@@ -26,7 +26,18 @@ class Arqueorecaudacioncab extends Model
      *
      * @var array
      */
-	protected $fillable = ["arqueocorrelativo","arqueofecha","arqueoturno","punto_recaud_id","arqueonombreoperador","arqueousuario","arqueofecharegistro","arqueoid","arqueoestado"];
+	protected $fillable = [
+        'arqueocorrelativo',
+        'arqueofecha',
+        'arqueoturno',
+        'punto_recaud_id',
+        'arqueonombreoperador',
+        'arqueousuario',
+        'arqueofecharegistro',
+        'arqueoid',
+        'arqueoestado',
+        'arqueonombresupervisor'
+    ];
 	
 
 	/**
@@ -66,7 +77,8 @@ class Arqueorecaudacioncab extends Model
 			"arqueousuario", 
 			"arqueofecharegistro", 
 			"arqueoid", 
-			"arqueoestado" 
+			"arqueoestado",
+            "arqueonombresupervisor"
 		];
 	}
 	
@@ -87,7 +99,8 @@ class Arqueorecaudacioncab extends Model
 			"arqueousuario", 
 			"arqueofecharegistro", 
 			"arqueoid", 
-			"arqueoestado" 
+			"arqueoestado",
+            "arqueonombresupervisor"
 		];
 	}
 	
@@ -98,18 +111,7 @@ class Arqueorecaudacioncab extends Model
      * @return array
      */
 	public static function viewFields(){
-		return [ 
-			"arqueorecid", 
-			"arqueocorrelativo", 
-			"arqueofecha", 
-			"arqueoturno", 
-			"punto_recaud_id", 
-			"arqueonombreoperador", 
-			"arqueousuario", 
-			"arqueofecharegistro", 
-			"arqueoid", 
-			"arqueoestado" 
-		];
+		return self::listFields();
 	}
 	
 
@@ -129,7 +131,8 @@ class Arqueorecaudacioncab extends Model
 			"arqueousuario", 
 			"arqueofecharegistro", 
 			"arqueoid", 
-			"arqueoestado" 
+			"arqueoestado",
+            "arqueonombresupervisor"
 		];
 	}
 	
@@ -140,18 +143,7 @@ class Arqueorecaudacioncab extends Model
      * @return array
      */
 	public static function editFields(){
-		return [ 
-			"arqueocorrelativo", 
-			"arqueofecha", 
-			"arqueoturno", 
-			"punto_recaud_id", 
-			"arqueonombreoperador", 
-			"arqueousuario", 
-			"arqueofecharegistro", 
-			"arqueoid", 
-			"arqueoestado", 
-			"arqueorecid" 
-		];
+		return self::listFields();
 	}
 	
 
@@ -161,4 +153,14 @@ class Arqueorecaudacioncab extends Model
      * @var bool
      */
 	public $timestamps = false;
+
+    public function puntoRecaudacion()
+    {
+        return $this->belongsTo(TblPuntosRecaudacion::class, 'punto_recaud_id', 'punto_recaud_id');
+    }
+
+    public function detalles()
+    {
+        return $this->hasMany(ArqueorecaudacionDet::class, 'arqueorecid', 'arqueorecid');
+    }
 }

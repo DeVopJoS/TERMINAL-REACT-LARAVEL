@@ -101,6 +101,12 @@ import TblvehiculosEdit from 'pages/tblvehiculos/Edit';
 import BusquedaActa  from 'pages/serviciosprevalorados/busquedaacta';
 import actaentregapopup  from 'pages/serviciosprevalorados/actaentregapopup';
 
+//MOD2 ARQUEO
+import ArqueoRecaudacionPage from 'pages/arqueo-recaudacion/index';
+import ArqueoRecaudacionAddPage from 'pages/arqueo-recaudacion/Add';
+import ArqueoRecaudacionViewPage from 'pages/arqueo-recaudacion/View';
+import ArqueoRecaudacionEditPage from 'pages/arqueo-recaudacion/Edit';
+
 import TblActasList from 'pages/tblactas/List';
 //--------------------
 import UsersList from 'pages/users/List';
@@ -129,6 +135,11 @@ const App = () => {
 			<Route element={<MainLayout />}>
 				<Route path="/home" element={<HomePage />} />
 				
+				{/* arqueo-recaudacion routes*/}
+				<Route path="/arqueo-recaudacion/add" element={<ArqueoRecaudacionAddPage />} />
+				<Route path="/arqueo-recaudacion/edit/:id" element={<ArqueoRecaudacionEditPage />} />
+				<Route path="/arqueo-recaudacion/:id" element={<ArqueoRecaudacionViewPage />} />
+				<Route path="/arqueo-recaudacion" element={<ArqueoRecaudacionPage />} />
 
 				{/* actaentregacab pages routes */}
 				<Route path="/actaentregacab" element={<ActaentregacabList />} />

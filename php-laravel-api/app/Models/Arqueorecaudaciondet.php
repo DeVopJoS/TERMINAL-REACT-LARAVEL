@@ -1,147 +1,52 @@
 <?php 
 namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
-class Arqueorecaudaciondet extends Model 
+
+class ArqueorecaudacionDet extends Model
 {
-	
+    protected $table = 'arqueorecaudaciondet';
+    protected $primaryKey = 'arqueorecdetid';
+    public $timestamps = false;
 
-	/**
-     * The table associated with the model.
-     *
-     * @var string
-     */
-	protected $table = 'arqueorecaudaciondet';
-	
+    protected $fillable = [
+        'arqueorecid',
+        'servicio_id',
+        'arqueodetcantidad',
+        'arqueodettarifabs',
+        'arqueodetimportebs',
+        'arqueoestado'
+    ];
 
-	/**
-     * The table primary key field
-     *
-     * @var string
-     */
-	protected $primaryKey = 'arqueorecdetid';
-	
+    public static function listFields()
+    {
+        return [
+            "arqueorecdetid",
+            "arqueorecid",
+            "servicio_id",
+            "arqueodetcantidad",
+            "arqueodettarifabs",
+            "arqueodetimportebs",
+            "arqueoestado"
+        ];
+    }
 
-	/**
-     * Table fillable fields
-     *
-     * @var array
-     */
-	protected $fillable = ["arqueorecid","servicio_id","arqueodetcantidad","arqueodettarifabs","arqueodetimportebs","arqueoestado"];
-	
+    public static function viewFields()
+    {
+        return self::listFields();
+    }
 
-	/**
-     * Set search query for the model
-	 * @param \Illuminate\Database\Eloquent\Builder $query
-	 * @param string $text
-     */
-	public static function search($query, $text){
-		//search table record 
-		$search_condition = '(
-				CAST(arqueorecdetid AS TEXT) LIKE ?  OR 
-				arqueoestado LIKE ? 
-		)';
-		$search_params = [
-			"%$text%","%$text%"
-		];
-		//setting search conditions
-		$query->whereRaw($search_condition, $search_params);
-	}
-	
+    public static function editFields()
+    {
+        return self::listFields();
+    }
 
-	/**
-     * return list page fields of the model.
-     * 
-     * @return array
-     */
-	public static function listFields(){
-		return [ 
-			"arqueorecdetid", 
-			"arqueorecid", 
-			"servicio_id", 
-			"arqueodetcantidad", 
-			"arqueodettarifabs", 
-			"arqueodetimportebs", 
-			"arqueoestado" 
-		];
-	}
-	
+    public function cabecera()
+    {
+        return $this->belongsTo(ArqueorecaudacionCab::class, 'arqueorecid', 'arqueorecid');
+    }
 
-	/**
-     * return exportList page fields of the model.
-     * 
-     * @return array
-     */
-	public static function exportListFields(){
-		return [ 
-			"arqueorecdetid", 
-			"arqueorecid", 
-			"servicio_id", 
-			"arqueodetcantidad", 
-			"arqueodettarifabs", 
-			"arqueodetimportebs", 
-			"arqueoestado" 
-		];
-	}
-	
-
-	/**
-     * return view page fields of the model.
-     * 
-     * @return array
-     */
-	public static function viewFields(){
-		return [ 
-			"arqueorecdetid", 
-			"arqueorecid", 
-			"servicio_id", 
-			"arqueodetcantidad", 
-			"arqueodettarifabs", 
-			"arqueodetimportebs", 
-			"arqueoestado" 
-		];
-	}
-	
-
-	/**
-     * return exportView page fields of the model.
-     * 
-     * @return array
-     */
-	public static function exportViewFields(){
-		return [ 
-			"arqueorecdetid", 
-			"arqueorecid", 
-			"servicio_id", 
-			"arqueodetcantidad", 
-			"arqueodettarifabs", 
-			"arqueodetimportebs", 
-			"arqueoestado" 
-		];
-	}
-	
-
-	/**
-     * return edit page fields of the model.
-     * 
-     * @return array
-     */
-	public static function editFields(){
-		return [ 
-			"arqueorecid", 
-			"servicio_id", 
-			"arqueodetcantidad", 
-			"arqueodettarifabs", 
-			"arqueodetimportebs", 
-			"arqueoestado", 
-			"arqueorecdetid" 
-		];
-	}
-	
-
-	/**
-     * Indicates if the model should be timestamped.
-     *
-     * @var bool
-     */
-	public $timestamps = false;
+    public function servicio()
+    {
+        return $this->belongsTo(TblServicios::class, 'servicio_id', 'servicio_id');
+    }
 }
