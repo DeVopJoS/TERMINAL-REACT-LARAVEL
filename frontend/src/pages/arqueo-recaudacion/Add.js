@@ -155,6 +155,13 @@ export default function ArqueoRecaudacionAdd() {
 
     const handleSubmit = async () => {
         try {
+            console.log("Form validation check:", {
+                operador: formData.arqueonombreoperador,
+                punto_id: formData.punto_recaud_id,
+                isPuntoMissing: !formData.punto_recaud_id,
+                isOperadorMissing: !formData.arqueonombreoperador
+            });
+
             if (!formData.arqueonombreoperador || !formData.punto_recaud_id) {
                 toast.current.show({
                     severity: 'warn',
@@ -173,8 +180,25 @@ export default function ArqueoRecaudacionAdd() {
                 return;
             }
 
+            console.log("Registrando arqueo con datos:", {
+                cabecera: {
+                    arqueocorrelativo: formData.arqueocorrelativo,
+                    arqueofecha: formData.arqueofecha,
+                    arqueoturno: formData.arqueoturno,
+                    punto_recaud_id: formData.punto_recaud_id,
+                    arqueonombreoperador: formData.arqueonombreoperador
+                },
+                detalles: formData.detalles.map(d => ({
+                    servicio_id: d.servicio_id,
+                    arqueodetcantidad: d.arqueodetcantidad,
+                    arqueodettarifabs: d.arqueodettarifabs,
+                    arqueodetimportebs: d.arqueodetimportebs
+                }))
+            });
+
             setLoading(true);
-            await api.post('arqueo-recaudacion', formData);
+            const response = await api.post('arqueo-recaudacion', formData);
+            console.log("Respuesta del servidor:", response.data);
             
             toast.current.show({
                 severity: 'success',
@@ -184,15 +208,24 @@ export default function ArqueoRecaudacionAdd() {
 
             navigate('/arqueo-recaudacion');
         } catch (error) {
+            console.error("Error guardando arqueo:", error);
             toast.current.show({
                 severity: 'error',
                 summary: 'Error',
-                detail: 'No se pudo crear el arqueo'
+                detail: 'No se pudo crear el arqueo: ' + (error.response?.data?.message || error.message)
             });
         } finally {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        console.log("Current formData values:", {
+            operador: formData.arqueonombreoperador,
+            punto_id: formData.punto_recaud_id,
+            selectedPunto
+        });
+    }, [formData.arqueonombreoperador, formData.punto_recaud_id, selectedPunto]);
 
     return (
         <div className="card">
@@ -240,8 +273,19 @@ export default function ArqueoRecaudacionAdd() {
                         value={selectedPunto}
                         options={puntosRecaudacion}
                         onChange={(e) => {
+                            console.log("Punto seleccionado:", e.value);
                             setSelectedPunto(e.value);
-                            setFormData(prev => ({...prev, punto_recaud_id: e.value.value}));
+                            if (e.value && typeof e.value === 'object' && 'value' in e.value) {
+                                setFormData(prev => ({
+                                    ...prev, 
+                                    punto_recaud_id: e.value.value
+                                }));
+                            } else {
+                                setFormData(prev => ({
+                                    ...prev, 
+                                    punto_recaud_id: e.value
+                                }));
+                            }
                         }}
                         optionLabel="label"
                         placeholder="Seleccione punto"

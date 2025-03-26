@@ -62,9 +62,21 @@ class ArqueoRecaudacionController extends Controller
                 'arqueocorrelativo' => 'required',
                 'arqueofecha' => 'required|date',
                 'arqueonombreoperador' => 'required',
-                'punto_recaud_id' => 'required',
+                'punto_recaud_id' => 'required|exists:tbl_puntos_recaudacion,punto_recaud_id',
                 'arqueoturno' => 'required|in:M,T,N',
-                'detalles' => 'required|array'
+                'detalles' => 'required|array',
+                'detalles.*.servicio_id' => 'required|exists:tbl_servicios,servicio_id',
+                'detalles.*.arqueodetcantidad' => 'required|numeric|min:1',
+                'detalles.*.arqueodettarifabs' => 'required|numeric|min:0',
+                'detalles.*.arqueodetimportebs' => 'required|numeric|min:0'
+            ]);
+
+            \Log::info('Creando arqueo recaudación', [
+                'correlativo' => $request->arqueocorrelativo,
+                'fecha' => $request->arqueofecha,
+                'turno' => $request->arqueoturno,
+                'punto_id' => $request->punto_recaud_id,
+                'detalles_count' => count($request->detalles)
             ]);
 
             $cabecera = ArqueorecaudacionCab::create([
@@ -73,24 +85,27 @@ class ArqueoRecaudacionController extends Controller
                 'arqueoturno' => $request->arqueoturno,
                 'punto_recaud_id' => $request->punto_recaud_id,
                 'arqueonombreoperador' => $request->arqueonombreoperador,
-                'arqueousuario' => 1,
+                'arqueousuario' => 1, //valor por defecto
                 'arqueofecharegistro' => now(),
-                'arqueoestado' => 'P',
+                'arqueoestado' => 'P', // estado pendiente
+                'arqueoid' => null, // esto se actualizará después
                 'arqueonombresupervisor' => $request->arqueonombresupervisor ?? null
             ]);
 
+            // procesar detalles
             foreach ($request->detalles as $detalle) {
                 $cantidad = intval($detalle['arqueodetcantidad'] ?? 0);
                 $tarifa = floatval($detalle['arqueodettarifabs'] ?? 0);
-                $importeEnviado = floatval($detalle['arqueodetimportebs'] ?? 0);
-
+                $importe = floatval($detalle['arqueodetimportebs'] ?? 0);
+                
+                //Crear registro de detalle (arqueorecaudaciondet
                 ArqueorecaudacionDet::create([
-                    'arqueorecid' => $cabecera->arqueorecid,
-                    'servicio_id' => $detalle['servicio_id'],
+                    'arqueorecid' => $cabecera->arqueorecid, // Foreign key a arqueorecaudacioncab
+                    'servicio_id' => $detalle['servicio_id'], // Foreign key a tbl_servicios
                     'arqueodetcantidad' => $cantidad,
                     'arqueodettarifabs' => $tarifa,
-                    'arqueodetimportebs' => $importeEnviado,
-                    'arqueoestado' => 'P'
+                    'arqueodetimportebs' => $importe,
+                    'arqueoestado' => 'P' // estado pendiente
                 ]);
             }
 
@@ -102,6 +117,10 @@ class ArqueoRecaudacionController extends Controller
             ]);
         } catch (Exception $e) {
             DB::rollback();
+            \Log::error('Error al crear arqueo: ' . $e->getMessage(), [
+                'exception' => $e,
+                'request' => $request->all()
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Error al crear arqueo: ' . $e->getMessage()

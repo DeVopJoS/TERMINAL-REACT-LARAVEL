@@ -1768,3 +1768,11 @@ LINE 1: ...ecaud_estado\" from \"tbl_puntos_recaudacion\" where \"ae_estado...
 [2025-03-26 12:19:20] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":6.0,"codigo":"BID"} 
 [2025-03-26 12:19:27] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":6.0,"codigo":"BID"} 
 [2025-03-26 12:59:10] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":6.0,"codigo":"BID"} 
+[2025-03-26 15:54:54] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":6.0,"codigo":"BID"} 
+[2025-03-26 15:58:33] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":6.0,"codigo":"BID"} 
+[2025-03-26 16:45:49] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":6.0,"codigo":"BID"} 
+[2025-03-26 16:48:29] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":6.0,"codigo":"BID"} 
+[2025-03-26 16:48:34] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":6.0,"codigo":"BID"} 
+[2025-03-26 16:48:48] local.INFO: Creando arqueo recaudación {"correlativo":4,"fecha":"2025-03-26T16:48:33.459Z","turno":"M","punto_id":4,"detalles_count":1} 
+[2025-03-26 16:49:08] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":6.0,"codigo":"BID"} 
+[2025-03-26 16:49:36] local.INFO: Creando arqueo recaudación {"correlativo":5,"fecha":"2025-03-26T16:49:07.290Z","turno":"M","punto_id":2,"detalles_count":2} 
