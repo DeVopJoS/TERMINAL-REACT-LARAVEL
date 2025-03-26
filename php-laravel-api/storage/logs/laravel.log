@@ -1765,3 +1765,6 @@ LINE 1: ...ecaud_estado\" from \"tbl_puntos_recaudacion\" where \"ae_estado...
 [2025-03-26 11:37:01] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":6.0,"codigo":"BID"} 
 [2025-03-26 11:37:07] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":6.0,"codigo":"BID"} 
 [2025-03-26 11:37:15] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":6.0,"codigo":"BID"} 
+[2025-03-26 12:19:20] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":6.0,"codigo":"BID"} 
+[2025-03-26 12:19:27] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":6.0,"codigo":"BID"} 
+[2025-03-26 12:59:10] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":6.0,"codigo":"BID"} 

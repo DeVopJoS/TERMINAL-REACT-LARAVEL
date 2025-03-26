@@ -66,6 +66,25 @@ function DialogActa({visible, onHide, reloadData}) {
     }
 
     const handleSaveDet = (newRecord) => {
+        const solapamiento = registros.some(record => {
+            if (newRecord.id && record.id === newRecord.id) return false;
+            
+            return (
+                (newRecord.desde_numero >= record.desde_numero && newRecord.desde_numero <= record.hasta_numero) ||
+                (newRecord.hasta_numero >= record.desde_numero && newRecord.hasta_numero <= record.hasta_numero) ||
+                (newRecord.desde_numero <= record.desde_numero && newRecord.hasta_numero >= record.hasta_numero)
+            );
+        });
+    
+        if (solapamiento) {
+            toast.current.show({
+                severity: "error",
+                summary: "Error",
+                detail: "El rango de números se solapa con un registro existente",
+                life: 3000,
+            });
+            return; 
+        }
         
         setRegistros(prevRegistros => {
             if (newRecord.id) {

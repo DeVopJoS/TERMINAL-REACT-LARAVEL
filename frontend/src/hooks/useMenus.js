@@ -34,6 +34,13 @@ export default function useMenus() {
     "target": "",
   },
   {
+    "to": "cajas/registro/prevaloradas",
+    "label": "Registro de Prevaloradas",
+    "icon": "pi pi-money-bill",
+    "iconcolor": "",
+    "target": "",
+  },
+  {
     "to": "/actaentregacab",
     "label": "Actaentregacab",
     "icon": "pi pi-th-large",

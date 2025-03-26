@@ -108,6 +108,9 @@ import ArqueoRecaudacionViewPage from 'pages/arqueo-recaudacion/View';
 import ArqueoRecaudacionEditPage from 'pages/arqueo-recaudacion/Edit';
 import ArqueoRecaudacionFinalPage from 'pages/arqueo-recaudacion/ArqueoFinal';
 
+//Registro de prevaloradas
+import PrevaloradasList from 'pages/registroprevaloradas/List'
+
 import TblActasList from 'pages/tblactas/List';
 //--------------------
 import UsersList from 'pages/users/List';
@@ -336,8 +339,12 @@ const App = () => {
 				<Route path="/users/edit/:pageid" element={<UsersEdit />} />
 				<Route path="/account/*" element={<AccountPages />} />
 
+				{/* Registro de prevaloradas */}
+				<Route path='/cajas/registro/prevaloradas' element={<PrevaloradasList/>}/>
 
+				{/* Servicios Prevalorados */}
 				<Route path="/serviciosprevalorados/busquedaacta/" element={<BusquedaActa />} /> 
+
 				{/* <Route path="/serviciosprevalorados/busquedaacta1/" element={<BusquedaActa2 />} />  */}
 				<Route path="/serviciosprevalorados/actaentregapopup/" element={<actaentregapopup />} /> 
 
