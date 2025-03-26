@@ -58,7 +58,6 @@ export default function ArqueoRecaudacionPage() {
             const response = await api.get(url);
             setArqueos(response.data);
         } catch (error) {
-            console.error('Error al cargar arqueos:', error);
             toast.current.show({
                 severity: 'error',
                 summary: 'Error',
@@ -126,6 +125,15 @@ export default function ArqueoRecaudacionPage() {
         );
     };
 
+    const getTurnoDisplay = (turnoCode) => {
+        switch(turnoCode) {
+            case 'M': return 'Mañana';
+            case 'T': return 'Tarde';
+            case 'N': return 'Noche';
+            default: return turnoCode;
+        }
+    };
+
     return (
         <div className="card">
             <Toast ref={toast} />
@@ -190,9 +198,27 @@ export default function ArqueoRecaudacionPage() {
             >
                 <Column field="arqueocorrelativo" header="Correlativo" sortable />
                 <Column field="arqueofecha" header="Fecha" body={fechaTemplate} sortable />
-                <Column field="arqueoturno" header="Turno" sortable />
+                <Column 
+                    field="arqueoturno" 
+                    header="Turno" 
+                    sortable
+                    body={(rowData) => getTurnoDisplay(rowData.arqueoturno)}
+                />
                 <Column field="arqueonombreoperador" header="Operador" sortable />
-                <Column field="puntoRecaudacion.puntorecaud_nombre" header="Punto Recaudación" sortable />
+                <Column 
+                    field="puntoRecaudacion.puntorecaud_nombre" 
+                    header="Punto Recaudación" 
+                    body={(rowData) => {
+                        if (rowData.puntoRecaudacion && rowData.puntoRecaudacion.puntorecaud_nombre) {
+                            return rowData.puntoRecaudacion.puntorecaud_nombre;
+                        } else if (rowData.punto_recaudacion && rowData.punto_recaudacion.puntorecaud_nombre) {
+                            return rowData.punto_recaudacion.puntorecaud_nombre;
+                        } else {
+                            return 'No especificado';
+                        }
+                    }}
+                    sortable
+                />
                 <Column header="Total" body={importeTemplate} sortable />
                 <Column header="Estado" body={estadoTemplate} sortable />
                 <Column header="Acciones" body={accionesTemplate} />

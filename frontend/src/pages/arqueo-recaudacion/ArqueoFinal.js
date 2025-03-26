@@ -26,6 +26,49 @@ const CORTES_DENOMINACION = [
     { campo: 'arqueocorte000_10', valor: 0.1, label: '0.10' }
 ];
 
+const DiferenciaIndicator = ({ totalCortes, totalRecaudacion }) => {
+    if (!totalRecaudacion) return null;
+    
+    const diferencia = totalCortes - totalRecaudacion;
+    let status = {
+        icon: 'pi pi-check-circle',
+        color: 'surface-200',
+        textColor: 'text-green-500',
+        label: 'COMPLETO',
+        description: 'Los montos coinciden exactamente'
+    };
+
+    if (diferencia > 0) {
+        status = {
+            icon: 'pi pi-arrow-up',
+            color: 'surface-200',
+            textColor: 'text-blue-500',
+            label: 'SOBRANTE',
+            description: `Hay un sobrante de Bs. ${diferencia.toFixed(2)}`
+        };
+    } else if (diferencia < 0) {
+        status = {
+            icon: 'pi pi-arrow-down',
+            color: 'surface-200',
+            textColor: 'text-red-500',
+            label: 'FALTANTE',
+            description: `Falta Bs. ${Math.abs(diferencia).toFixed(2)}`
+        };
+    }
+
+    return (
+        <div className={`p-4 border-round-xl shadow-1 mb-3 ${status.color}`}>
+            <div className="flex align-items-center">
+                <i className={`${status.icon} text-4xl ${status.textColor} mr-3`}></i>
+                <div>
+                    <h2 className={`text-xl font-bold ${status.textColor} m-0`}>{status.label}</h2>
+                    <p className="text-600 m-0">{status.description}</p>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 export default function ArqueoFinal() {
     const navigate = useNavigate();
     const api = useApi();
@@ -36,13 +79,10 @@ export default function ArqueoFinal() {
         arqueonumero: '',
         arqueofecha: new Date(),
         arqueoturno: 'M',
-        arqueohorainicio: '08:00',
-        arqueohorafin: '14:00',
-        arqueosupervisor: 1, // Default 1
-        arqueorealizadopor: 1, // Default 1
-        arqueorevisadopor: 1, // Default 1
+        arqueohorainicio: new Date(),  
+        arqueohorafin: new Date(),  
+        arqueosupervisor: '',
         arqueoobservacion: '',
-        arqueoestado: 'A',
         cortes: CORTES_DENOMINACION.reduce((acc, den) => ({
             ...acc,
             [den.campo]: 0
@@ -68,7 +108,6 @@ export default function ArqueoFinal() {
             const numeroRes = await api.get('arqueo-recaudacion-numero');
             setFormData(prev => ({ ...prev, arqueonumero: numeroRes.data.numero }));
         } catch (error) {
-            console.error('Error cargando datos iniciales:', error);
             toast.current.show({
                 severity: 'error',
                 summary: 'Error',
@@ -97,9 +136,7 @@ export default function ArqueoFinal() {
                 arqueofecha.toISOString().split('T')[0] : 
                 arqueofecha;
                 
-            console.log("Consultando resumen con fecha:", fechaStr, "turno:", arqueoturno);
             const response = await api.get(`arqueo-recaudacion-resumen?fecha=${fechaStr}&turno=${arqueoturno}`);
-            console.log("Respuesta resumen:", response.data);
             
             if (response.data.success) {
                 setResumenServicios(response.data.resumen_servicios);
@@ -111,14 +148,16 @@ export default function ArqueoFinal() {
                 );
                 setTotalRecaudacion(total);
             } else {
+                setResumenServicios([]);
+                setDetalleOperadores([]);
+                setTotalRecaudacion(0);
                 toast.current.show({
                     severity: 'warn',
-                    summary: 'Sin datos',
-                    detail: response.data.message || 'No se encontraron datos'
+                    summary: 'Sin datos pendientes',
+                    detail: response.data.message || 'No se encontraron recaudaciones pendientes'
                 });
             }
         } catch (error) {
-            console.error('Error al consultar resumen:', error);
             toast.current.show({
                 severity: 'error',
                 summary: 'Error',
@@ -130,6 +169,10 @@ export default function ArqueoFinal() {
     };
 
     const calcularTotalCortes = () => {
+        if (!resumenServicios.length) {
+            return 0;
+        }
+
         const total = CORTES_DENOMINACION.reduce((total, den) => {
             return total + (formData.cortes[den.campo] || 0) * den.valor;
         }, 0);
@@ -147,13 +190,39 @@ export default function ArqueoFinal() {
         }));
     };
 
+    const formatTimeForDB = (date) => {
+        if (!date) return null;
+        if (typeof date === 'string') {
+            const [hours, minutes] = date.split(':');
+            const today = new Date();
+            const timestamp = new Date(today.getFullYear(), today.getMonth(), today.getDate(), hours || 0, minutes || 0);
+            return timestamp.toISOString();
+        }
+        return date.toISOString();
+    };
+
     const handleSubmit = async () => {
         try {
-            if (!formData.arqueofecha || !formData.arqueoturno || !formData.arqueosupervisor) {
+            const requiredFields = {
+                arqueofecha: 'Fecha',
+                arqueoturno: 'Turno',
+                arqueohorainicio: 'Hora inicio',
+                arqueohorafin: 'Hora fin',
+                arqueosupervisor: 'Supervisor'
+            };
+
+            const missingFields = [];
+            Object.entries(requiredFields).forEach(([field, label]) => {
+                if (!formData[field]) {
+                    missingFields.push(label);
+                }
+            });
+
+            if (missingFields.length > 0) {
                 toast.current.show({
                     severity: 'warn',
                     summary: 'Datos incompletos',
-                    detail: 'Complete todos los campos requeridos'
+                    detail: `Complete los campos: ${missingFields.join(', ')}`
                 });
                 return;
             }
@@ -172,9 +241,18 @@ export default function ArqueoFinal() {
             const diferencia = totalCortes - totalRecaudacion;
 
             const requestData = {
-                ...formData,
+                arqueonumero: formData.arqueonumero,
+                arqueofecha: formData.arqueofecha instanceof Date ? 
+                    formData.arqueofecha.toISOString().split('T')[0] : 
+                    formData.arqueofecha,
+                arqueoturno: formData.arqueoturno,
+                arqueohorainicio: formatTimeForDB(formData.arqueohorainicio),
+                arqueohorafin: formatTimeForDB(formData.arqueohorafin),
+                arqueosupervisor: formData.arqueosupervisor,
+                arqueoobservacion: formData.arqueoobservacion,
                 arqueorecaudaciontotal: totalRecaudacion,
                 arqueodiferencia: diferencia,
+                cortes: formData.cortes
             };
 
             const response = await api.post('arqueo-recaudacion-final', requestData);
@@ -183,22 +261,21 @@ export default function ArqueoFinal() {
                 toast.current.show({
                     severity: 'success',
                     summary: 'Éxito',
-                    detail: 'Arqueo final generado correctamente'
+                    detail: `Arqueo final generado correctamente. ${
+                        diferencia === 0 ? '(Cuadre exacto)' :
+                        diferencia > 0 ? `(Sobrante: Bs. ${diferencia.toFixed(2)})` :
+                        `(Faltante: Bs. ${Math.abs(diferencia).toFixed(2)})`
+                    }`
                 });
                 navigate('/arqueocab/view/' + response.data.data.arqueoid);
             } else {
-                toast.current.show({
-                    severity: 'error',
-                    summary: 'Error',
-                    detail: response.data.message
-                });
+                throw new Error(response.data.message || 'Error al generar arqueo');
             }
         } catch (error) {
-            console.error('Error al generar arqueo final:', error);
             toast.current.show({
                 severity: 'error',
                 summary: 'Error',
-                detail: 'No se pudo generar el arqueo final'
+                detail: error.response?.data?.message || error.message || 'Error al generar arqueo final'
             });
         } finally {
             setLoading(false);
@@ -206,197 +283,273 @@ export default function ArqueoFinal() {
     };
 
     return (
-        <div className="card">
+        <div className="card p-4">
             <Toast ref={toast} />
-            <h5>Generar Arqueo Final</h5>
-
-            <div className="grid">
-                <div className="col-12 md:col-3">
-                    <label htmlFor="numero">Número de Arqueo</label>
-                    <InputText
-                        id="numero"
-                        value={formData.arqueonumero}
-                        readOnly
-                        className="w-full"
-                    />
+            
+            {/* Header Section */}
+            <div className="flex justify-content-between align-items-center mb-5">
+                <div>
+                    <h2 className="text-2xl font-bold text-900 m-0">Cierre de Arqueo</h2>
+                    <span className="text-500">#{formData.arqueonumero}</span>
                 </div>
+                <Button 
+                    icon="pi pi-arrow-left" 
+                    label="Volver"
+                    className="p-button-text"
+                    onClick={() => navigate('/arqueo-recaudacion')}
+                />
+            </div>
 
-                <div className="col-12 md:col-3">
-                    <label htmlFor="fecha">Fecha</label>
-                    <Calendar
-                        id="fecha"
-                        value={formData.arqueofecha}
-                        onChange={(e) => setFormData({...formData, arqueofecha: e.value})}
-                        showIcon
-                        dateFormat="dd/mm/yy"
-                        className="w-full"
-                    />
-                </div>
-
-                <div className="col-12 md:col-3">
-                    <label htmlFor="turno">Turno</label>
-                    <Dropdown
-                        id="turno"
-                        value={formData.arqueoturno}
-                        options={[
-                            { label: 'MAÑANA', value: 'M' },
-                            { label: 'TARDE', value: 'T' },
-                            { label: 'NOCHE', value: 'N' }
-                        ]}
-                        onChange={(e) => setFormData({...formData, arqueoturno: e.value})}
-                        className="w-full"
-                    />
-                </div>
-
-                <div className="col-12 md:col-3">
-                    <Button 
-                        label="Consultar Recaudación" 
-                        icon="pi pi-search" 
-                        onClick={handleConsultarResumen}
-                        loading={loading}
-                        className="w-full"
-                    />
-                </div>
-
-                <div className="col-12 md:col-3">
-                    <label htmlFor="horainicio">Hora Inicio</label>
-                    <InputText
-                        id="horainicio"
-                        value={formData.arqueohorainicio}
-                        onChange={(e) => setFormData({...formData, arqueohorainicio: e.target.value})}
-                        className="w-full"
-                    />
-                </div>
-
-                <div className="col-12 md:col-3">
-                    <label htmlFor="horafin">Hora Fin</label>
-                    <InputText
-                        id="horafin"
-                        value={formData.arqueohorafin}
-                        onChange={(e) => setFormData({...formData, arqueohorafin: e.target.value})}
-                        className="w-full"
-                    />
-                </div>
-
-                <div className="col-12 md:col-6">
-                    <label htmlFor="supervisor">Supervisor</label>
-                    <InputText
-                        id="supervisor"
-                        value={formData.arqueosupervisor}
-                        onChange={(e) => setFormData({...formData, arqueosupervisor: e.target.value})}
-                        className="w-full"
-                    />
-                </div>
-
-                <div className="col-12">
-                    <Divider align="left">
-                        <div className="inline-flex align-items-center">
-                            <i className="pi pi-money-bill mr-2"></i>
-                            <b>Resumen de Recaudación por Servicios</b>
-                        </div>
-                    </Divider>
-                </div>
-
-                <div className="col-12">
-                    <DataTable 
-                        value={resumenServicios} 
-                        loading={loading}
-                        emptyMessage="No hay datos de recaudación"
-                    >
-                        <Column field="codigo" header="Código" />
-                        <Column field="nombre" header="Servicio" />
-                        <Column field="cantidad_total" header="Cantidad" />
-                        <Column field="importe_total" header="Importe" body={(rowData) => `Bs. ${parseFloat(rowData.importe_total).toFixed(2)}`} />
-                    </DataTable>
-                </div>
-
-                <div className="col-12">
-                    <Divider align="left">
-                        <div className="inline-flex align-items-center">
-                            <i className="pi pi-user mr-2"></i>
-                            <b>Detalle por Operador</b>
-                        </div>
-                    </Divider>
-                </div>
-
-                <div className="col-12">
-                    <DataTable 
-                        value={detalleOperadores} 
-                        loading={loading}
-                        emptyMessage="No hay datos de operadores"
-                    >
-                        <Column field="operador" header="Operador" />
-                        <Column field="punto" header="Punto Recaudación" />
-                        <Column field="codigo" header="Servicio" />
-                        <Column field="cantidad" header="Cantidad" />
-                        <Column field="importe" header="Importe" body={(rowData) => `Bs. ${parseFloat(rowData.importe).toFixed(2)}`} />
-                    </DataTable>
-                </div>
-
-                <div className="col-12">
-                    <Divider align="left">
-                        <div className="inline-flex align-items-center">
-                            <i className="pi pi-dollar mr-2"></i>
-                            <b>Cortes Monetarios</b>
-                        </div>
-                    </Divider>
-                </div>
-
+            {/* Búsqueda de Arqueo */}
+            <div className="surface-100 p-4 border-round mb-4">
+                <h3 className="text-lg font-semibold mb-3">Búsqueda de Arqueo</h3>
                 <div className="grid">
-                    {CORTES_DENOMINACION.map(den => (
-                        <div key={den.campo} className="col-12 md:col-3">
-                            <label>Corte Bs. {den.label}</label>
-                            <InputNumber 
-                                value={formData.cortes[den.campo]}
-                                onChange={(e) => handleCortesChange(den.campo, e.value)}
-                                mode="decimal"
-                                minFractionDigits={2}
-                                maxFractionDigits={2}
-                                min={0}
-                                className="w-full"
-                            />
-                        </div>
-                    ))}
-                </div>
-
-                <div className="col-12">
-                    <div className="flex justify-content-between align-items-center">
-                        <div className="text-xl">
-                            <span className="text-700">Total Recaudado: </span>
-                            <span className="font-bold">Bs. {totalRecaudacion.toFixed(2)}</span>
-                        </div>
-                        <div className="text-xl">
-                            <span className="text-700">Total Cortes: </span>
-                            <span className="font-bold">Bs. {totalCortes.toFixed(2)}</span>
-                        </div>
-                        <div className="text-xl">
-                            <span className="text-700">Diferencia: </span>
-                            <span className={`font-bold ${totalCortes - totalRecaudacion === 0 ? 'text-green-500' : 'text-red-500'}`}>
-                                Bs. {(totalCortes - totalRecaudacion).toFixed(2)}
-                            </span>
-                        </div>
+                    <div className="col-12 md:col-3">
+                        <Calendar
+                            value={formData.arqueofecha}
+                            onChange={(e) => setFormData({...formData, arqueofecha: e.value})}
+                            showIcon
+                            placeholder="Seleccione fecha"
+                            className="w-full"
+                        />
+                    </div>
+                    <div className="col-12 md:col-3">
+                        <Dropdown
+                            value={formData.arqueoturno}
+                            options={[
+                                { label: 'MAÑANA', value: 'M' },
+                                { label: 'TARDE', value: 'T' },
+                                { label: 'NOCHE', value: 'N' }
+                            ]}
+                            onChange={(e) => setFormData({...formData, arqueoturno: e.value})}
+                            className="w-full"
+                            placeholder="Seleccione turno"
+                        />
+                    </div>
+                    <div className="col-12 md:col-6">
+                        <Button 
+                            label="Buscar Recaudación" 
+                            icon="pi pi-search"
+                            className="w-full p-button-raised"
+                            onClick={handleConsultarResumen}
+                            loading={loading}
+                        />
                     </div>
                 </div>
-
-                <div className="col-12">
-                    <label htmlFor="observacion">Observaciones</label>
-                    <InputText
-                        id="observacion"
-                        value={formData.arqueoobservacion}
-                        onChange={(e) => setFormData({...formData, arqueoobservacion: e.target.value})}
-                        className="w-full"
-                    />
-                </div>
-
-                <div className="col-12 text-right">
-                    <Button 
-                        label="Generar Arqueo Final" 
-                        icon="pi pi-save" 
-                        onClick={handleSubmit}
-                        loading={loading}
-                    />
-                </div>
             </div>
+
+            {resumenServicios.length > 0 && (
+                <>
+                    <div className="card mb-4">
+                        <DiferenciaIndicator 
+                            totalCortes={totalCortes} 
+                            totalRecaudacion={totalRecaudacion}
+                        />
+                        
+                        <div className="grid">
+                            <div className="col-12 md:col-4">
+                                <div className="text-center p-4 surface-100 border-round">
+                                    <span className="text-600 block mb-2">Total Recaudado</span>
+                                    <span className="text-3xl font-bold text-900">
+                                        Bs. {totalRecaudacion.toFixed(2)}
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="col-12 md:col-4">
+                                <div className="text-center p-4 surface-100 border-round">
+                                    <span className="text-600 block mb-2">Total Contado</span>
+                                    <span className="text-3xl font-bold text-900">
+                                        Bs. {totalCortes.toFixed(2)}
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="col-12 md:col-4">
+                                <div className="text-center p-4 surface-100 border-round">
+                                    <span className="text-600 block mb-2">Diferencia</span>
+                                    <span className={`text-3xl font-bold ${
+                                        totalCortes - totalRecaudacion === 0 ? 'text-green-500' :
+                                        totalCortes - totalRecaudacion > 0 ? 'text-blue-500' : 
+                                        'text-red-500'
+                                    }`}>
+                                        Bs. {(totalCortes - totalRecaudacion).toFixed(2)}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div className="grid">
+                        <div className="col-12 md:col-6">
+                            {/* Cortes Monetarios */}
+                            <div className="card p-0 mb-4">
+                                <div className="p-4 border-bottom-1 surface-border">
+                                    <h3 className="text-lg font-semibold m-0">
+                                        Conteo de Efectivo
+                                    </h3>
+                                </div>
+                                <div className="p-4">
+                                    <div className="grid">
+                                        {CORTES_DENOMINACION.map(den => (
+                                            <div key={den.campo} className="col-12 md:col-6 mb-3">
+                                                <div className="flex align-items-center">
+                                                    <span className="bg-primary border-round p-2 text-white font-bold mr-2 w-4rem text-center">
+                                                        {den.label}
+                                                    </span>
+                                                    <InputNumber 
+                                                        value={formData.cortes[den.campo]}
+                                                        onChange={(e) => handleCortesChange(den.campo, e.value)}
+                                                        showButtons
+                                                        min={0}
+                                                        className="w-full"
+                                                    />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="col-12 md:col-6">
+                            {/* Resumen de servicios */}
+                            <div className="card p-0 mb-4">
+                                <div className="p-4 border-bottom-1 surface-border">
+                                    <h3 className="text-lg font-semibold m-0">
+                                        Resumen de Recaudación
+                                    </h3>
+                                </div>
+                                <div className="p-4">
+                                    <DataTable 
+                                        value={resumenServicios}
+                                        scrollable 
+                                        scrollHeight="400px"
+                                        size="small"
+                                        className="mb-4"
+                                    >
+                                        <Column field="codigo" header="Código" style={{width: '80px'}} />
+                                        <Column field="nombre" header="Servicio" />
+                                        <Column field="cantidad_total" header="Cantidad" style={{width: '80px'}} />
+                                        <Column 
+                                            field="importe_total" 
+                                            header="Importe" 
+                                            body={(row) => `Bs. ${parseFloat(row.importe_total).toFixed(2)}`}
+                                            style={{width: '100px'}}
+                                        />
+                                    </DataTable>
+
+                                    {/* Totales */}
+                                    <div className="bg-gray-50 p-3 border-round">
+                                        <div className="flex justify-content-between align-items-center">
+                                            <span className="font-bold">Total Recaudado:</span>
+                                            <span className="text-xl font-bold">Bs. {totalRecaudacion.toFixed(2)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Detalle por operador*/}
+                            <div className="card p-0">
+                                <div className="p-4 border-bottom-1 surface-border">
+                                    <h3 className="text-lg font-semibold m-0">
+                                        Detalle por Operador
+                                    </h3>
+                                </div>
+                                <div className="p-4">
+                                    <DataTable 
+                                        value={detalleOperadores}
+                                        scrollable 
+                                        scrollHeight="200px"
+                                        size="small"
+                                    >
+                                        <Column field="operador" header="Operador" />
+                                        <Column field="punto" header="Punto" style={{width: '100px'}} />
+                                        <Column field="codigo" header="Serv." style={{width: '70px'}} />
+                                        <Column field="cantidad" header="Cant." style={{width: '70px'}} />
+                                        <Column 
+                                            field="importe" 
+                                            header="Importe" 
+                                            body={(row) => `Bs. ${parseFloat(row.importe).toFixed(2)}`}
+                                            style={{width: '100px'}}
+                                        />
+                                    </DataTable>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Datos del Cierre*/}
+                    <div className="card p-4 mb-4 mt-3">
+                        <h3 className="text-lg font-semibold mb-4">Datos del Cierre</h3>
+                        <div className="grid">
+                            <div className="col-12 md:col-4 mb-4">
+                                <label className="block text-600 mb-2">Hora Inicio</label>
+                                <Calendar
+                                    value={formData.arqueohorainicio}
+                                    onChange={(e) => setFormData({...formData, arqueohorainicio: e.value})}
+                                    timeOnly
+                                    hourFormat="24"
+                                    className="w-full"
+                                />
+                            </div>
+                            <div className="col-12 md:col-4 mb-4">
+                                <label className="block text-600 mb-2">Hora Fin</label>
+                                <Calendar
+                                    value={formData.arqueohorafin}
+                                    onChange={(e) => setFormData({...formData, arqueohorafin: e.value})}
+                                    timeOnly
+                                    hourFormat="24"
+                                    className="w-full"
+                                />
+                            </div>
+                            <div className="col-12 md:col-4 mb-4">
+                                <label className="block text-600 mb-2">Supervisor</label>
+                                <InputText
+                                    value={formData.arqueosupervisor}
+                                    onChange={(e) => setFormData({...formData, arqueosupervisor: e.target.value})}
+                                    className="w-full"
+                                />
+                            </div>
+                            <div className="col-12 mb-4">
+                                <label className="block text-600 mb-2">Observaciones</label>
+                                <InputText
+                                    value={formData.arqueoobservacion}
+                                    onChange={(e) => setFormData({...formData, arqueoobservacion: e.target.value})}
+                                    className="w-full"
+                                />
+                            </div>
+                        </div>
+                        
+                        <div className="flex justify-content-end">
+                            <Button
+                                label="Generar Arqueo Final"
+                                icon="pi pi-check"
+                                className="p-button-raised"
+                                onClick={handleSubmit}
+                                loading={loading}
+                            />
+                        </div>
+                    </div>
+                </>
+            )}
+
+            <style>
+                {`
+                    .sticky-container {
+                        position: sticky;
+                        top: 20px;
+                    }
+                    .p-datatable .p-datatable-tbody > tr > td {
+                        padding: 1rem 0.8rem;
+                    }
+                    .p-datatable .p-datatable-thead > tr > th {
+                        padding: 1rem 0.8rem;
+                        font-size: 1.1rem;  
+                    }
+                    .text-lg {
+                        font-size: 1.1rem !important; 
+                    }
+                `}
+            </style>
         </div>
     );
 }

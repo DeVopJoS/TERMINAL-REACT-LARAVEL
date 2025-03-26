@@ -18,9 +18,9 @@ class ArqueoRecaudacionController extends Controller
     {
         try {
             $query = ArqueorecaudacionCab::with([
-                'puntoRecaudacion',
+                'puntoRecaudacion:punto_recaud_id,puntorecaud_nombre',
                 'detalles' => function($q) {
-                    $q->with('servicio');
+                    $q->with('servicio:servicio_id,servicio_descripcion,servicio_abreviatura,servicio_precio_base');
                 }
             ]);
             
@@ -62,9 +62,13 @@ class ArqueoRecaudacionController extends Controller
                 'arqueocorrelativo' => 'required',
                 'arqueofecha' => 'required|date',
                 'arqueonombreoperador' => 'required',
-                'punto_recaud_id' => 'required',
+                'punto_recaud_id' => 'required|exists:tbl_puntos_recaudacion,punto_recaud_id',
                 'arqueoturno' => 'required|in:M,T,N',
-                'detalles' => 'required|array'
+                'detalles' => 'required|array',
+                'detalles.*.servicio_id' => 'required|exists:tbl_servicios,servicio_id',
+                'detalles.*.arqueodetcantidad' => 'required|numeric|min:1',
+                'detalles.*.arqueodettarifabs' => 'required|numeric|min:0',
+                'detalles.*.arqueodetimportebs' => 'required|numeric|min:0'
             ]);
 
             $cabecera = ArqueorecaudacionCab::create([
@@ -73,24 +77,27 @@ class ArqueoRecaudacionController extends Controller
                 'arqueoturno' => $request->arqueoturno,
                 'punto_recaud_id' => $request->punto_recaud_id,
                 'arqueonombreoperador' => $request->arqueonombreoperador,
-                'arqueousuario' => 1,
+                'arqueousuario' => 1, //valor por defecto
                 'arqueofecharegistro' => now(),
-                'arqueoestado' => 'P',
+                'arqueoestado' => 'P', // estado pendiente
+                'arqueoid' => null, // esto se actualizará después
                 'arqueonombresupervisor' => $request->arqueonombresupervisor ?? null
             ]);
 
+            // procesar detalles
             foreach ($request->detalles as $detalle) {
                 $cantidad = intval($detalle['arqueodetcantidad'] ?? 0);
                 $tarifa = floatval($detalle['arqueodettarifabs'] ?? 0);
-                $importeEnviado = floatval($detalle['arqueodetimportebs'] ?? 0);
-
+                $importe = floatval($detalle['arqueodetimportebs'] ?? 0);
+                
+                //Crear registro de detalle (arqueorecaudaciondet
                 ArqueorecaudacionDet::create([
-                    'arqueorecid' => $cabecera->arqueorecid,
-                    'servicio_id' => $detalle['servicio_id'],
+                    'arqueorecid' => $cabecera->arqueorecid, // Foreign key a arqueorecaudacioncab
+                    'servicio_id' => $detalle['servicio_id'], // Foreign key a tbl_servicios
                     'arqueodetcantidad' => $cantidad,
                     'arqueodettarifabs' => $tarifa,
-                    'arqueodetimportebs' => $importeEnviado,
-                    'arqueoestado' => 'P'
+                    'arqueodetimportebs' => $importe,
+                    'arqueoestado' => 'P' // estado pendiente
                 ]);
             }
 
@@ -109,148 +116,81 @@ class ArqueoRecaudacionController extends Controller
         }
     }
 
-    // Método para generar el arqueo final consolidado
+    // Método para generar el arqueo final
     public function generarArqueoFinal(Request $request)
     {
         DB::beginTransaction();
         try {
             $request->validate([
-                'arqueonumero' => 'required',
+                'arqueonumero' => 'required|integer',
                 'arqueofecha' => 'required|date',
                 'arqueoturno' => 'required|in:M,T,N',
                 'arqueohorainicio' => 'required',
                 'arqueohorafin' => 'required',
-                'arqueosupervisor' => 'required',
-                'cortes' => 'required|array'
+                'arqueosupervisor' => 'required|string',
+                'cortes' => 'required|array',
+                'arqueorecaudaciontotal' => 'required|numeric',
+                'arqueodiferencia' => 'required|numeric',
+                'arqueoobservacion' => 'nullable|string'
             ]);
 
-            // Crear arqueo principal
-            $arqueoCab = Arqueocab::create([
-                'arqueonumero' => $request->arqueonumero,
-                'arqueofecha' => $request->arqueofecha,
-                'arqueoturno' => $request->arqueoturno,
-                'arqueohorainicio' => $request->arqueohorainicio,
-                'arqueohorafin' => $request->arqueohorafin,
-                'arqueosupervisor' => 1, // Por defecto 1
-                'arqueorealizadopor' => 1, // Por defecto 1
-                'arqueorevisadopor' => 1, // Por defecto 1
-                'arqueorecaudaciontotal' => 0, // Se actualizará después
-                'arqueodiferencia' => 0, // Se calculará después
-                'arqueoobservacion' => $request->arqueoobservacion,
-                'arqueoestado' => 'A',
-                'arqueofecharegistro' => now(),
-                'arqueousuario' => 1 // Por defecto 1
-            ]);
+            $arqueoid = DB::table('arqueocab')->max('arqueoid') + 1;
+            $arqueodetcorteid = DB::table('arqueodetcortes')->max('arqueodetcorteid') + 1;
 
-            // Registrar cortes
-            Arqueodetcortes::create([
-                'arqueoid' => $arqueoCab->arqueoid,
-                // ...resto de campos de cortes...
-            ]);
+            $arqueoCab = new Arqueocab();
+            $arqueoCab->arqueoid = $arqueoid;
+            $arqueoCab->arqueonumero = $request->arqueonumero;
+            $arqueoCab->arqueofecha = $request->arqueofecha;
+            $arqueoCab->arqueoturno = $request->arqueoturno;
+            $arqueoCab->arqueohorainicio = $request->arqueohorainicio;
+            $arqueoCab->arqueohorafin = $request->arqueohorafin;
+            $arqueoCab->arqueosupervisor = 1; // valor por defecto
+            $arqueoCab->arqueorealizadopor = auth()->id() ?? 1;
+            $arqueoCab->arqueorevisadopor = 1; // valor por defecto
+            $arqueoCab->arqueorecaudaciontotal = $request->arqueorecaudaciontotal;
+            $arqueoCab->arqueodiferencia = $request->arqueodiferencia;
+            $arqueoCab->arqueoobservacion = $request->arqueoobservacion;
+            $arqueoCab->arqueoestado = 'A'; // estado activo
+            $arqueoCab->arqueofecharegistro = now();
+            $arqueoCab->arqueousuario = auth()->id() ?? 1;
+            $arqueoCab->save();
 
-            // Actualizar recaudaciones relacionadas y calcular totales
-            $recaudaciones = ArqueorecaudacionCab::where('arqueofecha', $request->arqueofecha)
+            $arqueodetcortes = new Arqueodetcortes();
+            $arqueodetcortes->arqueodetcorteid = $arqueodetcorteid;
+            $arqueodetcortes->arqueoid = $arqueoid;
+            $arqueodetcortes->arqueocorte200_00 = $request->cortes['arqueocorte200_00'] ?? 0;
+            $arqueodetcortes->arqueocorte100_00 = $request->cortes['arqueocorte100_00'] ?? 0;
+            $arqueodetcortes->arqueocorte050_00 = $request->cortes['arqueocorte050_00'] ?? 0;
+            $arqueodetcortes->arqueocorte020_00 = $request->cortes['arqueocorte020_00'] ?? 0;
+            $arqueodetcortes->arqueocorte010_00 = $request->cortes['arqueocorte010_00'] ?? 0;
+            $arqueodetcortes->arqueocorte005_00 = $request->cortes['arqueocorte005_00'] ?? 0;
+            $arqueodetcortes->arqueocorte002_00 = $request->cortes['arqueocorte002_00'] ?? 0;
+            $arqueodetcortes->arqueocorte001_00 = $request->cortes['arqueocorte001_00'] ?? 0;
+            $arqueodetcortes->arqueocorte000_50 = $request->cortes['arqueocorte000_50'] ?? 0;
+            $arqueodetcortes->arqueocorte000_20 = $request->cortes['arqueocorte000_20'] ?? 0;
+            $arqueodetcortes->arqueocorte000_10 = $request->cortes['arqueocorte000_10'] ?? 0;
+            $arqueodetcortes->arqueoestado = 'A';
+            $arqueodetcortes->save();
+
+            ArqueorecaudacionCab::where('arqueofecha', $request->arqueofecha)
                 ->where('arqueoturno', $request->arqueoturno)
-                ->get();
+                ->update([
+                    'arqueoid' => $arqueoid,
+                    'arqueoestado' => 'A'
+                ]);
 
-            foreach($recaudaciones as $recaudacion) {
-                $recaudacion->arqueoid = $arqueoCab->arqueoid;
-                $recaudacion->arqueoestado = 'A';
-                $recaudacion->save();
-            }
-
-            // Obtener todos los arqueos de recaudación de la fecha indicada
-            $recaudaciones = ArqueorecaudacionCab::where('arqueofecha', $request->arqueofecha)
-                ->where('arqueoturno', $request->arqueoturno)
-                ->with('detalles.servicio')
-                ->get();
-                
-            if($recaudaciones->isEmpty()) {
-                throw new Exception('No hay recaudaciones para la fecha y turno indicados');
-            }
-            
-            // Calcular el total recaudado según los registros de los operadores
-            $totalRecaudado = 0;
-            foreach($recaudaciones as $recaudacion) {
-                foreach($recaudacion->detalles as $detalle) {
-                    $totalRecaudado += $detalle->arqueodetimportebs;
-                }
-            }
-            
-            // Calcular el total según los cortes
-            $totalCortes = 0;
-            $cortes = $request->cortes;
-            if($cortes['arqueocorte200_00']) $totalCortes += 200 * $cortes['arqueocorte200_00'];
-            if($cortes['arqueocorte100_00']) $totalCortes += 100 * $cortes['arqueocorte100_00'];
-            if($cortes['arqueocorte050_00']) $totalCortes += 50 * $cortes['arqueocorte050_00'];
-            if($cortes['arqueocorte020_00']) $totalCortes += 20 * $cortes['arqueocorte020_00'];
-            if($cortes['arqueocorte010_00']) $totalCortes += 10 * $cortes['arqueocorte010_00'];
-            if($cortes['arqueocorte005_00']) $totalCortes += 5 * $cortes['arqueocorte005_00'];
-            if($cortes['arqueocorte002_00']) $totalCortes += 2 * $cortes['arqueocorte002_00'];
-            if($cortes['arqueocorte001_00']) $totalCortes += 1 * $cortes['arqueocorte001_00'];
-            if($cortes['arqueocorte000_50']) $totalCortes += 0.5 * $cortes['arqueocorte000_50'];
-            if($cortes['arqueocorte000_20']) $totalCortes += 0.2 * $cortes['arqueocorte000_20'];
-            if($cortes['arqueocorte000_10']) $totalCortes += 0.1 * $cortes['arqueocorte000_10'];
-            
-            // Calcular diferencia
-            $diferencia = $totalCortes - $totalRecaudado;
-            
-            // Crear cabecera de arqueo
-            $arqueoCab = Arqueocab::create([
-                'arqueonumero' => $request->arqueonumero,
-                'arqueofecha' => $request->arqueofecha,
-                'arqueoturno' => $request->arqueoturno,
-                'arqueohorainicio' => $request->arqueohorainicio,
-                'arqueohorafin' => $request->arqueohorafin,
-                'arqueosupervisor' => $request->arqueosupervisor,
-                'arqueorealizadopor' => auth()->id(),
-                'arqueorevisadopor' => null,
-                'arqueorecaudaciontotal' => $totalRecaudado,
-                'arqueodiferencia' => $diferencia,
-                'arqueoobservacion' => $request->arqueoobservacion,
-                'arqueoestado' => 'A',
-                'arqueofecharegistro' => now(),
-                'arqueousuario' => auth()->id()
-            ]);
-            
-            // Crear detalle de cortes
-            $arqueoidGenerado = $arqueoCab->arqueoid;
-            
-            Arqueodetcortes::create([
-                'arqueoid' => $arqueoidGenerado,
-                'arqueocorte200_00' => $cortes['arqueocorte200_00'] ?? 0,
-                'arqueocorte100_00' => $cortes['arqueocorte100_00'] ?? 0,
-                'arqueocorte050_00' => $cortes['arqueocorte050_00'] ?? 0,
-                'arqueocorte020_00' => $cortes['arqueocorte020_00'] ?? 0,
-                'arqueocorte010_00' => $cortes['arqueocorte010_00'] ?? 0,
-                'arqueocorte005_00' => $cortes['arqueocorte005_00'] ?? 0,
-                'arqueocorte002_00' => $cortes['arqueocorte002_00'] ?? 0,
-                'arqueocorte001_00' => $cortes['arqueocorte001_00'] ?? 0,
-                'arqueocorte000_50' => $cortes['arqueocorte000_50'] ?? 0,
-                'arqueocorte000_20' => $cortes['arqueocorte000_20'] ?? 0,
-                'arqueocorte000_10' => $cortes['arqueocorte000_10'] ?? 0,
-                'arqueoestado' => 'A'
-            ]);
-            
-            // Actualizar las recaudaciones relacionadas con el arqueoid generado
-            foreach($recaudaciones as $recaudacion) {
-                $recaudacion->arqueoid = $arqueoidGenerado;
-                $recaudacion->arqueoestado = 'A'; // Arqueo realizado
-                $recaudacion->save();
-            }
-            
             DB::commit();
             return response()->json([
                 'success' => true,
                 'message' => 'Arqueo final generado correctamente',
                 'data' => [
-                    'arqueoid' => $arqueoidGenerado,
-                    'total_recaudado' => $totalRecaudado,
-                    'total_cortes' => $totalCortes,
-                    'diferencia' => $diferencia
+                    'arqueoid' => $arqueoid,
+                    'total_recaudado' => $request->arqueorecaudaciontotal,
+                    'total_cortes' => $request->cortes,
+                    'diferencia' => $request->arqueodiferencia
                 ]
             ]);
-            
+
         } catch (Exception $e) {
             DB::rollback();
             return response()->json([
@@ -274,12 +214,13 @@ class ArqueoRecaudacionController extends Controller
                 ], 400);
             }
             
-            // Obtener recaudaciones por servicio
+            // Modificar para solo obtener recaudaciones pendientes (estado = 'P')
             $resumen = DB::table('arqueorecaudaciondet as det')
                 ->join('arqueorecaudacioncab as cab', 'det.arqueorecid', '=', 'cab.arqueorecid')
                 ->join('tbl_servicios as srv', 'det.servicio_id', '=', 'srv.servicio_id')
                 ->where('cab.arqueofecha', $fecha)
                 ->where('cab.arqueoturno', $turno)
+                ->where('cab.arqueoestado', 'P') // Solo recaudaciones pendientes
                 ->select(
                     'srv.servicio_id',
                     'srv.servicio_abreviatura as codigo',
@@ -291,13 +232,14 @@ class ArqueoRecaudacionController extends Controller
                 ->orderBy('srv.servicio_descripcion')
                 ->get();
                 
-            // Obtener operadores con sus puntos y servicios
+            // Modificar para solo obtener operadores con recaudaciones pendientes
             $operadores = DB::table('arqueorecaudacioncab as cab')
                 ->join('arqueorecaudaciondet as det', 'cab.arqueorecid', '=', 'det.arqueorecid')
                 ->join('tbl_puntos_recaudacion as pr', 'cab.punto_recaud_id', '=', 'pr.punto_recaud_id')
                 ->join('tbl_servicios as srv', 'det.servicio_id', '=', 'srv.servicio_id')
                 ->where('cab.arqueofecha', $fecha)
                 ->where('cab.arqueoturno', $turno)
+                ->where('cab.arqueoestado', 'P') // Solo recaudaciones pendientes
                 ->select(
                     'cab.arqueonombreoperador as operador',
                     'pr.puntorecaud_nombre as punto',
@@ -308,6 +250,14 @@ class ArqueoRecaudacionController extends Controller
                 ->orderBy('cab.arqueonombreoperador')
                 ->orderBy('pr.puntorecaud_nombre')
                 ->get();
+            
+            // Verificar que existan recaudaciones pendientes
+            if ($resumen->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No hay recaudaciones pendientes para la fecha y turno indicados'
+                ]);
+            }
                 
             return response()->json([
                 'success' => true,
@@ -363,13 +313,8 @@ class ArqueoRecaudacionController extends Controller
                     return $servicio;
                 });
             
-            if ($servicios->count() > 0) {
-                \Log::info('Primer servicio:', $servicios->first()->toArray());
-            }
-
             return response()->json($servicios);
         } catch (Exception $e) {
-            \Log::error('Error en getServicios: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Error al obtener servicios: ' . $e->getMessage()
@@ -394,7 +339,7 @@ class ArqueoRecaudacionController extends Controller
         try {
             $arqueo = ArqueorecaudacionCab::with([
                 'detalles.servicio',
-                'puntoRecaudacion'
+                'puntoRecaudacion:punto_recaud_id,puntorecaud_nombre'
             ])->findOrFail($id);
             
             return response()->json($arqueo);
@@ -415,21 +360,34 @@ class ArqueoRecaudacionController extends Controller
 
             $arqueo->update([
                 'arqueofecha' => $request->arqueofecha,
-                'arqueonombreoperador' => $request->arqueonombreoperador
+                'arqueonombreoperador' => $request->arqueonombreoperador,
+                'punto_recaud_id' => $request->punto_recaud_id ?? $arqueo->punto_recaud_id
             ]);
 
             ArqueorecaudacionDet::where('arqueorecid', $id)->delete();
             
             foreach($request->detalles as $detalle) {
-                $servicio = TblServicios::find($detalle['servicio_id']);
-                $importe = $detalle['cantidad'] * $servicio->servicio_precio_base;
+                $servicio_id = isset($detalle['servicio_id']) ? $detalle['servicio_id'] : null;
+                if (!$servicio_id) continue;
+                
+                $servicio = TblServicios::find($servicio_id);
+                if (!$servicio) {
+                    throw new Exception('Servicio no encontrado: ' . $servicio_id);
+                }
+                
+                $cantidad = isset($detalle['cantidad']) ? intval($detalle['cantidad']) : 
+                           (isset($detalle['arqueodetcantidad']) ? intval($detalle['arqueodetcantidad']) : 0);
+                
+                $tarifa = isset($detalle['precio']) ? floatval($detalle['precio']) : 
+                         (isset($detalle['arqueodettarifabs']) ? floatval($detalle['arqueodettarifabs']) : $servicio->servicio_precio_base);
+                
+                $importe = $cantidad * $tarifa;
                 
                 ArqueorecaudacionDet::create([
                     'arqueorecid' => $id,
-                    'punto_recaud_id' => $detalle['punto_recaud_id'],
-                    'servicio_id' => $detalle['servicio_id'], 
-                    'arqueodetcantidad' => $detalle['cantidad'],
-                    'arqueodettarifabs' => $servicio->servicio_precio_base,
+                    'servicio_id' => $servicio_id,
+                    'arqueodetcantidad' => $cantidad,
+                    'arqueodettarifabs' => $tarifa,
                     'arqueodetimportebs' => $importe,
                     'arqueoestado' => 'P'
                 ]);
@@ -437,12 +395,16 @@ class ArqueoRecaudacionController extends Controller
 
             DB::commit();
             return response()->json([
+                'success' => true,
                 'message' => 'Arqueo actualizado correctamente',
                 'data' => $arqueo->load('detalles.servicio', 'puntoRecaudacion')
             ]);
         } catch (Exception $e) {
             DB::rollback();
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al actualizar arqueo: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

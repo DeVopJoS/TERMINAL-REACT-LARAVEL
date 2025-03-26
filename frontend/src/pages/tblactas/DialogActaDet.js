@@ -32,55 +32,17 @@ function DialogActaDet({visible, onHide, onSave, currentData = null,}) {
         }
     };
 
-    // const handleSave = async () => {
-    //     if(tipoServicioSelected && desdeNumero && hastaNumero){
-    //         if(desdeNumero >= hastaNumero){
-    //             toast.current.show({
-    //                 severity: "error",
-    //                 summary: "Error",
-    //                 detail: "El campo desde tiene que ser menor a el campo hasta!",
-    //                 life: 3000,
-    //             });
-    //         }
-    //         else{
-    //             const {label, preuni} = obtenerDatosPorValue(tipoServicioSelected);
-    //             const data = {
-    //             id: currentData?.id || null,
-    //             tipo_servicio: tipoServicioSelected,
-    //             descripcion: label, 
-    //             desde_numero: desdeNumero,
-    //             hasta_numero: hastaNumero,
-    //             cantidad_boletos: (hastaNumero - desdeNumero) + 1,
-    //             precio_unitario: preuni,
-    //             precio_total: (hastaNumero - desdeNumero + 1) * preuni,
-    //             };
-      
-    //             onSave(data);
-    //             onHide();
-    //             resetForm();
-    //         }
-    //     } else {
-    //         toast.current.show({
-    //             severity: "error",
-    //             summary: "Error",
-    //             detail: "Campos vacios.",
-    //             life: 3000,
-    //         });
-    //     }  
-        
-    //   };
-
     const handleSave = async () => {
         if (tipoServicioSelected && desdeNumero && hastaNumero) {
-            if (parseInt(desdeNumero) >= parseInt(hastaNumero)) {
+            if (parseInt(desdeNumero) > parseInt(hastaNumero)) {
                 toast.current.show({
                     severity: "error",
                     summary: "Error",
-                    detail: "El campo 'Desde' tiene que ser menor que el campo 'Hasta'.",
+                    detail: "El número 'Desde' no puede ser mayor que el número 'Hasta'.",
                     life: 3000,
                 });
             } else {
-                const cantidadTotal = (hastaNumero - desdeNumero) ;
+                const cantidadTotal = parseInt(hastaNumero) - parseInt(desdeNumero) + (parseInt(desdeNumero) === parseInt(hastaNumero) ? 1 : 0);
     
                 if (cantidadTotal > 100) {
                     confirmDialog({
@@ -111,18 +73,19 @@ function DialogActaDet({visible, onHide, onSave, currentData = null,}) {
         }
     };
     
-    // Función para guardar un solo registro
     const guardarRegistroUnico = (desde, hasta) => {
         const { label, preuni } = obtenerDatosPorValue(tipoServicioSelected);
+        const cantidad = parseInt(hasta) - parseInt(desde) + 1;
+        
         const data = {
             id: currentData?.id || null,
             tipo_servicio: tipoServicioSelected,
             descripcion: label,
             desde_numero: desde,
             hasta_numero: hasta,
-            cantidad_boletos: (hasta - desde) + 1,
+            cantidad_boletos: cantidad,
             precio_unitario: preuni,
-            precio_total: ((hasta - desde) + 1) * preuni,
+            precio_total: cantidad * preuni,
         };
     
         onSave(data);
@@ -130,31 +93,35 @@ function DialogActaDet({visible, onHide, onSave, currentData = null,}) {
         resetForm();
     };
     
-    // Función para dividir y guardar los registros en bloques de hasta 100
     const dividirYGuardarRegistros = (desde, hasta) => {
         const { label, preuni } = obtenerDatosPorValue(tipoServicioSelected);
-        let aux_desde=desde;
+        let aux_desde = parseInt(desde);
         let nuevasFilas = [];
-        const rows = (hasta - desde)/100;
+        const total = parseInt(hasta) - parseInt(desde) + 1;
+        const rows = Math.ceil(total / 100);
         
-        desde = parseInt(desde);
-        aux_desde = parseInt(aux_desde)
         for(let i=0; i < rows; i++){
-            aux_desde += 99; 
-            //console.log(desde, ' ', aux_desde);
-
+            const current_desde = aux_desde;
+            
+            if (i === rows - 1) {
+                aux_desde = parseInt(hasta);
+            } else {
+                aux_desde = current_desde + 99;
+            }
+            
+            const cantidad = aux_desde - current_desde + 1;
+            
             nuevasFilas.push({
                 id: currentData?.id || null,
                 tipo_servicio: tipoServicioSelected,
                 descripcion: label,
-                desde_numero: desde,
+                desde_numero: current_desde,
                 hasta_numero: aux_desde,
-                cantidad_boletos: (aux_desde - desde) + 1,
+                cantidad_boletos: cantidad,
                 precio_unitario: preuni,
-                precio_total: ((aux_desde - desde) + 1) * preuni,
+                precio_total: cantidad * preuni,
             });
-
-            desde = aux_desde + 1;
+    
             aux_desde += 1;
         }
     

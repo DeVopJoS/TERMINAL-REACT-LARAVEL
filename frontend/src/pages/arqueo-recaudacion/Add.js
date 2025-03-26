@@ -39,26 +39,17 @@ export default function ArqueoRecaudacionAdd() {
     const loadInitialData = async () => {
         try {
             setLoading(true);
-            
 
             try {
-                console.log("Solicitando servicios...");
                 const serviciosRes = await api.get('arqueo-recaudacion-servicios');
-                console.log("Respuesta de servicios:", serviciosRes);
                 
                 if (serviciosRes && serviciosRes.data) {
                     if (Array.isArray(serviciosRes.data)) {
                         setServicios(serviciosRes.data);
-                        console.log("Servicios cargados:", serviciosRes.data.length);
-                        if (serviciosRes.data.length > 0) {
-                            console.log("Primer servicio:", serviciosRes.data[0]);
-                        }
-                    } else {
-                        console.error("La respuesta no es un array:", serviciosRes.data);
                     }
                 }
             } catch (error) {
-                console.error("Error al cargar servicios:", error);
+                // Handle error silently
             }
             
             try {
@@ -76,15 +67,14 @@ export default function ArqueoRecaudacionAdd() {
                     }));
                 }
             } catch (error) {
-                console.error("Error al cargar otros datos:", error);
+                // Handle error silently
             }
             
         } catch (error) {
-            console.error('Error general cargando datos:', error);
             toast.current.show({
                 severity: 'error',
                 summary: 'Error',
-                detail: 'No se pudieron cargar los datos iniciales: ' + error.message
+                detail: 'No se pudieron cargar los datos iniciales'
             });
         } finally {
             setLoading(false);
@@ -122,8 +112,6 @@ export default function ArqueoRecaudacionAdd() {
             descripcion = selectedServicio.label || '';
         }
         
-        console.log(`ID: ${servicio_id}, Nombre: ${descripcion}, Precio: ${precio}`);
-        
         const importe = cantidad * precio;
 
         const nuevoDetalle = {
@@ -134,8 +122,6 @@ export default function ArqueoRecaudacionAdd() {
             arqueodetimportebs: importe,
             arqueonombreoperador: formData.arqueonombreoperador
         };
-
-        console.log("Detalle a agregar:", nuevoDetalle);
         
         setFormData(prev => ({
             ...prev,
@@ -174,7 +160,7 @@ export default function ArqueoRecaudacionAdd() {
             }
 
             setLoading(true);
-            await api.post('arqueo-recaudacion', formData);
+            const response = await api.post('arqueo-recaudacion', formData);
             
             toast.current.show({
                 severity: 'success',
@@ -187,7 +173,7 @@ export default function ArqueoRecaudacionAdd() {
             toast.current.show({
                 severity: 'error',
                 summary: 'Error',
-                detail: 'No se pudo crear el arqueo'
+                detail: error.response?.data?.message || error.message || 'No se pudo crear el arqueo'
             });
         } finally {
             setLoading(false);
@@ -241,7 +227,17 @@ export default function ArqueoRecaudacionAdd() {
                         options={puntosRecaudacion}
                         onChange={(e) => {
                             setSelectedPunto(e.value);
-                            setFormData(prev => ({...prev, punto_recaud_id: e.value.value}));
+                            if (e.value && typeof e.value === 'object' && 'value' in e.value) {
+                                setFormData(prev => ({
+                                    ...prev, 
+                                    punto_recaud_id: e.value.value
+                                }));
+                            } else {
+                                setFormData(prev => ({
+                                    ...prev, 
+                                    punto_recaud_id: e.value
+                                }));
+                            }
                         }}
                         optionLabel="label"
                         placeholder="Seleccione punto"
@@ -255,7 +251,6 @@ export default function ArqueoRecaudacionAdd() {
                         value={selectedServicio}
                         options={servicios}
                         onChange={(e) => {
-                            console.log("Servicio seleccionado completo:", e.value);
                             setSelectedServicio(e.value);
                         }}
                         optionLabel="label"

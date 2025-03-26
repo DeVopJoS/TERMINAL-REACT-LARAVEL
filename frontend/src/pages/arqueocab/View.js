@@ -104,7 +104,11 @@ const ArqueocabViewPage = (props) => {
                                 <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
                                     <div className="">
                                         <div className="text-400 font-medium mb-1">Arqueoturno</div>
-                                        <div className="font-bold">{ item.arqueoturno }</div>
+                                        <div className="font-bold">
+                                            { item.arqueoturno === 'M' ? 'Mañana' : 
+                                              item.arqueoturno === 'T' ? 'Tarde' : 
+                                              item.arqueoturno === 'N' ? 'Noche' : item.arqueoturno }
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -144,7 +148,7 @@ const ArqueocabViewPage = (props) => {
                                 <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
                                     <div className="">
                                         <div className="text-400 font-medium mb-1">Arqueorevisadopor</div>
-                                        <div className="font-bold">{ item.arqueorevisadopor }</div>
+                                        <div className="font-bold">{ item.arqueorevisadopor ? item.arqueorevisadopor : "No revisado" }</div>
                                     </div>
                                 </div>
                             </div>

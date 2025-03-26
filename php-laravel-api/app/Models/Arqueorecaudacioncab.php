@@ -154,6 +154,9 @@ class Arqueorecaudacioncab extends Model
      */
 	public $timestamps = false;
 
+    /**
+     * Get the punto recaudacion associated with this arqueo.
+     */
     public function puntoRecaudacion()
     {
         return $this->belongsTo(TblPuntosRecaudacion::class, 'punto_recaud_id', 'punto_recaud_id');

@@ -26,7 +26,6 @@ export default function ArqueoRecaudacionView() {
             const response = await api.get(`arqueo-recaudacion/${id}`);
             setArqueo(response.data);
         } catch (error) {
-            console.error('Error al cargar arqueo:', error);
             toast.current.show({
                 severity: 'error',
                 summary: 'Error',
@@ -37,6 +36,15 @@ export default function ArqueoRecaudacionView() {
         }
     };
     
+    const getTurnoDisplay = (turnoCode) => {
+        switch(turnoCode) {
+            case 'M': return 'Mañana';
+            case 'T': return 'Tarde';
+            case 'N': return 'Noche';
+            default: return turnoCode;
+        }
+    };
+
     if (loading || !arqueo) {
         return (
             <div className="card">
@@ -97,7 +105,20 @@ export default function ArqueoRecaudacionView() {
                     <div className="card">
                         <div className="card-body">
                             <h6>Punto de Recaudación</h6>
-                            <p className="text-lg">{arqueo.puntoRecaudacion?.puntorecaud_nombre}</p>
+                            <p className="text-lg">
+                                {arqueo.puntoRecaudacion?.puntorecaud_nombre || 
+                                 arqueo.punto_recaudacion?.puntorecaud_nombre || 
+                                 `No especificado (ID: ${arqueo.punto_recaud_id || 'No ID'})`}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="col-12 md:col-6 lg:col-3">
+                    <div className="card">
+                        <div className="card-body">
+                            <h6>Turno</h6>
+                            <p className="text-lg">{getTurnoDisplay(arqueo.arqueoturno)}</p>
                         </div>
                     </div>
                 </div>
