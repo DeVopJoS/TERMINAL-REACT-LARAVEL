@@ -103,34 +103,57 @@ function DialogActa({visible, onHide, reloadData}) {
 
     const validarFormulario = () => {
         let erroresTemp = {};
+        let isValid = true;
     
-        if (!tipoPuntoSelec) erroresTemp.punto_recaudacion = "Seleccione un punto de recaudación";
-        if (!fecha) erroresTemp.fecha = "Ingrese la fecha";
-        if (totalImporte == 0) erroresTemp.totalImporte = "Debe agregar por lo menos un detalle de acta.";
-        if (!document.getElementById("grupo")?.value) erroresTemp.grupo = "Ingrese el grupo";
-        if (!document.getElementById("operador1erturno")?.value) erroresTemp.operador_1er_turno = "Ingrese el operador del 1er turno";
-        if (!document.getElementById("operador2doturno")?.value) erroresTemp.operador_2do_turno = "Ingrese el operador del 2do turno";
+        if (!tipoPuntoSelec) {
+            erroresTemp.punto_recaudacion = "Seleccione un punto de recaudación";
+            isValid = false;
+        }
+        
+        if (!fecha) {
+            erroresTemp.fecha = "Ingrese la fecha";
+            isValid = false;
+        }
+        
+        if (totalImporte == 0) {
+            erroresTemp.totalImporte = "Debe agregar por lo menos un detalle de acta.";
+            isValid = false;
+        }
+        
+        if (!document.getElementById("grupo")?.value) {
+            erroresTemp.grupo = "Ingrese el grupo";
+            isValid = false;
+        }
+        
+        if (!document.getElementById("operador1erturno")?.value) {
+            erroresTemp.operador_1er_turno = "Ingrese el operador del 1er turno";
+            isValid = false;
+        }
+        
+        if (!document.getElementById("operador2doturno")?.value) {
+            erroresTemp.operador_2do_turno = "Ingrese el operador del 2do turno";
+            isValid = false;
+        }
     
-        if (Object.keys(erroresTemp).length > 0) {
-            setErrores(erroresTemp);
+        setErrores(erroresTemp);
+        
+        if (!isValid) {
             toast.current.show({
                 severity: "error",
                 summary: "Error",
                 detail: "Complete todos los campos obligatorios",
                 life: 3000,
             });
-            return false; 
         }
     
-        setErrores({}); 
-        return true;
+        return isValid;
     };
 
     const handleSaveActa = async () => {
+        if (!validarFormulario()) return;
+
         setIsSaving(true);
         try {
-            if (!validarFormulario()) return; 
-
             const acta = {
                 observacion: observacion,
                 recaudacion_total: totalImporte,
@@ -145,6 +168,7 @@ function DialogActa({visible, onHide, reloadData}) {
                 fechero: document.getElementById("fechero")?.value || "0",
                 tampo: document.getElementById("tampo")?.value || "0",
                 candados: document.getElementById("candados")?.value || "0",
+                ae_estado: "P",
                 registros: registros.map(r => ({
                   id: r.id,
                   tipo_servicio: r.tipo_servicio,
@@ -169,7 +193,8 @@ function DialogActa({visible, onHide, reloadData}) {
             setTimeout(() => {
                 setIsSaving(false);
                 onHide();
-            }, 3000);
+                reloadData();
+            }, 1000);
           }
 
         } catch (error) {
@@ -177,12 +202,11 @@ function DialogActa({visible, onHide, reloadData}) {
           toast.current.show({
             severity: "error",
             summary: "Error",
-            detail: "No se pudo guardar el acta",
+            detail: "No se pudo guardar el acta: " + (error.response?.data?.message || error.message),
             life: 3000,
           });
-        } finally{
-            reloadData();
-        } 
+          setIsSaving(false);
+        }
     }
 
     useEffect(() => {
