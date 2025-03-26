@@ -136,4 +136,10 @@ class TblServicios extends Model
      * @var bool
      */
 	public $timestamps = false;
+
+    // Relación con detalles de arqueo
+    public function arqueoDetalles()
+    {
+        return $this->hasMany(ArqueorecaudacionDet::class, 'servicio_id', 'servicio_id');
+    }
 }

@@ -20,6 +20,13 @@ export default function useMenus() {
     "target": "",
   },
   {
+    "to": "/tblactas/view",
+    "label": "Acta Entrega",
+    "icon": "pi pi-money-bill",
+    "iconcolor": "",
+    "target": "",
+  },
+  {
     "to": "/arqueo-recaudacion",
     "label": "Arqueo Recaudación",
     "icon": "pi pi-money-bill",

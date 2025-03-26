@@ -248,6 +248,9 @@ Route::middleware(['auth:api'])->group(function () {
 	Route::get('arqueo-recaudacion-puntos', 'ArqueoRecaudacionController@getPuntosRecaudacion');
 	Route::get('arqueo-recaudacion-servicios', 'ArqueoRecaudacionController@getServicios');
 	Route::get('arqueo-recaudacion-correlativo', 'ArqueoRecaudacionController@getNextCorrelativo');
+	Route::post('arqueo-recaudacion-final', 'ArqueoRecaudacionController@generarArqueoFinal');
+	Route::get('arqueo-recaudacion-resumen', 'ArqueoRecaudacionController@obtenerResumenPorServicios');
+	Route::get('arqueo-recaudacion-numero', 'ArqueoRecaudacionController@getNextNumeroArqueo');
 });
 
 Route::get('home', 'HomeController@index');

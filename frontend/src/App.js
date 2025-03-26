@@ -106,6 +106,7 @@ import ArqueoRecaudacionPage from 'pages/arqueo-recaudacion/index';
 import ArqueoRecaudacionAddPage from 'pages/arqueo-recaudacion/Add';
 import ArqueoRecaudacionViewPage from 'pages/arqueo-recaudacion/View';
 import ArqueoRecaudacionEditPage from 'pages/arqueo-recaudacion/Edit';
+import ArqueoRecaudacionFinalPage from 'pages/arqueo-recaudacion/ArqueoFinal';
 
 import TblActasList from 'pages/tblactas/List';
 //--------------------
@@ -138,6 +139,7 @@ const App = () => {
 				{/* arqueo-recaudacion routes*/}
 				<Route path="/arqueo-recaudacion/add" element={<ArqueoRecaudacionAddPage />} />
 				<Route path="/arqueo-recaudacion/edit/:id" element={<ArqueoRecaudacionEditPage />} />
+				<Route path="/arqueo-recaudacion/arqueo-final" element={<ArqueoRecaudacionFinalPage />} />
 				<Route path="/arqueo-recaudacion/:id" element={<ArqueoRecaudacionViewPage />} />
 				<Route path="/arqueo-recaudacion" element={<ArqueoRecaudacionPage />} />
 
