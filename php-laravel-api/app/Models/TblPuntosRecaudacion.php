@@ -125,4 +125,12 @@ class TblPuntosRecaudacion extends Model
      * @var bool
      */
 	public $timestamps = false;
+
+	/**
+     * Relationship to ArqueorecaudacionCab
+     */
+	public function arqueoRecaudaciones()
+	{
+		return $this->hasMany(ArqueorecaudacionCab::class, 'punto_recaud_id', 'punto_recaud_id');
+	}
 }

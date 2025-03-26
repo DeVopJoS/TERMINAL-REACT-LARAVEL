@@ -18,9 +18,9 @@ class ArqueoRecaudacionController extends Controller
     {
         try {
             $query = ArqueorecaudacionCab::with([
-                'puntoRecaudacion',
+                'puntoRecaudacion:punto_recaud_id,puntorecaud_nombre',
                 'detalles' => function($q) {
-                    $q->with('servicio');
+                    $q->with('servicio:servicio_id,servicio_descripcion,servicio_abreviatura,servicio_precio_base');
                 }
             ]);
             
@@ -339,7 +339,7 @@ class ArqueoRecaudacionController extends Controller
         try {
             $arqueo = ArqueorecaudacionCab::with([
                 'detalles.servicio',
-                'puntoRecaudacion'
+                'puntoRecaudacion:punto_recaud_id,puntorecaud_nombre'
             ])->findOrFail($id);
             
             return response()->json($arqueo);

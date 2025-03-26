@@ -1904,3 +1904,8 @@ LINE 1: SELECT nextval('arqueocab_arqueoid_seq')
 [2025-03-26 20:28:11] local.INFO: Creando arqueo recaudación {"correlativo":8,"fecha":"2025-03-26T20:27:52.473Z","turno":"N","punto_id":3,"detalles_count":1} 
 [2025-03-26 20:28:48] local.INFO: Generating arqueo final with data: {"arqueonumero":16,"arqueofecha":"2025-03-26","arqueoturno":"N","arqueohorainicio":"2025-03-26T20:28:14.710Z","arqueohorafin":"2025-03-26T20:28:14.710Z","arqueosupervisor":"8","arqueoobservacion":null,"arqueorecaudaciontotal":12,"arqueodiferencia":0,"cortes":{"arqueocorte200_00":0,"arqueocorte100_00":0,"arqueocorte050_00":0,"arqueocorte020_00":0,"arqueocorte010_00":1,"arqueocorte005_00":0,"arqueocorte002_00":1,"arqueocorte001_00":0,"arqueocorte000_50":0,"arqueocorte000_20":0,"arqueocorte000_10":0}} 
 [2025-03-26 20:37:56] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":6.0,"codigo":"BID"} 
+[2025-03-26 20:53:52] local.INFO: Sample arqueorecaudacioncab record: {"puntoRecaudacion":{"punto_recaud_id":13,"puntorecaud_nombre":"PUERTA 5 SALIDA"}} 
+[2025-03-26 20:53:57] local.INFO: Arqueo view data: {"puntoRecaudacion":"Loaded","puntoRecaudId":13} 
+[2025-03-26 20:54:03] local.INFO: Sample arqueorecaudacioncab record: {"puntoRecaudacion":{"punto_recaud_id":13,"puntorecaud_nombre":"PUERTA 5 SALIDA"}} 
+[2025-03-26 20:54:33] local.INFO: Sample arqueorecaudacioncab record: {"puntoRecaudacion":{"punto_recaud_id":13,"puntorecaud_nombre":"PUERTA 5 SALIDA"}} 
+[2025-03-26 20:55:39] local.INFO: Sample arqueorecaudacioncab record: {"puntoRecaudacion":{"punto_recaud_id":13,"puntorecaud_nombre":"PUERTA 5 SALIDA"}} 

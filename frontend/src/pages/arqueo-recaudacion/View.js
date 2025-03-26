@@ -26,7 +26,6 @@ export default function ArqueoRecaudacionView() {
             const response = await api.get(`arqueo-recaudacion/${id}`);
             setArqueo(response.data);
         } catch (error) {
-            console.error('Error al cargar arqueo:', error);
             toast.current.show({
                 severity: 'error',
                 summary: 'Error',
@@ -106,7 +105,11 @@ export default function ArqueoRecaudacionView() {
                     <div className="card">
                         <div className="card-body">
                             <h6>Punto de Recaudación</h6>
-                            <p className="text-lg">{arqueo.puntoRecaudacion?.puntorecaud_nombre}</p>
+                            <p className="text-lg">
+                                {arqueo.puntoRecaudacion?.puntorecaud_nombre || 
+                                 arqueo.punto_recaudacion?.puntorecaud_nombre || 
+                                 `No especificado (ID: ${arqueo.punto_recaud_id || 'No ID'})`}
+                            </p>
                         </div>
                     </div>
                 </div>
