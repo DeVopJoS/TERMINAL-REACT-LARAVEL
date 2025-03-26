@@ -27,7 +27,23 @@ class Arqueocab extends Model
      *
      * @var array
      */
-	protected $fillable = ["arqueoid","arqueonumero","arqueofecha","arqueoturno","arqueohorainicio","arqueohorafin","arqueosupervisor","arqueorealizadopor","arqueorevisadopor","arqueorecaudaciontotal","arqueodiferencia","arqueoobservacion","arqueoestado","arqueofecharegistro","arqueousuario"];
+	protected $fillable = [
+        'arqueoid',
+        'arqueonumero',
+        'arqueofecha',
+        'arqueoturno',
+        'arqueohorainicio',
+        'arqueohorafin',
+        'arqueosupervisor',
+        'arqueorealizadopor',
+        'arqueorevisadopor',
+        'arqueorecaudaciontotal',
+        'arqueodiferencia',
+        'arqueoobservacion',
+        'arqueoestado',
+        'arqueofecharegistro',
+        'arqueousuario'
+    ];
 	
 
 	/**
@@ -187,4 +203,29 @@ class Arqueocab extends Model
      * @var bool
      */
 	public $timestamps = false;
+
+    /**
+     * Get the cortes associated with this arqueo.
+     */
+    public function cortes()
+    {
+        return $this->hasOne(Arqueodetcortes::class, 'arqueoid', 'arqueoid');
+    }
+
+    /**
+     * Get the recaudaciones associated with this arqueo.
+     */
+    public function recaudaciones()
+    {
+        return $this->hasMany(ArqueorecaudacionCab::class, 'arqueoid', 'arqueoid');
+    }
+
+    /**
+     * Get a formatted display value for arqueorevisadopor
+     * @return string
+     */
+    public function getArqueorevisadoporDisplayAttribute()
+    {
+        return $this->arqueorevisadopor ? 'Usuario #' . $this->arqueorevisadopor : 'No revisado';
+    }
 }

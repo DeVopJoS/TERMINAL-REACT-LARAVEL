@@ -37,6 +37,15 @@ export default function ArqueoRecaudacionView() {
         }
     };
     
+    const getTurnoDisplay = (turnoCode) => {
+        switch(turnoCode) {
+            case 'M': return 'Mañana';
+            case 'T': return 'Tarde';
+            case 'N': return 'Noche';
+            default: return turnoCode;
+        }
+    };
+
     if (loading || !arqueo) {
         return (
             <div className="card">
@@ -98,6 +107,15 @@ export default function ArqueoRecaudacionView() {
                         <div className="card-body">
                             <h6>Punto de Recaudación</h6>
                             <p className="text-lg">{arqueo.puntoRecaudacion?.puntorecaud_nombre}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="col-12 md:col-6 lg:col-3">
+                    <div className="card">
+                        <div className="card-body">
+                            <h6>Turno</h6>
+                            <p className="text-lg">{getTurnoDisplay(arqueo.arqueoturno)}</p>
                         </div>
                     </div>
                 </div>

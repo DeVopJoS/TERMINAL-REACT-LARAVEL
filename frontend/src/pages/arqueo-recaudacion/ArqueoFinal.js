@@ -36,13 +36,10 @@ export default function ArqueoFinal() {
         arqueonumero: '',
         arqueofecha: new Date(),
         arqueoturno: 'M',
-        arqueohorainicio: '08:00',
-        arqueohorafin: '14:00',
-        arqueosupervisor: 1, // Default 1
-        arqueorealizadopor: 1, // Default 1
-        arqueorevisadopor: 1, // Default 1
+        arqueohorainicio: new Date(),  
+        arqueohorafin: new Date(),  
+        arqueosupervisor: '',
         arqueoobservacion: '',
-        arqueoestado: 'A',
         cortes: CORTES_DENOMINACION.reduce((acc, den) => ({
             ...acc,
             [den.campo]: 0
@@ -68,7 +65,6 @@ export default function ArqueoFinal() {
             const numeroRes = await api.get('arqueo-recaudacion-numero');
             setFormData(prev => ({ ...prev, arqueonumero: numeroRes.data.numero }));
         } catch (error) {
-            console.error('Error cargando datos iniciales:', error);
             toast.current.show({
                 severity: 'error',
                 summary: 'Error',
@@ -97,9 +93,7 @@ export default function ArqueoFinal() {
                 arqueofecha.toISOString().split('T')[0] : 
                 arqueofecha;
                 
-            console.log("Consultando resumen con fecha:", fechaStr, "turno:", arqueoturno);
             const response = await api.get(`arqueo-recaudacion-resumen?fecha=${fechaStr}&turno=${arqueoturno}`);
-            console.log("Respuesta resumen:", response.data);
             
             if (response.data.success) {
                 setResumenServicios(response.data.resumen_servicios);
@@ -111,14 +105,16 @@ export default function ArqueoFinal() {
                 );
                 setTotalRecaudacion(total);
             } else {
+                setResumenServicios([]);
+                setDetalleOperadores([]);
+                setTotalRecaudacion(0);
                 toast.current.show({
                     severity: 'warn',
-                    summary: 'Sin datos',
-                    detail: response.data.message || 'No se encontraron datos'
+                    summary: 'Sin datos pendientes',
+                    detail: response.data.message || 'No se encontraron recaudaciones pendientes'
                 });
             }
         } catch (error) {
-            console.error('Error al consultar resumen:', error);
             toast.current.show({
                 severity: 'error',
                 summary: 'Error',
@@ -130,6 +126,10 @@ export default function ArqueoFinal() {
     };
 
     const calcularTotalCortes = () => {
+        if (!resumenServicios.length) {
+            return 0;
+        }
+
         const total = CORTES_DENOMINACION.reduce((total, den) => {
             return total + (formData.cortes[den.campo] || 0) * den.valor;
         }, 0);
@@ -147,13 +147,39 @@ export default function ArqueoFinal() {
         }));
     };
 
+    const formatTimeForDB = (date) => {
+        if (!date) return null;
+        if (typeof date === 'string') {
+            const [hours, minutes] = date.split(':');
+            const today = new Date();
+            const timestamp = new Date(today.getFullYear(), today.getMonth(), today.getDate(), hours || 0, minutes || 0);
+            return timestamp.toISOString();
+        }
+        return date.toISOString();
+    };
+
     const handleSubmit = async () => {
         try {
-            if (!formData.arqueofecha || !formData.arqueoturno || !formData.arqueosupervisor) {
+            const requiredFields = {
+                arqueofecha: 'Fecha',
+                arqueoturno: 'Turno',
+                arqueohorainicio: 'Hora inicio',
+                arqueohorafin: 'Hora fin',
+                arqueosupervisor: 'Supervisor'
+            };
+
+            const missingFields = [];
+            Object.entries(requiredFields).forEach(([field, label]) => {
+                if (!formData[field]) {
+                    missingFields.push(label);
+                }
+            });
+
+            if (missingFields.length > 0) {
                 toast.current.show({
                     severity: 'warn',
                     summary: 'Datos incompletos',
-                    detail: 'Complete todos los campos requeridos'
+                    detail: `Complete los campos: ${missingFields.join(', ')}`
                 });
                 return;
             }
@@ -172,9 +198,18 @@ export default function ArqueoFinal() {
             const diferencia = totalCortes - totalRecaudacion;
 
             const requestData = {
-                ...formData,
+                arqueonumero: formData.arqueonumero,
+                arqueofecha: formData.arqueofecha instanceof Date ? 
+                    formData.arqueofecha.toISOString().split('T')[0] : 
+                    formData.arqueofecha,
+                arqueoturno: formData.arqueoturno,
+                arqueohorainicio: formatTimeForDB(formData.arqueohorainicio),
+                arqueohorafin: formatTimeForDB(formData.arqueohorafin),
+                arqueosupervisor: formData.arqueosupervisor,
+                arqueoobservacion: formData.arqueoobservacion,
                 arqueorecaudaciontotal: totalRecaudacion,
                 arqueodiferencia: diferencia,
+                cortes: formData.cortes
             };
 
             const response = await api.post('arqueo-recaudacion-final', requestData);
@@ -183,22 +218,21 @@ export default function ArqueoFinal() {
                 toast.current.show({
                     severity: 'success',
                     summary: 'Éxito',
-                    detail: 'Arqueo final generado correctamente'
+                    detail: `Arqueo final generado correctamente. ${
+                        diferencia === 0 ? '(Cuadre exacto)' :
+                        diferencia > 0 ? `(Sobrante: Bs. ${diferencia.toFixed(2)})` :
+                        `(Faltante: Bs. ${Math.abs(diferencia).toFixed(2)})`
+                    }`
                 });
                 navigate('/arqueocab/view/' + response.data.data.arqueoid);
             } else {
-                toast.current.show({
-                    severity: 'error',
-                    summary: 'Error',
-                    detail: response.data.message
-                });
+                throw new Error(response.data.message || 'Error al generar arqueo');
             }
         } catch (error) {
-            console.error('Error al generar arqueo final:', error);
             toast.current.show({
                 severity: 'error',
                 summary: 'Error',
-                detail: 'No se pudo generar el arqueo final'
+                detail: error.response?.data?.message || error.message || 'Error al generar arqueo final'
             });
         } finally {
             setLoading(false);
@@ -260,20 +294,30 @@ export default function ArqueoFinal() {
 
                 <div className="col-12 md:col-3">
                     <label htmlFor="horainicio">Hora Inicio</label>
-                    <InputText
+                    <Calendar
                         id="horainicio"
                         value={formData.arqueohorainicio}
-                        onChange={(e) => setFormData({...formData, arqueohorainicio: e.target.value})}
+                        onChange={(e) => setFormData({...formData, arqueohorainicio: e.value})}
+                        timeOnly
+                        hourFormat="24"
+                        showTime
+                        showSeconds={false}
+                        placeholder="Seleccione hora inicio"
                         className="w-full"
                     />
                 </div>
 
                 <div className="col-12 md:col-3">
                     <label htmlFor="horafin">Hora Fin</label>
-                    <InputText
+                    <Calendar
                         id="horafin"
                         value={formData.arqueohorafin}
-                        onChange={(e) => setFormData({...formData, arqueohorafin: e.target.value})}
+                        onChange={(e) => setFormData({...formData, arqueohorafin: e.value})}
+                        timeOnly
+                        hourFormat="24"
+                        showTime
+                        showSeconds={false}
+                        placeholder="Seleccione hora fin"
                         className="w-full"
                     />
                 </div>
@@ -371,9 +415,13 @@ export default function ArqueoFinal() {
                         </div>
                         <div className="text-xl">
                             <span className="text-700">Diferencia: </span>
-                            <span className={`font-bold ${totalCortes - totalRecaudacion === 0 ? 'text-green-500' : 'text-red-500'}`}>
-                                Bs. {(totalCortes - totalRecaudacion).toFixed(2)}
-                            </span>
+                            {resumenServicios.length ? (
+                                <span className={`font-bold ${totalCortes - totalRecaudacion === 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                    Bs. {(totalCortes - totalRecaudacion).toFixed(2)}
+                                </span>
+                            ) : (
+                                <span className="text-500">Consulte la recaudación primero</span>
+                            )}
                         </div>
                     </div>
                 </div>

@@ -85,28 +85,38 @@ export default function ArqueoRecaudacionEdit() {
             setLoading(true);
             
             const requestData = {
-                ...formData,
+                arqueofecha: formData.arqueofecha instanceof Date ? formData.arqueofecha.toISOString().split('T')[0] : formData.arqueofecha,
+                arqueonombreoperador: formData.arqueonombreoperador,
+                punto_recaud_id: arqueo.punto_recaud_id,
                 detalles: formData.detalles.map(d => ({
                     servicio_id: d.servicio_id,
-                    cantidad: d.cantidad
+                    cantidad: d.cantidad,
+                    precio: d.precio,
+                    importe: d.importe
                 }))
             };
             
-            await api.put(`arqueo-recaudacion/${id}`, requestData);
+            console.log('Sending update request with data:', requestData);
             
-            toast.current.show({
-                severity: 'success',
-                summary: 'Éxito',
-                detail: 'Arqueo actualizado correctamente'
-            });
+            const response = await api.put(`arqueo-recaudacion/${id}`, requestData);
             
-            navigate('/arqueo-recaudacion');
+            if (response.data.success) {
+                toast.current.show({
+                    severity: 'success',
+                    summary: 'Éxito',
+                    detail: 'Arqueo actualizado correctamente'
+                });
+                
+                navigate('/arqueo-recaudacion');
+            } else {
+                throw new Error(response.data.message || 'Error actualizando arqueo');
+            }
         } catch (error) {
             console.error('Error al actualizar arqueo:', error);
             toast.current.show({
                 severity: 'error',
                 summary: 'Error',
-                detail: 'No se pudo actualizar el arqueo'
+                detail: error.response?.data?.message || error.message || 'No se pudo actualizar el arqueo'
             });
         } finally {
             setLoading(false);
