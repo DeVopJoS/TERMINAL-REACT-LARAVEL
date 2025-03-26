@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useApi from 'hooks/useApi';
 import { Button } from 'primereact/button';
@@ -9,7 +9,6 @@ import { InputText } from 'primereact/inputtext';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Toast } from 'primereact/toast';
-import { useRef } from 'react';
 
 export default function ArqueoRecaudacionAdd() {
     const navigate = useNavigate();
@@ -17,20 +16,21 @@ export default function ArqueoRecaudacionAdd() {
     const toast = useRef(null);
 
     const [loading, setLoading] = useState(true);
-    const [puntosRecaudacion, setPuntosRecaudacion] = useState([]);
-    const [servicios, setServicios] = useState([]);
-    const [selectedPunto, setSelectedPunto] = useState(null);
-    const [detalles, setDetalles] = useState([]);
-    
     const [formData, setFormData] = useState({
         arqueocorrelativo: '',
         arqueofecha: new Date(),
-        arqueonombreoperador: '',
+        arqueoturno: 'M',
         punto_recaud_id: null,
-        arqueoturno: '1',
-        arqueonombresupervisor: '',
+        arqueonombreoperador: '',
         detalles: []
     });
+
+    // Estados para el formulario de detalle
+    const [servicios, setServicios] = useState([]);
+    const [selectedServicio, setSelectedServicio] = useState(null);
+    const [cantidad, setCantidad] = useState(0);
+    const [puntosRecaudacion, setPuntosRecaudacion] = useState([]);
+    const [selectedPunto, setSelectedPunto] = useState(null);
 
     useEffect(() => {
         loadInitialData();
@@ -39,105 +39,132 @@ export default function ArqueoRecaudacionAdd() {
     const loadInitialData = async () => {
         try {
             setLoading(true);
-            const [puntosRes, serviciosRes, correlativoRes] = await Promise.all([
-                api.get('arqueo-recaudacion-puntos'),
-                api.get('arqueo-recaudacion-servicios'),
-                api.get('arqueo-recaudacion-correlativo')
-            ]);
+            
 
-            setPuntosRecaudacion(puntosRes.data);
-            setServicios(serviciosRes.data);
-            setFormData(prev => ({
-                ...prev,
-                arqueocorrelativo: correlativoRes.data.correlativo
-            }));
+            try {
+                console.log("Solicitando servicios...");
+                const serviciosRes = await api.get('arqueo-recaudacion-servicios');
+                console.log("Respuesta de servicios:", serviciosRes);
+                
+                if (serviciosRes && serviciosRes.data) {
+                    if (Array.isArray(serviciosRes.data)) {
+                        setServicios(serviciosRes.data);
+                        console.log("Servicios cargados:", serviciosRes.data.length);
+                        if (serviciosRes.data.length > 0) {
+                            console.log("Primer servicio:", serviciosRes.data[0]);
+                        }
+                    } else {
+                        console.error("La respuesta no es un array:", serviciosRes.data);
+                    }
+                }
+            } catch (error) {
+                console.error("Error al cargar servicios:", error);
+            }
+            
+            try {
+                const [puntosRes, correlativoRes] = await Promise.all([
+                    api.get('arqueo-recaudacion-puntos'),
+                    api.get('arqueo-recaudacion-correlativo')
+                ]);
+                
+                setPuntosRecaudacion(puntosRes.data || []);
+                
+                if (correlativoRes.data && correlativoRes.data.correlativo) {
+                    setFormData(prev => ({
+                        ...prev,
+                        arqueocorrelativo: correlativoRes.data.correlativo
+                    }));
+                }
+            } catch (error) {
+                console.error("Error al cargar otros datos:", error);
+            }
+            
         } catch (error) {
-            console.error('Error cargando datos:', error);
+            console.error('Error general cargando datos:', error);
             toast.current.show({
                 severity: 'error',
                 summary: 'Error',
-                detail: 'No se pudieron cargar los datos iniciales'
+                detail: 'No se pudieron cargar los datos iniciales: ' + error.message
             });
         } finally {
             setLoading(false);
         }
     };
 
-    const handlePuntoChange = (e) => {
-        setSelectedPunto(e.value);
-        setFormData(prev => ({...prev, punto_recaud_id: e.value.id}));
-    };
-
     const handleAddDetalle = () => {
-        if (!selectedPunto) {
+        if (!selectedServicio || !selectedPunto || cantidad <= 0) {
             toast.current.show({
                 severity: 'warn',
-                summary: 'Advertencia',
-                detail: 'Debe seleccionar un punto de recaudación'
+                summary: 'Datos incompletos',
+                detail: 'Debe seleccionar servicio, punto y cantidad mayor a cero'
             });
             return;
         }
 
-        setDetalles([
-            ...detalles, 
-            {
-                id: Date.now(),
-                punto_recaud_id: selectedPunto.id,
-                punto_nombre: selectedPunto.nombre,
-                servicio_id: null,
-                servicio_nombre: '',
-                cantidad: 0,
-                precio: 0,
-                importe: 0
+        let servicio_id, precio, descripcion;
+        
+        if (typeof selectedServicio === 'number') {
+            const servicioObj = servicios.find(s => s.value === selectedServicio);
+            if (!servicioObj) {
+                toast.current.show({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'No se encontró información del servicio seleccionado'
+                });
+                return;
             }
-        ]);
-    };
+            servicio_id = servicioObj.value;
+            precio = parseFloat(servicioObj.precio) || 0;
+            descripcion = servicioObj.label || '';
+        } else {
+            servicio_id = selectedServicio.value;
+            precio = parseFloat(selectedServicio.precio) || 0;
+            descripcion = selectedServicio.label || '';
+        }
+        
+        console.log(`ID: ${servicio_id}, Nombre: ${descripcion}, Precio: ${precio}`);
+        
+        const importe = cantidad * precio;
 
-    const handleRemoveDetalle = (id) => {
-        setDetalles(detalles.filter(d => d.id !== id));
-    };
+        const nuevoDetalle = {
+            servicio_id: servicio_id,
+            servicio_nombre: descripcion,
+            arqueodetcantidad: cantidad,
+            arqueodettarifabs: precio,
+            arqueodetimportebs: importe,
+            arqueonombreoperador: formData.arqueonombreoperador
+        };
 
-    const handleServicioChange = (id, servicioId) => {
-        setDetalles(detalles.map(d => {
-            if (d.id === id) {
-                const servicio = servicios.find(s => s.id === servicioId);
-                return {
-                    ...d, 
-                    servicio_id: servicioId,
-                    servicio_nombre: servicio.nombre,
-                    precio: servicio.precio,
-                    importe: d.cantidad * servicio.precio
-                };
-            }
-            return d;
+        console.log("Detalle a agregar:", nuevoDetalle);
+        
+        setFormData(prev => ({
+            ...prev,
+            detalles: [...prev.detalles, nuevoDetalle]
         }));
+
+        setSelectedServicio(null);
+        setCantidad(0);
     };
 
-    const handleCantidadChange = (id, cantidad) => {
-        setDetalles(detalles.map(d => {
-            if (d.id === id) {
-                return {
-                    ...d, 
-                    cantidad,
-                    importe: cantidad * d.precio
-                };
-            }
-            return d;
+    const handleRemoveDetalle = (index) => {
+        setFormData(prev => ({
+            ...prev,
+            detalles: prev.detalles.filter((_, i) => i !== index)
         }));
     };
 
     const handleSubmit = async () => {
         try {
-            if (!formData.arqueonombreoperador) {
+            if (!formData.arqueonombreoperador || !formData.punto_recaud_id) {
                 toast.current.show({
                     severity: 'warn',
-                    summary: 'Dato requerido',
-                    detail: 'Debe ingresar el nombre del operador'
+                    summary: 'Datos incompletos',
+                    detail: 'Debe ingresar operador y punto de recaudación'
                 });
                 return;
             }
 
-            if (detalles.length === 0) {
+            if (formData.detalles.length === 0) {
                 toast.current.show({
                     severity: 'warn',
                     summary: 'Sin detalles',
@@ -146,27 +173,8 @@ export default function ArqueoRecaudacionAdd() {
                 return;
             }
 
-            const invalidDetalles = detalles.filter(d => !d.servicio_id || d.cantidad <= 0);
-            if (invalidDetalles.length > 0) {
-                toast.current.show({
-                    severity: 'warn',
-                    summary: 'Datos incompletos',
-                    detail: 'Todos los detalles deben tener servicio y cantidad mayor a cero'
-                });
-                return;
-            }
-
             setLoading(true);
-
-            const requestData = {
-                ...formData,
-                detalles: detalles.map(d => ({
-                    servicio_id: d.servicio_id,
-                    cantidad: d.cantidad
-                }))
-            };
-
-            await api.post('arqueo-recaudacion', requestData);
+            await api.post('arqueo-recaudacion', formData);
             
             toast.current.show({
                 severity: 'success',
@@ -176,7 +184,6 @@ export default function ArqueoRecaudacionAdd() {
 
             navigate('/arqueo-recaudacion');
         } catch (error) {
-            console.error('Error al guardar:', error);
             toast.current.show({
                 severity: 'error',
                 summary: 'Error',
@@ -187,120 +194,141 @@ export default function ArqueoRecaudacionAdd() {
         }
     };
 
-    const totalImporte = detalles.reduce((sum, d) => sum + parseFloat(d.importe || 0), 0);
-
     return (
         <div className="card">
             <Toast ref={toast} />
             <h5>Nuevo Arqueo de Recaudación</h5>
             
             <div className="grid">
-                <div className="col-12 md:col-3">
-                    <label htmlFor="correlativo">Correlativo</label>
-                    <InputText
-                        id="correlativo"
-                        value={formData.arqueocorrelativo}
-                        readOnly
-                        className="w-full"
-                    />
-                </div>
-
-                <div className="col-12 md:col-3">
-                    <label htmlFor="fecha">Fecha</label>
-                    <Calendar
-                        id="fecha"
+                <div className="col-12 md:col-4">
+                    <label>Fecha</label>
+                    <Calendar 
                         value={formData.arqueofecha}
                         onChange={(e) => setFormData({...formData, arqueofecha: e.value})}
-                        showIcon
                         dateFormat="dd/mm/yy"
+                        showIcon
                         className="w-full"
                     />
                 </div>
 
-                <div className="col-12 md:col-3">
-                    <label htmlFor="turno">Turno</label>
+                <div className="col-12 md:col-4">
+                    <label>Turno</label>
                     <Dropdown
-                        id="turno"
                         value={formData.arqueoturno}
                         options={[
-                            { label: 'Turno 1', value: '1' },
-                            { label: 'Turno 2', value: '2' }
+                            { label: 'MAÑANA', value: 'M' },
+                            { label: 'TARDE', value: 'T' },
+                            { label: 'NOCHE', value: 'N' }
                         ]}
                         onChange={(e) => setFormData({...formData, arqueoturno: e.value})}
                         className="w-full"
                     />
                 </div>
 
-                <div className="col-12 md:col-3">
-                    <label htmlFor="operador">Operador</label>
+                <div className="col-12 md:col-4">
+                    <label>Operador</label>
                     <InputText
-                        id="operador"
                         value={formData.arqueonombreoperador}
                         onChange={(e) => setFormData({...formData, arqueonombreoperador: e.target.value})}
                         className="w-full"
                     />
                 </div>
 
-                <div className="col-12 md:col-6">
+                <div className="col-12 md:col-4">
                     <label>Punto de Recaudación</label>
+                    <Dropdown
+                        value={selectedPunto}
+                        options={puntosRecaudacion}
+                        onChange={(e) => {
+                            setSelectedPunto(e.value);
+                            setFormData(prev => ({...prev, punto_recaud_id: e.value.value}));
+                        }}
+                        optionLabel="label"
+                        placeholder="Seleccione punto"
+                        className="w-full"
+                    />
+                </div>
+
+                <div className="col-12 md:col-4">
+                    <label>Servicio</label>
+                    <Dropdown
+                        value={selectedServicio}
+                        options={servicios}
+                        onChange={(e) => {
+                            console.log("Servicio seleccionado completo:", e.value);
+                            setSelectedServicio(e.value);
+                        }}
+                        optionLabel="label"
+                        placeholder="Seleccione servicio"
+                        className="w-full"
+                        filter
+                        dataKey="value"
+                        valueTemplate={(option) => {
+                            return option ? option.label : 'Seleccione servicio';
+                        }}
+                    />
+                    {loading && <small>Cargando servicios...</small>}
+                </div>
+
+                <div className="col-12 md:col-4">
+                    <label>Cantidad</label>
                     <div className="p-inputgroup">
-                        <Dropdown
-                            value={selectedPunto}
-                            options={puntosRecaudacion}
-                            onChange={handlePuntoChange}
-                            optionLabel="nombre"
-                            placeholder="Seleccione punto de recaudación"
+                        <InputNumber
+                            value={cantidad}
+                            onChange={(e) => setCantidad(e.value)}
+                            min={0}
+                            showButtons
                             className="w-full"
                         />
-                        <Button icon="pi pi-plus" onClick={handleAddDetalle} />
+                        <Button 
+                            icon="pi pi-plus" 
+                            onClick={handleAddDetalle}
+                            disabled={!selectedServicio || !selectedPunto || cantidad <= 0}
+                        />
                     </div>
                 </div>
 
+                {/* Tabla de detalles */}
                 <div className="col-12">
-                    <h6>Detalles de Recaudación</h6>
                     <DataTable 
-                        value={detalles} 
-                        loading={loading}
-                        emptyMessage="No hay detalles agregados"
+                        value={formData.detalles}
+                        className="mt-3"
+                        emptyMessage="No se han agregado servicios"
                     >
-                        <Column field="punto_nombre" header="Punto de Recaudación" />
-                        <Column header="Servicio" body={(rowData) => (
-                            <Dropdown
-                                value={rowData.servicio_id}
-                                options={servicios}
-                                onChange={(e) => handleServicioChange(rowData.id, e.value)}
-                                optionLabel="nombre"
-                                optionValue="id"
-                                placeholder="Seleccionar"
-                                className="w-full"
-                            />
-                        )} />
-                        <Column header="Cantidad" body={(rowData) => (
-                            <InputNumber
-                                value={rowData.cantidad}
-                                onChange={(e) => handleCantidadChange(rowData.id, e.value)}
-                                min={0}
-                                showButtons
-                            />
-                        )} />
-                        <Column field="precio" header="Precio" body={(rowData) => rowData.precio ? `Bs. ${rowData.precio}` : ''} />
-                        <Column field="importe" header="Importe" body={(rowData) => rowData.importe ? `Bs. ${rowData.importe.toFixed(2)}` : 'Bs. 0.00'} />
-                        <Column header="Acciones" body={(rowData) => (
-                            <Button 
-                                icon="pi pi-trash" 
-                                className="p-button-danger p-button-sm" 
-                                onClick={() => handleRemoveDetalle(rowData.id)}
-                            />
-                        )} />
+                        <Column field="servicio_nombre" header="Servicio" />
+                        <Column field="arqueodetcantidad" header="Cantidad" />
+                        <Column 
+                            field="arqueodettarifabs" 
+                            header="Tarifa" 
+                            body={(rowData) => `Bs. ${parseFloat(rowData.arqueodettarifabs || 0).toFixed(2)}`}
+                        />
+                        <Column 
+                            field="arqueodetimportebs" 
+                            header="Total" 
+                            body={(rowData) => `Bs. ${parseFloat(rowData.arqueodetimportebs || 0).toFixed(2)}`}
+                        />
+                        <Column field="arqueonombreoperador" header="Operador" />
+                        <Column 
+                            body={(rowData, options) => (
+                                <Button
+                                    icon="pi pi-trash"
+                                    className="p-button-danger p-button-sm"
+                                    onClick={() => handleRemoveDetalle(options.rowIndex)}
+                                />
+                            )}
+                        />
                     </DataTable>
                 </div>
 
+                {/* Total y botón guardar */}
                 <div className="col-12 flex justify-content-between align-items-center">
-                    <h5>Total: Bs. {totalImporte.toFixed(2)}</h5>
-                    <Button 
-                        label="Guardar Arqueo" 
-                        icon="pi pi-save" 
-                        onClick={handleSubmit} 
+                    <h5>
+                        Total: Bs. {formData.detalles.reduce((sum, det) => sum + parseFloat(det.arqueodetimportebs || 0), 0).toFixed(2)}
+                    </h5>
+                    <Button
+                        label="Guardar Arqueo"
+                        icon="pi pi-save"
+                        onClick={handleSubmit}
                         loading={loading}
                     />
                 </div>

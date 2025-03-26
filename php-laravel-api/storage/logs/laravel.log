@@ -1725,3 +1725,43 @@ LINE 1: ...ecaud_estado\" from \"tbl_puntos_recaudacion\" where \"ae_estado...
 #34 C:\\Users\\PC-HP\\Desktop\\TERMINAL-REACT-LARAVEL\\php-laravel-api\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(16): require_once('C:\\\\Users\\\\PC-HP\\\\...')
 #35 {main}
 "} 
+[2025-03-26 10:31:22] local.INFO: Servicios encontrados: 10  
+[2025-03-26 10:31:31] local.INFO: Servicios encontrados: 10  
+[2025-03-26 10:32:55] local.INFO: Servicios encontrados: 10  
+[2025-03-26 10:34:11] local.INFO: Servicios encontrados: 10  
+[2025-03-26 10:35:43] local.INFO: Servicios encontrados: 10  
+[2025-03-26 10:40:04] local.INFO: Servicios encontrados: 10  
+[2025-03-26 10:43:40] local.INFO: Servicios encontrados: 10  
+[2025-03-26 10:43:48] local.INFO: Servicios encontrados: 10  
+[2025-03-26 10:45:35] local.INFO: Servicios encontrados: 10  
+[2025-03-26 10:45:57] local.INFO: Servicios encontrados: 10  
+[2025-03-26 10:49:25] local.INFO: Servicios encontrados: 10  
+[2025-03-26 10:50:34] local.INFO: Servicios encontrados: 10  
+[2025-03-26 10:50:41] local.INFO: Servicios encontrados: 10  
+[2025-03-26 10:53:47] local.INFO: Servicios encontrados: 10  
+[2025-03-26 11:17:53] local.WARNING: No se encontraron servicios activos  
+[2025-03-26 11:22:36] local.INFO: Servicios encontrados: 10  
+[2025-03-26 11:22:36] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":"6.00","codigo":"BID"} 
+[2025-03-26 11:22:42] local.INFO: Servicios encontrados: 10  
+[2025-03-26 11:22:42] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":"6.00","codigo":"BID"} 
+[2025-03-26 11:25:24] local.INFO: Servicios encontrados: 10  
+[2025-03-26 11:25:24] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":"6.00","codigo":"BID"} 
+[2025-03-26 11:25:37] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":6.0,"codigo":"BID"} 
+[2025-03-26 11:26:35] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":6.0,"codigo":"BID"} 
+[2025-03-26 11:28:31] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":6.0,"codigo":"BID"} 
+[2025-03-26 11:29:44] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":6.0,"codigo":"BID"} 
+[2025-03-26 11:31:07] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":6.0,"codigo":"BID"} 
+[2025-03-26 11:31:15] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":6.0,"codigo":"BID"} 
+[2025-03-26 11:33:59] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":6.0,"codigo":"BID"} 
+[2025-03-26 11:34:18] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":6.0,"codigo":"BID"} 
+[2025-03-26 11:36:22] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":6.0,"codigo":"BID"} 
+[2025-03-26 11:36:26] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":6.0,"codigo":"BID"} 
+[2025-03-26 11:36:31] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":6.0,"codigo":"BID"} 
+[2025-03-26 11:36:36] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":6.0,"codigo":"BID"} 
+[2025-03-26 11:36:41] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":6.0,"codigo":"BID"} 
+[2025-03-26 11:36:46] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":6.0,"codigo":"BID"} 
+[2025-03-26 11:36:47] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":6.0,"codigo":"BID"} 
+[2025-03-26 11:36:54] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":6.0,"codigo":"BID"} 
+[2025-03-26 11:37:01] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":6.0,"codigo":"BID"} 
+[2025-03-26 11:37:07] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":6.0,"codigo":"BID"} 
+[2025-03-26 11:37:15] local.INFO: Primer servicio: {"value":1,"label":"BUSES INTERDEPARTAMENTALES","precio":6.0,"codigo":"BID"} 

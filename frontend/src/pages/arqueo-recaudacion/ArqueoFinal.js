@@ -12,6 +12,20 @@ import { Toast } from 'primereact/toast';
 import { Divider } from 'primereact/divider';
 import { formatDate } from '../../utils/utils';
 
+const CORTES_DENOMINACION = [
+    { campo: 'arqueocorte200_00', valor: 200, label: '200' },
+    { campo: 'arqueocorte100_00', valor: 100, label: '100' },
+    { campo: 'arqueocorte050_00', valor: 50, label: '50' },
+    { campo: 'arqueocorte020_00', valor: 20, label: '20' },
+    { campo: 'arqueocorte010_00', valor: 10, label: '10' },
+    { campo: 'arqueocorte005_00', valor: 5, label: '5' },
+    { campo: 'arqueocorte002_00', valor: 2, label: '2' },
+    { campo: 'arqueocorte001_00', valor: 1, label: '1' },
+    { campo: 'arqueocorte000_50', valor: 0.5, label: '0.50' },
+    { campo: 'arqueocorte000_20', valor: 0.2, label: '0.20' },
+    { campo: 'arqueocorte000_10', valor: 0.1, label: '0.10' }
+];
+
 export default function ArqueoFinal() {
     const navigate = useNavigate();
     const api = useApi();
@@ -24,21 +38,15 @@ export default function ArqueoFinal() {
         arqueoturno: 'M',
         arqueohorainicio: '08:00',
         arqueohorafin: '14:00',
-        arqueosupervisor: '',
+        arqueosupervisor: 1, // Default 1
+        arqueorealizadopor: 1, // Default 1
+        arqueorevisadopor: 1, // Default 1
         arqueoobservacion: '',
-        cortes: {
-            arqueocorte200_00: 0,
-            arqueocorte100_00: 0,
-            arqueocorte050_00: 0,
-            arqueocorte020_00: 0,
-            arqueocorte010_00: 0,
-            arqueocorte005_00: 0,
-            arqueocorte002_00: 0,
-            arqueocorte001_00: 0,
-            arqueocorte000_50: 0,
-            arqueocorte000_20: 0,
-            arqueocorte000_10: 0
-        }
+        arqueoestado: 'A',
+        cortes: CORTES_DENOMINACION.reduce((acc, den) => ({
+            ...acc,
+            [den.campo]: 0
+        }), {})
     });
 
     const [resumenServicios, setResumenServicios] = useState([]);
@@ -89,7 +97,9 @@ export default function ArqueoFinal() {
                 arqueofecha.toISOString().split('T')[0] : 
                 arqueofecha;
                 
+            console.log("Consultando resumen con fecha:", fechaStr, "turno:", arqueoturno);
             const response = await api.get(`arqueo-recaudacion-resumen?fecha=${fechaStr}&turno=${arqueoturno}`);
+            console.log("Respuesta resumen:", response.data);
             
             if (response.data.success) {
                 setResumenServicios(response.data.resumen_servicios);
@@ -104,7 +114,7 @@ export default function ArqueoFinal() {
                 toast.current.show({
                     severity: 'warn',
                     summary: 'Sin datos',
-                    detail: response.data.message
+                    detail: response.data.message || 'No se encontraron datos'
                 });
             }
         } catch (error) {
@@ -112,7 +122,7 @@ export default function ArqueoFinal() {
             toast.current.show({
                 severity: 'error',
                 summary: 'Error',
-                detail: 'No se pudo obtener el resumen'
+                detail: 'No se pudo obtener el resumen: ' + (error.message || 'Error desconocido')
             });
         } finally {
             setLoading(false);
@@ -120,22 +130,11 @@ export default function ArqueoFinal() {
     };
 
     const calcularTotalCortes = () => {
-        const cortes = formData.cortes;
-        let total = 0;
-        
-        total += (cortes.arqueocorte200_00 || 0) * 200;
-        total += (cortes.arqueocorte100_00 || 0) * 100;
-        total += (cortes.arqueocorte050_00 || 0) * 50;
-        total += (cortes.arqueocorte020_00 || 0) * 20;
-        total += (cortes.arqueocorte010_00 || 0) * 10;
-        total += (cortes.arqueocorte005_00 || 0) * 5;
-        total += (cortes.arqueocorte002_00 || 0) * 2;
-        total += (cortes.arqueocorte001_00 || 0) * 1;
-        total += (cortes.arqueocorte000_50 || 0) * 0.5;
-        total += (cortes.arqueocorte000_20 || 0) * 0.2;
-        total += (cortes.arqueocorte000_10 || 0) * 0.1;
-        
+        const total = CORTES_DENOMINACION.reduce((total, den) => {
+            return total + (formData.cortes[den.campo] || 0) * den.valor;
+        }, 0);
         setTotalCortes(total);
+        return total;
     };
 
     const handleCortesChange = (field, value) => {
@@ -169,7 +168,16 @@ export default function ArqueoFinal() {
             }
 
             setLoading(true);
-            const response = await api.post('arqueo-recaudacion-final', formData);
+            const totalCortes = calcularTotalCortes();
+            const diferencia = totalCortes - totalRecaudacion;
+
+            const requestData = {
+                ...formData,
+                arqueorecaudaciontotal: totalRecaudacion,
+                arqueodiferencia: diferencia,
+            };
+
+            const response = await api.post('arqueo-recaudacion-final', requestData);
             
             if (response.data.success) {
                 toast.current.show({
@@ -334,113 +342,21 @@ export default function ArqueoFinal() {
                     </Divider>
                 </div>
 
-                <div className="col-12 md:col-6">
-                    <div className="grid">
-                        <div className="col-4">
-                            <label>Corte Bs. 200</label>
+                <div className="grid">
+                    {CORTES_DENOMINACION.map(den => (
+                        <div key={den.campo} className="col-12 md:col-3">
+                            <label>Corte Bs. {den.label}</label>
                             <InputNumber 
-                                value={formData.cortes.arqueocorte200_00}
-                                onChange={(e) => handleCortesChange('arqueocorte200_00', e.value)} 
+                                value={formData.cortes[den.campo]}
+                                onChange={(e) => handleCortesChange(den.campo, e.value)}
+                                mode="decimal"
+                                minFractionDigits={2}
+                                maxFractionDigits={2}
                                 min={0}
                                 className="w-full"
                             />
                         </div>
-                        <div className="col-4">
-                            <label>Corte Bs. 100</label>
-                            <InputNumber 
-                                value={formData.cortes.arqueocorte100_00}
-                                onChange={(e) => handleCortesChange('arqueocorte100_00', e.value)}
-                                min={0}
-                                className="w-full"
-                            />
-                        </div>
-                        <div className="col-4">
-                            <label>Corte Bs. 50</label>
-                            <InputNumber 
-                                value={formData.cortes.arqueocorte050_00}
-                                onChange={(e) => handleCortesChange('arqueocorte050_00', e.value)}
-                                min={0}
-                                className="w-full"
-                            />
-                        </div>
-                        <div className="col-4">
-                            <label>Corte Bs. 20</label>
-                            <InputNumber 
-                                value={formData.cortes.arqueocorte020_00}
-                                onChange={(e) => handleCortesChange('arqueocorte020_00', e.value)}
-                                min={0}
-                                className="w-full"
-                            />
-                        </div>
-                        <div className="col-4">
-                            <label>Corte Bs. 10</label>
-                            <InputNumber 
-                                value={formData.cortes.arqueocorte010_00}
-                                onChange={(e) => handleCortesChange('arqueocorte010_00', e.value)}
-                                min={0}
-                                className="w-full"
-                            />
-                        </div>
-                        <div className="col-4">
-                            <label>Corte Bs. 5</label>
-                            <InputNumber 
-                                value={formData.cortes.arqueocorte005_00}
-                                onChange={(e) => handleCortesChange('arqueocorte005_00', e.value)}
-                                min={0}
-                                className="w-full"
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                <div className="col-12 md:col-6">
-                    <div className="grid">
-                        <div className="col-4">
-                            <label>Corte Bs. 2</label>
-                            <InputNumber 
-                                value={formData.cortes.arqueocorte002_00}
-                                onChange={(e) => handleCortesChange('arqueocorte002_00', e.value)}
-                                min={0}
-                                className="w-full"
-                            />
-                        </div>
-                        <div className="col-4">
-                            <label>Corte Bs. 1</label>
-                            <InputNumber 
-                                value={formData.cortes.arqueocorte001_00}
-                                onChange={(e) => handleCortesChange('arqueocorte001_00', e.value)}
-                                min={0}
-                                className="w-full"
-                            />
-                        </div>
-                        <div className="col-4">
-                            <label>Corte Bs. 0.50</label>
-                            <InputNumber 
-                                value={formData.cortes.arqueocorte000_50}
-                                onChange={(e) => handleCortesChange('arqueocorte000_50', e.value)}
-                                min={0}
-                                className="w-full"
-                            />
-                        </div>
-                        <div className="col-4">
-                            <label>Corte Bs. 0.20</label>
-                            <InputNumber 
-                                value={formData.cortes.arqueocorte000_20}
-                                onChange={(e) => handleCortesChange('arqueocorte000_20', e.value)}
-                                min={0}
-                                className="w-full"
-                            />
-                        </div>
-                        <div className="col-4">
-                            <label>Corte Bs. 0.10</label>
-                            <InputNumber 
-                                value={formData.cortes.arqueocorte000_10}
-                                onChange={(e) => handleCortesChange('arqueocorte000_10', e.value)}
-                                min={0}
-                                className="w-full"
-                            />
-                        </div>
-                    </div>
+                    ))}
                 </div>
 
                 <div className="col-12">
