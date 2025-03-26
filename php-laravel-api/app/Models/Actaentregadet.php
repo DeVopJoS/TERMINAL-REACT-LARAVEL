@@ -152,6 +152,9 @@ class Actaentregadet extends Model
 		];
 	}
 	
+	public function servicio() {
+		return $this->belongsTo(TblServicios::class, 'servicio_id', 'servicio_id');
+	}
 
 	/**
      * Indicates if the model should be timestamped.
