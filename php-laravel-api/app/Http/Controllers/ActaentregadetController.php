@@ -18,7 +18,8 @@ class ActaentregadetController extends Controller
      * @return \Illuminate\View\View
      */
 	function index(Request $request, $fieldname = null , $fieldvalue = null){
-		$query = Actaentregadet::query();
+		$query = Actaentregadet::query()->with(['servicio:servicio_id,servicio_descripcion']);
+		
 		if($request->search){
 			$search = trim($request->search);
 			Actaentregadet::search($query, $search);

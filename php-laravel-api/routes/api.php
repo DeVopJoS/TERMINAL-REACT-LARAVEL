@@ -275,15 +275,20 @@ Route::post('fileuploader/upload/{fieldname}', 'FileUploaderController@upload');
 Route::post('fileuploader/s3upload/{fieldname}', 'FileUploaderController@s3upload');
 Route::post('fileuploader/remove_temp_file', 'FileUploaderController@remove_temp_file');
 
-
+// Routes from TblServicioController
 Route::get('/servicios', [TblServiciosController::class, 'obtenerServicios']);
-Route::post('/registros', 'ActaentregadetController@nuevo'); // Crear nueva licencia
-Route::put('/registros/{id}', 'ActaentregadetController@nuevo');
 
+// Routes for ActaentregacabController
 Route::get('/actas/index/{filter?}/{filtervalue?}', 'ActaentregacabController@index');
 Route::get('/actas/cabecera/{rec_id}', 'ActaentregacabController@showActaWithDet');
 Route::post('/actas/cabecera', 'ActaentregacabController@showMultipleActas');
-
 Route::post('/actas', [ActaentregacabController::class, 'store']);
 
+// Routes for ActaentregadetController
+Route::get('/tblactaentregadet/index', 'ActaentregadetController@index');
+Route::get('/tblactaentregadet/index/{filter?}/{filtervalue?}', 'ActaentregadetController@index');
+Route::post('/registros', 'ActaentregadetController@nuevo'); 
+Route::put('/registros/{id}', 'ActaentregadetController@nuevo');
+
+// Routes for TblPuntosRecaudacionController
 Route::get('tblpuntosrecaudacion/index/{filter?}/{filtervalue?}', 'TblPuntosRecaudacionController@index');

@@ -213,3 +213,11 @@ body{
 .nice-shadow-22 {
 	box-shadow: rgba(0, 0, 0, 0.45) 0px 25px 20px -20px !important;
 }
+
+.p-datatable .p-datatable-tbody > tr.row-aprobada {
+	background-color: #c8e6c9 !important; 
+  }
+  
+.p-datatable .p-datatable-tbody > tr.row-rechazada {
+	background-color: #ffcdd2 !important; 
+}
