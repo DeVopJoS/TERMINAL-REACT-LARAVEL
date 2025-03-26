@@ -340,91 +340,6 @@ export default function ArqueoFinal() {
 
             {resumenServicios.length > 0 && (
                 <>
-                    {/* Información del Arqueo */}
-                    <div className="grid">
-                        <div className="col-12 md:col-8">
-                            {/* Resumen y Detalles */}
-                            <div className="card p-0 mb-4">
-                                <div className="p-4 border-bottom-1 surface-border">
-                                    <h3 className="text-lg font-semibold m-0">
-                                        Resumen de Recaudación
-                                    </h3>
-                                </div>
-                                <div className="p-4">
-                                    <DataTable 
-                                        value={resumenServicios}
-                                        scrollable 
-                                        scrollHeight="200px"
-                                        className="mb-4"
-                                    >
-                                        <Column field="codigo" header="Código" style={{width: '100px'}} />
-                                        <Column field="nombre" header="Servicio" />
-                                        <Column field="cantidad_total" header="Cantidad" style={{width: '100px'}} />
-                                        <Column 
-                                            field="importe_total" 
-                                            header="Importe" 
-                                            body={(row) => `Bs. ${parseFloat(row.importe_total).toFixed(2)}`}
-                                            style={{width: '150px'}}
-                                        />
-                                    </DataTable>
-
-                                    <h3 className="text-lg font-semibold mb-3">
-                                        Detalle por Operador
-                                    </h3>
-                                    <DataTable 
-                                        value={detalleOperadores}
-                                        scrollable 
-                                        scrollHeight="200px"
-                                        size="small"
-                                    >
-                                        <Column field="operador" header="Operador" />
-                                        <Column field="punto" header="Punto" />
-                                        <Column field="codigo" header="Serv." style={{width: '80px'}} />
-                                        <Column field="cantidad" header="Cant." style={{width: '80px'}} />
-                                        <Column 
-                                            field="importe" 
-                                            header="Importe" 
-                                            body={(row) => `Bs. ${parseFloat(row.importe).toFixed(2)}`}
-                                            style={{width: '120px'}}
-                                        />
-                                    </DataTable>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="col-12 md:col-4">
-                            {/* Cortes Monetarios */}
-                            <div className="card p-0">
-                                <div className="p-4 border-bottom-1 surface-border">
-                                    <h3 className="text-lg font-semibold m-0">
-                                        Conteo de Efectivo
-                                    </h3>
-                                </div>
-                                <div className="p-4">
-                                    <div className="grid">
-                                        {CORTES_DENOMINACION.map(den => (
-                                            <div key={den.campo} className="col-12 mb-3">
-                                                <div className="flex align-items-center">
-                                                    <span className="bg-primary border-round p-2 text-white font-bold mr-2 w-4rem text-center">
-                                                        {den.label}
-                                                    </span>
-                                                    <InputNumber 
-                                                        value={formData.cortes[den.campo]}
-                                                        onChange={(e) => handleCortesChange(den.campo, e.value)}
-                                                        showButtons
-                                                        min={0}
-                                                        className="w-full"
-                                                    />
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Resumen Final */}
                     <div className="card mb-4">
                         <DiferenciaIndicator 
                             totalCortes={totalCortes} 
@@ -462,9 +377,108 @@ export default function ArqueoFinal() {
                             </div>
                         </div>
                     </div>
+                    
+                    <div className="grid">
+                        <div className="col-12 md:col-6">
+                            {/* Cortes Monetarios */}
+                            <div className="card p-0 mb-4">
+                                <div className="p-4 border-bottom-1 surface-border">
+                                    <h3 className="text-lg font-semibold m-0">
+                                        Conteo de Efectivo
+                                    </h3>
+                                </div>
+                                <div className="p-4">
+                                    <div className="grid">
+                                        {CORTES_DENOMINACION.map(den => (
+                                            <div key={den.campo} className="col-12 md:col-6 mb-3">
+                                                <div className="flex align-items-center">
+                                                    <span className="bg-primary border-round p-2 text-white font-bold mr-2 w-4rem text-center">
+                                                        {den.label}
+                                                    </span>
+                                                    <InputNumber 
+                                                        value={formData.cortes[den.campo]}
+                                                        onChange={(e) => handleCortesChange(den.campo, e.value)}
+                                                        showButtons
+                                                        min={0}
+                                                        className="w-full"
+                                                    />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                    {/* Formulario Final */}
-                    <div className="card p-4">
+                        <div className="col-12 md:col-6">
+                            {/* Resumen de servicios */}
+                            <div className="card p-0 mb-4">
+                                <div className="p-4 border-bottom-1 surface-border">
+                                    <h3 className="text-lg font-semibold m-0">
+                                        Resumen de Recaudación
+                                    </h3>
+                                </div>
+                                <div className="p-4">
+                                    <DataTable 
+                                        value={resumenServicios}
+                                        scrollable 
+                                        scrollHeight="400px"
+                                        size="small"
+                                        className="mb-4"
+                                    >
+                                        <Column field="codigo" header="Código" style={{width: '80px'}} />
+                                        <Column field="nombre" header="Servicio" />
+                                        <Column field="cantidad_total" header="Cantidad" style={{width: '80px'}} />
+                                        <Column 
+                                            field="importe_total" 
+                                            header="Importe" 
+                                            body={(row) => `Bs. ${parseFloat(row.importe_total).toFixed(2)}`}
+                                            style={{width: '100px'}}
+                                        />
+                                    </DataTable>
+
+                                    {/* Totales */}
+                                    <div className="bg-gray-50 p-3 border-round">
+                                        <div className="flex justify-content-between align-items-center">
+                                            <span className="font-bold">Total Recaudado:</span>
+                                            <span className="text-xl font-bold">Bs. {totalRecaudacion.toFixed(2)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Detalle por operador*/}
+                            <div className="card p-0">
+                                <div className="p-4 border-bottom-1 surface-border">
+                                    <h3 className="text-lg font-semibold m-0">
+                                        Detalle por Operador
+                                    </h3>
+                                </div>
+                                <div className="p-4">
+                                    <DataTable 
+                                        value={detalleOperadores}
+                                        scrollable 
+                                        scrollHeight="200px"
+                                        size="small"
+                                    >
+                                        <Column field="operador" header="Operador" />
+                                        <Column field="punto" header="Punto" style={{width: '100px'}} />
+                                        <Column field="codigo" header="Serv." style={{width: '70px'}} />
+                                        <Column field="cantidad" header="Cant." style={{width: '70px'}} />
+                                        <Column 
+                                            field="importe" 
+                                            header="Importe" 
+                                            body={(row) => `Bs. ${parseFloat(row.importe).toFixed(2)}`}
+                                            style={{width: '100px'}}
+                                        />
+                                    </DataTable>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Datos del Cierre*/}
+                    <div className="card p-4 mb-4 mt-3">
                         <h3 className="text-lg font-semibold mb-4">Datos del Cierre</h3>
                         <div className="grid">
                             <div className="col-12 md:col-4 mb-4">
@@ -517,6 +531,25 @@ export default function ArqueoFinal() {
                     </div>
                 </>
             )}
+
+            <style>
+                {`
+                    .sticky-container {
+                        position: sticky;
+                        top: 20px;
+                    }
+                    .p-datatable .p-datatable-tbody > tr > td {
+                        padding: 1rem 0.8rem;
+                    }
+                    .p-datatable .p-datatable-thead > tr > th {
+                        padding: 1rem 0.8rem;
+                        font-size: 1.1rem;  
+                    }
+                    .text-lg {
+                        font-size: 1.1rem !important; 
+                    }
+                `}
+            </style>
         </div>
     );
 }
