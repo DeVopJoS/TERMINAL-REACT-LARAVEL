@@ -51,8 +51,13 @@ function PrevaloradasList() {
     }
     
     const fetchData = async () => {
-        const { data } = await axios.get('actas/index/ae_estado/P');
+        const { data } = await axios.get('actas/index/ae_estado/E');
         setActas(data);
+    }
+
+    const handleSubmit = () => {
+        console.log('formulario enviado...')
+        console.log(actaDetalle)
     }
 
   return (
@@ -92,14 +97,13 @@ function PrevaloradasList() {
             <DataTable value={actas} responsiveLayout="scroll" className="p-datatable-sm text-xs" showGridlines>
                 <Column field="ae_actaid" header="ACTA ID" className="text-xs py-1 px-2"/>
                 {/* <Column field="ae_correlativo" header="CORRELATIVO" className="text-xs py-1 px-2"/> */}
-                <Column field="punto_recaud_id" header="PUNTO RECAUDACIÓN" className="text-xs py-1 px-2"/>
+                <Column field="punto_recaudacion.puntorecaud_nombre" header="PUNTO RECAUDACIÓN" className="text-xs py-1 px-2"/>
                 <Column field="ae_fecha" header="FECHA" className="text-xs py-1 px-2"/>
                 <Column field='ae_grupo' header="GRUPO" className="text-xs py-1 px-2"/>
                 <Column field="ae_operador1erturno" header="OPERADOR 1ER TURNO" className="text-xs py-1 px-2"/>
                 <Column field="ae_operador2doturno" header="OPERADOR 2DO TURNO" className="text-xs py-1 px-2"/>
                 <Column field="ae_observacion" header="OBSERVACIÓN" className="text-xs py-1 px-2"/>
                 <Column field="ae_recaudaciontotalbs" header="RECAUDACIÓN TOTAL BS" className="text-xs py-1 px-2"/>
-                <Column field="ae_estado" header="ESTADO" className="text-xs py-1 px-2"/>
                 <Column body={actionTemplate} header="" className="text-xs py-1 px-2"/>
             </DataTable>
         </Card>
@@ -220,7 +224,10 @@ function PrevaloradasList() {
                         </div>
                     </div>
                 </div>
-                <TableActas data={actaDetalle}/>
+                <TableActas data={actaDetalle} setData={setActaDetalle}/>
+                <div className='flex justify-content-end'>
+                    <Button className='mt-5' label='Cerrar Acta' onClick={handleSubmit}/>
+                </div>
             </Dialog>
         )}
     </>

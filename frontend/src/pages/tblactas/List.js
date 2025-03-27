@@ -32,7 +32,7 @@ const TblActasList = () => {
   }, [])
   
   const fetchData = async () => {
-    const { data } = await axios.get('actas/index/ae_estado/P');
+    const { data } = await axios.get('actas/index/ae_estado/E');
     setActas(data);
   }
 

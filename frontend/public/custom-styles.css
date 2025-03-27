@@ -221,3 +221,7 @@ body{
 .p-datatable .p-datatable-tbody > tr.row-rechazada {
 	background-color: #ffcdd2 !important; 
 }
+
+.p-datatable .p-datatable-tbody > tr.row-warning {
+	background-color: #e4da94 !important; 
+}

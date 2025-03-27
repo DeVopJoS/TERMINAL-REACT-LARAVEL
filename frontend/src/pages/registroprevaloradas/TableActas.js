@@ -6,21 +6,21 @@ import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext'
 
-function TableActas({data}) {
+function TableActas({data, setData}) {
     const [ dialogQuantity, setDialogQuantity ] = useState(false);
     const [ dataQuantity, setDataQuantity ] = useState();
     const [ quantity, setQuantity ] = useState();
-    const [ actas, setActas ] = useState ([]);
+    //const [ actas, setActas ] = useState ([]);
 
     useEffect(() => {
-        setActas(data);
-        
+        //setActas(data);
+        setData(data);
     }, [])
     
     const handleCheckboxChange = (rowData, field) => {
-        const updatedActas = actas.map(acta => {
+        const updatedActas = data.map(acta => {
             if (acta.aed_actaid === rowData.aed_actaid) {
-            const vendido = ( field === 'aprobado') ? rowData.aed_cantidad : 0;
+            const vendido = ( field === 'aprobado') ? rowData.aed_hastanumero : rowData.aed_desdenumero;
             return {
                 ...acta,
                 aed_vendidohasta: vendido,
@@ -30,7 +30,8 @@ function TableActas({data}) {
             }
             return acta;
         });
-        setActas(updatedActas);
+        //setActas(updatedActas);
+        setData(updatedActas);
     };
 
     const vendidoBodyTemplate = (rowData) => {
@@ -52,8 +53,9 @@ function TableActas({data}) {
     };
 
     const rowClassName = (rowData) => {
-        if (rowData.aprobado) return 'row-aprobada';
-        if (rowData.rechazado) return 'row-rechazada';
+        if(rowData.aed_vendidohasta < rowData.aed_hastanumero && rowData.aed_vendidohasta > rowData.aed_desdenumero) return 'row-warning';
+        if(rowData.aed_vendidohasta === rowData.aed_hastanumero) return 'row-aprobada';
+        if(rowData.aed_vendidohasta === rowData.aed_desdenumero) return 'row-rechazada';
         return '';
       };
 
@@ -72,13 +74,13 @@ function TableActas({data}) {
     const fillDialogQuantity = (rowData) => {
         setDialogQuantity(true);
         setDataQuantity( rowData );
-        setQuantity(0);
+        setQuantity(rowData.aed_desdenumero);
     }
 
     const updateQuantity = () => {
         setDialogQuantity(false);
         
-        const updatedActas = actas.map(acta => {
+        const updatedActas = data.map(acta => {
             if (acta.aed_actaid === dataQuantity.aed_actaid) {
             return {
                 ...acta,
@@ -90,18 +92,19 @@ function TableActas({data}) {
             return acta;
         });  
         
-        setActas(updatedActas);
+        //setActas(updatedActas);
+        setData(updatedActas);
     }
 
   return (
     <>
-        <DataTable value={actas} rowClassName={rowClassName} className="p-datatable-striped">
+        <DataTable value={data} rowClassName={rowClassName} className="p-datatable-striped">
             <Column field="servicio.servicio_id" header="TIPO SERVICIO"></Column>
             <Column field="servicio.servicio_descripcion" header="SERVICIO DESCRIPCION"></Column>
             <Column field="aed_desdenumero" header="DESDE NUMERO"></Column>
             <Column field="aed_hastanumero" header="HASTA NUMERO"></Column>
             <Column field="aed_cantidad" header="CANTIDAD"></Column>
-            <Column field="aed_vendidohasta" header="VENDIDO (S)"></Column>
+            <Column field="aed_vendidohasta" header="VENDIDO HASTA"></Column>
             <Column field="aed_preciounitario" header="PRECIO UNITARIO"></Column>
             <Column field="aed_importebs" header="IMPORTE"></Column>
             <Column header="VENDIDO" body={vendidoBodyTemplate} style={{ textAlign: 'center' }}/>
@@ -166,8 +169,8 @@ function TableActas({data}) {
                                 <i className="pi pi-eye"></i>
                             </span>
                             <span className="p-float-label">
-                                <InputText type='number' id='vendido' value={quantity} min="0" max={(dataQuantity?.aed_hastanumero-dataQuantity?.aed_desdenumero +1 )} onChange={(e) => setQuantity(e.target.value)}/>
-                            <label htmlFor='vendido'>Cantidad vendida</label>
+                                <InputText type='number' id='vendido' value={quantity} min={dataQuantity?.aed_desdenumero} max={dataQuantity?.aed_hastanumero} onChange={(e) => setQuantity(e.target.value)}/>
+                            <label htmlFor='vendido'>Vendida hasta</label>
                             </span>
                         </div>
                     </div>

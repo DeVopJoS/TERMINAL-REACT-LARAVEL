@@ -126,10 +126,9 @@ class ActaentregacabController extends Controller
                 'ae_fechero' => $request->fechero,
                 'ae_tampo' => $request->tampo,
                 'ae_candados' => $request->candados,
-                'ae_estado' => "P",
+                'ae_estado' => "E",
             ];
             $record = Actaentregacab::create($actaCab);
-            // Verifica que el ID se haya generado correctamente
             if (!$actaCab || !$record->ae_actaid) {
                 throw new \Exception("No se pudo obtener el ID del acta creada.");
             }
@@ -140,12 +139,12 @@ class ActaentregacabController extends Controller
                     //'ae_actaid' => $registro['id'],
                     'servicio_id' => $registro['tipo_servicio'],
                     'aed_desdenumero' => $registro['desde_numero'],
-                    'aed_hastanumero' => $registro['hasta_numero'],
-                    'aed_vendidohasta' => $registro['cantidad_boletos'],
-                    'aed_cantidad' => $registro['cantidad_boletos'],
+                    'aed_hastanumero' => $registro['hasta_numero'],     
+                    'aed_vendidohasta' => $registro['desde_numero'],    // Vendido hasta empieza desde 'aed_desdenumero'
+                    'aed_cantidad' => 0,                                // Cantidad inicial vendida 0
                     'aed_preciounitario' => $registro['precio_unitario'],
                     'aed_importebs' => $registro['importe_total'],
-                    'aed_estado' => "P",
+                    'aed_estado' => "E",
                 ]);
             }
 
