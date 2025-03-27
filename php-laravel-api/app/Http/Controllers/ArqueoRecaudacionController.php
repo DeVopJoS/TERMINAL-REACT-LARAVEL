@@ -34,9 +34,12 @@ class ArqueoRecaudacionController extends Controller
             }
             
             if($request->fecha_desde && $request->fecha_hasta) {
-                $query->whereBetween('arqueofecha', [$request->fecha_desde, $request->fecha_hasta]);
+                $fechaDesde = date('Y-m-d', strtotime($request->fecha_desde));
+                $fechaHasta = date('Y-m-d', strtotime($request->fecha_hasta));
+                $query->whereBetween(DB::raw("CAST(arqueofecha AS DATE)"), [$fechaDesde, $fechaHasta]);
             } else if($request->fecha) {
-                $query->whereDate('arqueofecha', $request->fecha);
+                $fecha = date('Y-m-d', strtotime($request->fecha));
+                $query->where(DB::raw("CAST(arqueofecha AS DATE)"), '=', $fecha);
             }
             
             if($request->turno) {
@@ -71,9 +74,12 @@ class ArqueoRecaudacionController extends Controller
                 'detalles.*.arqueodetimportebs' => 'required|numeric|min:0'
             ]);
 
+            // Asegurar que la fecha se guarde correctamente en formato Y-m-d
+            $fecha = date('Y-m-d', strtotime($request->arqueofecha));
+
             $cabecera = ArqueorecaudacionCab::create([
                 'arqueocorrelativo' => $request->arqueocorrelativo,
-                'arqueofecha' => $request->arqueofecha,
+                'arqueofecha' => $fecha,
                 'arqueoturno' => $request->arqueoturno,
                 'punto_recaud_id' => $request->punto_recaud_id,
                 'arqueonombreoperador' => $request->arqueonombreoperador,
@@ -134,13 +140,16 @@ class ArqueoRecaudacionController extends Controller
                 'arqueoobservacion' => 'nullable|string'
             ]);
 
+            // Asegurar que la fecha esté en el formato correcto Y-m-d
+            $fecha = date('Y-m-d', strtotime($request->arqueofecha));
+
             $arqueoid = DB::table('arqueocab')->max('arqueoid') + 1;
             $arqueodetcorteid = DB::table('arqueodetcortes')->max('arqueodetcorteid') + 1;
 
             $arqueoCab = new Arqueocab();
             $arqueoCab->arqueoid = $arqueoid;
             $arqueoCab->arqueonumero = $request->arqueonumero;
-            $arqueoCab->arqueofecha = $request->arqueofecha;
+            $arqueoCab->arqueofecha = $fecha;
             $arqueoCab->arqueoturno = $request->arqueoturno;
             $arqueoCab->arqueohorainicio = $request->arqueohorainicio;
             $arqueoCab->arqueohorafin = $request->arqueohorafin;
@@ -172,8 +181,9 @@ class ArqueoRecaudacionController extends Controller
             $arqueodetcortes->arqueoestado = 'A';
             $arqueodetcortes->save();
 
-            ArqueorecaudacionCab::where('arqueofecha', $request->arqueofecha)
+            $updatedRows = ArqueorecaudacionCab::where(DB::raw("CAST(arqueofecha AS DATE)"), '=', $fecha)
                 ->where('arqueoturno', $request->arqueoturno)
+                ->where('arqueoestado', 'P')
                 ->update([
                     'arqueoid' => $arqueoid,
                     'arqueoestado' => 'A'
@@ -214,11 +224,16 @@ class ArqueoRecaudacionController extends Controller
                 ], 400);
             }
             
+            try {
+                $fecha = date('Y-m-d', strtotime($fecha));
+            } catch (\Exception $e) {
+            }
+            
             // Modificar para solo obtener recaudaciones pendientes (estado = 'P')
             $resumen = DB::table('arqueorecaudaciondet as det')
                 ->join('arqueorecaudacioncab as cab', 'det.arqueorecid', '=', 'cab.arqueorecid')
                 ->join('tbl_servicios as srv', 'det.servicio_id', '=', 'srv.servicio_id')
-                ->where('cab.arqueofecha', $fecha)
+                ->where(DB::raw("CAST(cab.arqueofecha AS DATE)"), '=', $fecha)
                 ->where('cab.arqueoturno', $turno)
                 ->where('cab.arqueoestado', 'P') // Solo recaudaciones pendientes
                 ->select(
@@ -237,7 +252,7 @@ class ArqueoRecaudacionController extends Controller
                 ->join('arqueorecaudaciondet as det', 'cab.arqueorecid', '=', 'det.arqueorecid')
                 ->join('tbl_puntos_recaudacion as pr', 'cab.punto_recaud_id', '=', 'pr.punto_recaud_id')
                 ->join('tbl_servicios as srv', 'det.servicio_id', '=', 'srv.servicio_id')
-                ->where('cab.arqueofecha', $fecha)
+                ->where(DB::raw("CAST(cab.arqueofecha AS DATE)"), '=', $fecha)
                 ->where('cab.arqueoturno', $turno)
                 ->where('cab.arqueoestado', 'P') // Solo recaudaciones pendientes
                 ->select(
@@ -255,7 +270,7 @@ class ArqueoRecaudacionController extends Controller
             if ($resumen->isEmpty()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'No hay recaudaciones pendientes para la fecha y turno indicados'
+                    'message' => 'No hay recaudaciones pendientes para la fecha (' . $fecha . ') y turno (' . $turno . ') indicados'
                 ]);
             }
                 
@@ -358,8 +373,11 @@ class ArqueoRecaudacionController extends Controller
                 throw new Exception('No se puede modificar un arqueo que no está pendiente');
             }
 
+            // Asegurar que la fecha se guarde correctamente en formato Y-m-d
+            $fecha = date('Y-m-d', strtotime($request->arqueofecha));
+
             $arqueo->update([
-                'arqueofecha' => $request->arqueofecha,
+                'arqueofecha' => $fecha,
                 'arqueonombreoperador' => $request->arqueonombreoperador,
                 'punto_recaud_id' => $request->punto_recaud_id ?? $arqueo->punto_recaud_id
             ]);

@@ -132,9 +132,17 @@ export default function ArqueoFinal() {
                 return;
             }
             
-            const fechaStr = arqueofecha instanceof Date ? 
-                arqueofecha.toISOString().split('T')[0] : 
-                arqueofecha;
+            let fechaStr;
+            if (arqueofecha instanceof Date) {
+                fechaStr = arqueofecha.toISOString().split('T')[0];
+            } else if (typeof arqueofecha === 'string') {
+                try {
+                    const dateObj = new Date(arqueofecha);
+                    fechaStr = dateObj.toISOString().split('T')[0];
+                } catch {
+                    fechaStr = arqueofecha;
+                }
+            }
                 
             const response = await api.get(`arqueo-recaudacion-resumen?fecha=${fechaStr}&turno=${arqueoturno}`);
             
@@ -309,8 +317,12 @@ export default function ArqueoFinal() {
                             value={formData.arqueofecha}
                             onChange={(e) => setFormData({...formData, arqueofecha: e.value})}
                             showIcon
+                            dateFormat="dd/mm/yy"
                             placeholder="Seleccione fecha"
                             className="w-full"
+                            showTime={false}
+                            showButtonBar={true}
+                            touchUI={false}
                         />
                     </div>
                     <div className="col-12 md:col-3">
@@ -431,6 +443,17 @@ export default function ArqueoFinal() {
                                         <Column field="cantidad_total" header="Cantidad" style={{width: '80px'}} />
                                         <Column 
                                             field="importe_total" 
+                                            header="Precio Unit." 
+                                            body={(row) => {
+                                                const cantidad = parseFloat(row.cantidad_total) || 0;
+                                                const importe = parseFloat(row.importe_total) || 0;
+                                                const precioUnitario = cantidad > 0 ? importe / cantidad : 0;
+                                                return `Bs. ${precioUnitario.toFixed(2)}`;
+                                            }}
+                                            style={{width: '100px'}}
+                                        />
+                                        <Column 
+                                            field="importe_total" 
                                             header="Importe" 
                                             body={(row) => `Bs. ${parseFloat(row.importe_total).toFixed(2)}`}
                                             style={{width: '100px'}}
@@ -463,8 +486,8 @@ export default function ArqueoFinal() {
                                     >
                                         <Column field="operador" header="Operador" />
                                         <Column field="punto" header="Punto" style={{width: '100px'}} />
-                                        <Column field="codigo" header="Serv." style={{width: '70px'}} />
-                                        <Column field="cantidad" header="Cant." style={{width: '70px'}} />
+                                        <Column field="codigo" header="Codigo Serv." style={{width: '70px'}} />
+                                        <Column field="cantidad" header="Cantidad" style={{width: '70px'}} />
                                         <Column 
                                             field="importe" 
                                             header="Importe" 

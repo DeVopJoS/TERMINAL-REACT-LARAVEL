@@ -49,7 +49,6 @@ export default function ArqueoRecaudacionAdd() {
                     }
                 }
             } catch (error) {
-                // Handle error silently
             }
             
             try {
@@ -67,7 +66,6 @@ export default function ArqueoRecaudacionAdd() {
                     }));
                 }
             } catch (error) {
-                // Handle error silently
             }
             
         } catch (error) {
@@ -160,7 +158,17 @@ export default function ArqueoRecaudacionAdd() {
             }
 
             setLoading(true);
-            const response = await api.post('arqueo-recaudacion', formData);
+            
+            const dataToSend = {
+                ...formData,
+                arqueofecha: formData.arqueofecha instanceof Date 
+                    ? formData.arqueofecha.toISOString().split('T')[0]
+                    : formData.arqueofecha
+            };
+            
+            console.log('Enviando datos de arqueo:', dataToSend);
+            
+            const response = await api.post('arqueo-recaudacion', dataToSend);
             
             toast.current.show({
                 severity: 'success',
@@ -170,6 +178,7 @@ export default function ArqueoRecaudacionAdd() {
 
             navigate('/arqueo-recaudacion');
         } catch (error) {
+            console.error('Error al crear arqueo:', error);
             toast.current.show({
                 severity: 'error',
                 summary: 'Error',
