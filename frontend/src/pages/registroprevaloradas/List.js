@@ -1,15 +1,18 @@
+import { useEffect, useState, useRef } from 'react';
+import { Toast } from "primereact/toast";
 import { Card } from 'primereact/card';
 import { InputText } from 'primereact/inputtext'
 import { Button } from 'primereact/button'
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { useEffect, useState } from 'react';
 import { Dialog } from 'primereact/dialog';
-import { Calendar } from 'primereact/calendar'
+import { Calendar } from 'primereact/calendar';
+import { confirmDialog } from 'primereact/confirmdialog';
 import TableActas from './TableActas';
 import axios from "axios";
 
 function PrevaloradasList() {
+    const toast = useRef(null);
     const [ displayDialog, setDisplayDialog ] = useState(false);
     const [ actaSelected, setActaSelected ] = useState();
     const [ actaDetalle, setActaDetalle ] = useState();
@@ -56,12 +59,42 @@ function PrevaloradasList() {
     }
 
     const handleSubmit = () => {
-        console.log('formulario enviado...')
-        console.log(actaDetalle)
+        const sendActa = async () => {
+            try{
+                const {status} = await axios.post('/tblactaentregadet/finalizar', actaDetalle);
+                
+                if(status == 200){
+                    toast.current.show({
+                        severity: "success",
+                        summary: "Éxito",
+                        detail: "Acta cerrada exitosamente.",
+                        life: 3000,
+                    });
+                }
+                fetchData();
+            } catch(error){
+                console.error('error: ', error)
+                toast.current.show({
+                    severity: "error",
+                    summary: "Error",
+                    detail: "No se pudo cerrar el acta: " + (error),
+                    life: 3000,
+                });
+            } finally {
+                setDisplayDialog(false);
+            }
+        }
+        confirmDialog({
+            message: `¿Esta séguro de cerrar el acta? esta acción no se podra revertir.`,
+            header: "Confirmación",
+            icon: "pi pi-exclamation-triangle",
+            accept: () => sendActa(),
+        });
     }
 
   return (
     <>
+        <Toast ref={toast} />
         <Card title="Registro de Pre-valoradas">
             {/* section inputs search */}
             <div className="grid p-fluid mb-2">

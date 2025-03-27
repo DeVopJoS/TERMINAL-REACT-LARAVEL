@@ -4,7 +4,8 @@ import { Checkbox } from 'primereact/checkbox';
 import { useEffect, useState } from 'react';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
-import { InputText } from 'primereact/inputtext'
+import { InputText } from 'primereact/inputtext';
+
 
 function TableActas({data, setData}) {
     const [ dialogQuantity, setDialogQuantity ] = useState(false);

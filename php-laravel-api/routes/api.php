@@ -289,6 +289,7 @@ Route::get('/tblactaentregadet/index', 'ActaentregadetController@index');
 Route::get('/tblactaentregadet/index/{filter?}/{filtervalue?}', 'ActaentregadetController@index');
 Route::post('/registros', 'ActaentregadetController@nuevo'); 
 Route::put('/registros/{id}', 'ActaentregadetController@nuevo');
+Route::post('/tblactaentregadet/finalizar', 'ActaentregadetController@closeActa'); 
 
 // Routes for TblPuntosRecaudacionController
 Route::get('tblpuntosrecaudacion/index/{filter?}/{filtervalue?}', 'TblPuntosRecaudacionController@index');

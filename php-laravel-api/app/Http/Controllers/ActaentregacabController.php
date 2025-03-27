@@ -141,7 +141,7 @@ class ActaentregacabController extends Controller
                     'aed_desdenumero' => $registro['desde_numero'],
                     'aed_hastanumero' => $registro['hasta_numero'],     
                     'aed_vendidohasta' => $registro['desde_numero'],    // Vendido hasta empieza desde 'aed_desdenumero'
-                    'aed_cantidad' => 0,                                // Cantidad inicial vendida 0
+                    'aed_cantidad' => $registro['cantidad_boletos'],    // Cantidad total para vender
                     'aed_preciounitario' => $registro['precio_unitario'],
                     'aed_importebs' => $registro['importe_total'],
                     'aed_estado' => "E",
