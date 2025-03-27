@@ -20,8 +20,6 @@ export default function ArqueoRecaudacionAdd() {
         arqueocorrelativo: '',
         arqueofecha: new Date(),
         arqueoturno: 'M',
-        punto_recaud_id: null,
-        arqueonombreoperador: '',
         detalles: []
     });
 
@@ -31,6 +29,7 @@ export default function ArqueoRecaudacionAdd() {
     const [cantidad, setCantidad] = useState(0);
     const [puntosRecaudacion, setPuntosRecaudacion] = useState([]);
     const [selectedPunto, setSelectedPunto] = useState(null);
+    const [operadorNombre, setOperadorNombre] = useState('');
 
     useEffect(() => {
         loadInitialData();
@@ -89,6 +88,15 @@ export default function ArqueoRecaudacionAdd() {
             return;
         }
 
+        if (!operadorNombre.trim()) {
+            toast.current.show({
+                severity: 'warn',
+                summary: 'Datos incompletos',
+                detail: 'Debe ingresar el nombre del operador'
+            });
+            return;
+        }
+
         let servicio_id, precio, descripcion;
         
         if (typeof selectedServicio === 'number') {
@@ -112,13 +120,27 @@ export default function ArqueoRecaudacionAdd() {
         
         const importe = cantidad * precio;
 
+        let punto_recaud_id;
+        let puntorecaud_nombre;
+        
+        if (typeof selectedPunto === 'object' && selectedPunto !== null) {
+            punto_recaud_id = selectedPunto.value;
+            puntorecaud_nombre = selectedPunto.label;
+        } else {
+            punto_recaud_id = selectedPunto;
+            const puntoObj = puntosRecaudacion.find(p => p.value === selectedPunto);
+            puntorecaud_nombre = puntoObj ? puntoObj.label : 'Punto no identificado';
+        }
+
         const nuevoDetalle = {
             servicio_id: servicio_id,
             servicio_nombre: descripcion,
             arqueodetcantidad: cantidad,
             arqueodettarifabs: precio,
             arqueodetimportebs: importe,
-            arqueonombreoperador: formData.arqueonombreoperador
+            arqueonombreoperador: operadorNombre,
+            punto_recaud_id: punto_recaud_id,
+            puntorecaud_nombre: puntorecaud_nombre
         };
         
         setFormData(prev => ({
@@ -126,6 +148,7 @@ export default function ArqueoRecaudacionAdd() {
             detalles: [...prev.detalles, nuevoDetalle]
         }));
 
+        // Mantener el operador y punto para facilitar múltiples entradas
         setSelectedServicio(null);
         setCantidad(0);
     };
@@ -139,15 +162,6 @@ export default function ArqueoRecaudacionAdd() {
 
     const handleSubmit = async () => {
         try {
-            if (!formData.arqueonombreoperador || !formData.punto_recaud_id) {
-                toast.current.show({
-                    severity: 'warn',
-                    summary: 'Datos incompletos',
-                    detail: 'Debe ingresar operador y punto de recaudación'
-                });
-                return;
-            }
-
             if (formData.detalles.length === 0) {
                 toast.current.show({
                     severity: 'warn',
@@ -159,24 +173,71 @@ export default function ArqueoRecaudacionAdd() {
 
             setLoading(true);
             
-            const dataToSend = {
-                ...formData,
-                arqueofecha: formData.arqueofecha instanceof Date 
-                    ? formData.arqueofecha.toISOString().split('T')[0]
-                    : formData.arqueofecha
-            };
+            const puntosOperadorMap = {};
             
-            console.log('Enviando datos de arqueo:', dataToSend);
-            
-            const response = await api.post('arqueo-recaudacion', dataToSend);
-            
-            toast.current.show({
-                severity: 'success',
-                summary: 'Éxito',
-                detail: 'Arqueo creado correctamente'
+            formData.detalles.forEach(detalle => {
+                const key = `${detalle.punto_recaud_id}_${detalle.arqueonombreoperador}`;
+                
+                if (!puntosOperadorMap[key]) {
+                    puntosOperadorMap[key] = {
+                        arqueocorrelativo: formData.arqueocorrelativo,
+                        arqueofecha: formData.arqueofecha instanceof Date 
+                            ? formData.arqueofecha.toISOString().split('T')[0]
+                            : formData.arqueofecha,
+                        arqueoturno: formData.arqueoturno,
+                        punto_recaud_id: detalle.punto_recaud_id,
+                        arqueonombreoperador: detalle.arqueonombreoperador,
+                        detalles: []
+                    };
+                }
+                
+                puntosOperadorMap[key].detalles.push({
+                    servicio_id: detalle.servicio_id,
+                    arqueodetcantidad: detalle.arqueodetcantidad,
+                    arqueodettarifabs: detalle.arqueodettarifabs,
+                    arqueodetimportebs: detalle.arqueodetimportebs
+                });
             });
-
-            navigate('/arqueo-recaudacion');
+            
+            // Convertir a array y asignar correlativo incremental si hay múltiples grupos
+            const arqueos = Object.values(puntosOperadorMap);
+            const baseCorrelativo = parseInt(formData.arqueocorrelativo) || 0;
+            
+            if (arqueos.length > 1) {
+                // Si hay múltiples arqueos, incrementamos el correlativo para cada uno
+                arqueos.forEach((arqueo, index) => {
+                    arqueo.arqueocorrelativo = baseCorrelativo + index;
+                });
+            }
+            
+            // Enviamos la data
+            try {
+                if (arqueos.length === 1) {
+                    // Si solo hay un arqueo, enviarlo como objeto único
+                    const response = await api.post('arqueo-recaudacion', arqueos[0]);
+                    
+                    toast.current.show({
+                        severity: 'success',
+                        summary: 'Éxito',
+                        detail: 'Arqueo creado correctamente'
+                    });
+                } else {
+                    // Si hay múltiples arqueos, crear cada uno individualmente
+                    for (const arqueo of arqueos) {
+                        await api.post('arqueo-recaudacion', arqueo);
+                    }
+                    
+                    toast.current.show({
+                        severity: 'success',
+                        summary: 'Éxito',
+                        detail: `${arqueos.length} arqueos creados correctamente`
+                    });
+                }
+                
+                navigate('/arqueo-recaudacion');
+            } catch (error) {
+                throw new Error(error.response?.data?.message || error.message);
+            }
         } catch (error) {
             console.error('Error al crear arqueo:', error);
             toast.current.show({
@@ -220,75 +281,71 @@ export default function ArqueoRecaudacionAdd() {
                     />
                 </div>
 
-                <div className="col-12 md:col-4">
-                    <label>Operador</label>
-                    <InputText
-                        value={formData.arqueonombreoperador}
-                        onChange={(e) => setFormData({...formData, arqueonombreoperador: e.target.value})}
-                        className="w-full"
-                    />
-                </div>
+                {/* Sección de detalle */}
+                <div className="col-12">
+                    <div className="p-3 border-1 border-round border-300 mt-3">
+                        <h6>Agregar nuevo detalle</h6>
+                        <div className="grid">
+                            <div className="col-12 md:col-4">
+                                <label>Operador</label>
+                                <InputText
+                                    value={operadorNombre}
+                                    onChange={(e) => setOperadorNombre(e.target.value)}
+                                    className="w-full"
+                                    placeholder="Nombre del operador"
+                                />
+                            </div>
 
-                <div className="col-12 md:col-4">
-                    <label>Punto de Recaudación</label>
-                    <Dropdown
-                        value={selectedPunto}
-                        options={puntosRecaudacion}
-                        onChange={(e) => {
-                            setSelectedPunto(e.value);
-                            if (e.value && typeof e.value === 'object' && 'value' in e.value) {
-                                setFormData(prev => ({
-                                    ...prev, 
-                                    punto_recaud_id: e.value.value
-                                }));
-                            } else {
-                                setFormData(prev => ({
-                                    ...prev, 
-                                    punto_recaud_id: e.value
-                                }));
-                            }
-                        }}
-                        optionLabel="label"
-                        placeholder="Seleccione punto"
-                        className="w-full"
-                    />
-                </div>
+                            <div className="col-12 md:col-4">
+                                <label>Punto de Recaudación</label>
+                                <Dropdown
+                                    value={selectedPunto}
+                                    options={puntosRecaudacion}
+                                    onChange={(e) => setSelectedPunto(e.value)}
+                                    optionLabel="label"
+                                    placeholder="Seleccione punto"
+                                    className="w-full"
+                                />
+                            </div>
 
-                <div className="col-12 md:col-4">
-                    <label>Servicio</label>
-                    <Dropdown
-                        value={selectedServicio}
-                        options={servicios}
-                        onChange={(e) => {
-                            setSelectedServicio(e.value);
-                        }}
-                        optionLabel="label"
-                        placeholder="Seleccione servicio"
-                        className="w-full"
-                        filter
-                        dataKey="value"
-                        valueTemplate={(option) => {
-                            return option ? option.label : 'Seleccione servicio';
-                        }}
-                    />
-                    {loading && <small>Cargando servicios...</small>}
-                </div>
+                            <div className="col-12 md:col-4">
+                                <label>Servicio</label>
+                                <Dropdown
+                                    value={selectedServicio}
+                                    options={servicios}
+                                    onChange={(e) => {
+                                        setSelectedServicio(e.value);
+                                    }}
+                                    optionLabel="label"
+                                    placeholder="Seleccione servicio"
+                                    className="w-full"
+                                    filter
+                                    dataKey="value"
+                                    valueTemplate={(option) => {
+                                        return option ? option.label : 'Seleccione servicio';
+                                    }}
+                                />
+                                {loading && <small>Cargando servicios...</small>}
+                            </div>
 
-                <div className="col-12 md:col-4">
-                    <label>Cantidad</label>
-                    <div className="p-inputgroup">
-                        <InputNumber
-                            value={cantidad}
-                            onChange={(e) => setCantidad(e.value)}
-                            min={0}
-                            showButtons
-                            className="w-full"
-                        />
-                        <Button 
-                            icon="pi pi-plus" 
-                            onClick={handleAddDetalle}
-                            disabled={!selectedServicio || !selectedPunto || cantidad <= 0}
-                        />
+                            <div className="col-12 md:col-4">
+                                <label>Cantidad</label>
+                                <div className="p-inputgroup">
+                                    <InputNumber
+                                        value={cantidad}
+                                        onChange={(e) => setCantidad(e.value)}
+                                        min={0}
+                                        showButtons
+                                        className="w-full"
+                                    />
+                                    <Button 
+                                        icon="pi pi-plus" 
+                                        onClick={handleAddDetalle}
+                                        disabled={!selectedServicio || !selectedPunto || cantidad <= 0 || !operadorNombre.trim()}
+                                    />
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -312,6 +369,7 @@ export default function ArqueoRecaudacionAdd() {
                             body={(rowData) => `Bs. ${parseFloat(rowData.arqueodetimportebs || 0).toFixed(2)}`}
                         />
                         <Column field="arqueonombreoperador" header="Operador" />
+                        <Column field="puntorecaud_nombre" header="Punto Recaudación" />
                         <Column 
                             body={(rowData, options) => (
                                 <Button
