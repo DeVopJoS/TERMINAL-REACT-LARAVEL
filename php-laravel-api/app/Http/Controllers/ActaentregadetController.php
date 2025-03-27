@@ -108,7 +108,7 @@ class ActaentregadetController extends Controller
 			DB::beginTransaction(); 
 			$ae_actaid = $request->input('0.ae_actaid'); 
 			$acta = Actaentregacab::where('ae_actaid', $ae_actaid)->first();
-			$acta->ae_estado = 'C';
+			$acta->ae_estado = 'A';
 			$acta->save();
 	
 			foreach ($request->all() as $item) {
@@ -120,7 +120,7 @@ class ActaentregadetController extends Controller
 	
 				if ($detalle) {
 					$detalle->aed_vendidohasta = $item['aed_vendidohasta'];
-					$detalle->aed_estado = 'C'; 
+					$detalle->aed_estado = 'A'; 
 					$detalle->save(); 
 				}
 			}
