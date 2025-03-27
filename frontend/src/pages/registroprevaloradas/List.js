@@ -7,6 +7,7 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Dialog } from 'primereact/dialog';
 import { Calendar } from 'primereact/calendar';
+import { Checkbox } from 'primereact/checkbox';
 import { confirmDialog } from 'primereact/confirmdialog';
 import TableActas from './TableActas';
 import axios from "axios";
@@ -17,12 +18,35 @@ function PrevaloradasList() {
     const [ actaSelected, setActaSelected ] = useState();
     const [ actaDetalle, setActaDetalle ] = useState();
     const [ actas, setActas ] = useState([]);
-
-    const handleSearch = () => { }
+    const [fecha, setFecha] = useState(null);
+    const [correlativo, setCorrelativo] = useState("");
 
     useEffect(() => {
         fetchData();
     }, [])
+
+    const fetchData = async () => {
+        const { data } = await axios.get('actas/index/ae_estado/E');
+        setActas(data);
+    }
+
+    const handleSearch = async () => { 
+        try {
+            const formattedDate = fecha ? fecha.toISOString().split('T')[0] : '';
+            let url = '/actas/index?ae_estado=E';
+            if(fecha)
+                url += `&ae_fecha=${formattedDate}`;
+            if(correlativo)
+                url+= `&ae_actaid=${correlativo}`
+        
+            // const { data } = await axios.get(`/actas/index?ae_estado=E&ae_fecha=${formattedDate}`);
+            const { data } = await axios.get(url);
+        
+            setActas(data);
+        } catch (error) {
+            console.error("Error al buscar datos:", error);
+        }
+    }
 
     const actionTemplate = (rowData) => {
         return (
@@ -51,11 +75,6 @@ function PrevaloradasList() {
         }));
         
         setActaDetalle(updatedRecords);
-    }
-    
-    const fetchData = async () => {
-        const { data } = await axios.get('actas/index/ae_estado/E');
-        setActas(data);
     }
 
     const handleSubmit = () => {
@@ -101,22 +120,23 @@ function PrevaloradasList() {
                 <div className="col-12 md:col-3 mt-5">
                     <div className="p-inputgroup">
                         <span className="p-inputgroup-addon">
-                            <i className="pi pi-pencil"></i>
+                            <Checkbox checked={true} />
                         </span>
                         <span className="p-float-label">
-                            <InputText id='per_ap_paterno'/>
-                        <label htmlFor='per_ap_paterno'>CORRELATIVO</label>
+                            <InputText type='number' id='ae_actaid' value={correlativo}
+                      onChange={(e) => setCorrelativo(e.target.value)}/>
+                        <label htmlFor='ae_actaid'>CORRELATIVO</label>
                         </span>
                     </div>
                 </div>
                 <div className="col-12 md:col-3 mt-5">
                     <div className="p-inputgroup">
                         <span className="p-inputgroup-addon">
-                            <i className="pi pi-pencil"></i>
+                            <Checkbox checked={true} />
                         </span>
                         <span className="p-float-label">
-                            <Calendar id='per_ap_materno' className="w-full" />
-                        <label htmlFor='per_ap_materno'>FECHA</label>
+                            <Calendar id='ae_fecha' value={fecha} onChange={(e) => setFecha(e.value)} showIcon className="p-inputtext-sm" />
+                        <label htmlFor='ae_fecha'>FECHA</label>
                         </span>
                     </div>
                 </div>

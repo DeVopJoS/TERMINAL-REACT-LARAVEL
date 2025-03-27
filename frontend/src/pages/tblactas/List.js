@@ -78,7 +78,6 @@ const TblActasList = () => {
   const findActa = async (ae_actaid) => {
     try {
       const { data } = await axios.get(`/actas/cabecera/${ae_actaid}`);
-      console.log(data)
 
       if (!data || data.length === 0) {
         console.error("No se encontraron datos en la cabecera");

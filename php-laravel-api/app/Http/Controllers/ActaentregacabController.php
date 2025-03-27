@@ -35,6 +35,10 @@ class ActaentregacabController extends Controller
             $query->whereDate('ae_fecha', $request->ae_fecha);
         }
 
+        if ($request->has('ae_actaid') && !empty($request->ae_actaid)) {
+            $query->where('ae_actaid', $request->ae_actaid);
+        }
+
 		if($request->search){
 			$search = trim($request->search);
 			Actaentregacab::search($query, $search);
