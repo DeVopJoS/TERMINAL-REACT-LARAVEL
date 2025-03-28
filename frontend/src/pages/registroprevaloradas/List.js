@@ -39,9 +39,7 @@ function PrevaloradasList() {
             if(correlativo)
                 url+= `&ae_actaid=${correlativo}`
         
-            // const { data } = await axios.get(`/actas/index?ae_estado=E&ae_fecha=${formattedDate}`);
             const { data } = await axios.get(url);
-        
             setActas(data);
         } catch (error) {
             console.error("Error al buscar datos:", error);
@@ -63,9 +61,7 @@ function PrevaloradasList() {
         );
       };
 
-    const fetchActaDet = async ({ae_actaid}) => {
-        setDisplayDialog(true);
-        
+    const fetchActaDet = async ({ae_actaid}) => {        
         const {data:{records}} = await axios.get(`tblactaentregadet/index/ae_actaid/${ae_actaid}`);
         
         const updatedRecords = records.map(item => ({
@@ -75,6 +71,7 @@ function PrevaloradasList() {
         }));
         
         setActaDetalle(updatedRecords);
+        setDisplayDialog(true);
     }
 
     const handleSubmit = () => {
