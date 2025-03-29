@@ -1,13 +1,11 @@
 import { useEffect, useState, useRef } from 'react';
 import { Toast } from "primereact/toast";
-import { Card } from 'primereact/card';
 import { InputText } from 'primereact/inputtext'
 import { Button } from 'primereact/button'
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Dialog } from 'primereact/dialog';
 import { Calendar } from 'primereact/calendar';
-import { Checkbox } from 'primereact/checkbox';
 import { confirmDialog } from 'primereact/confirmdialog';
 import TableActas from './TableActas';
 import axios from "axios";
@@ -18,24 +16,23 @@ function PrevaloradasList() {
     const [ actaSelected, setActaSelected ] = useState();
     const [ actaDetalle, setActaDetalle ] = useState();
     const [ actas, setActas ] = useState([]);
-    const [fecha, setFecha] = useState(null);
-    const [correlativo, setCorrelativo] = useState("");
+    const [ fecha, setFecha ] = useState(null);
+    const [ correlativo, setCorrelativo ] = useState("");
+    const [ loading, setLoading ] = useState();
 
     useEffect(() => {
         fetchData();
     }, [])
 
-    const fetchData = async () => {
-        const { data } = await axios.get('actas/index/ae_estado/E');
-        setActas(data);
-    }
-
-    const handleSearch = async () => { 
+    const fetchData = async () => { 
         try {
+            setLoading(true);
             const formattedDate = fecha ? fecha.toISOString().split('T')[0] : '';
             let url = '/actas/index?ae_estado=E';
+
             if(fecha)
                 url += `&ae_fecha=${formattedDate}`;
+
             if(correlativo)
                 url+= `&ae_actaid=${correlativo}`
         
@@ -43,6 +40,8 @@ function PrevaloradasList() {
             setActas(data);
         } catch (error) {
             console.error("Error al buscar datos:", error);
+        } finally{
+            setLoading(false);
         }
     }
 
@@ -110,53 +109,40 @@ function PrevaloradasList() {
 
   return (
     <>
-        <Toast ref={toast} />
-        <Card title="Registro de Pre-valoradas">
-            {/* section inputs search */}
-            <div className="grid p-fluid mb-2">
-                <div className="col-12 md:col-3 mt-5">
-                    <div className="p-inputgroup">
-                        <span className="p-inputgroup-addon">
-                            <Checkbox checked={true} />
-                        </span>
-                        <span className="p-float-label">
-                            <InputText type='number' id='ae_actaid' value={correlativo}
-                      onChange={(e) => setCorrelativo(e.target.value)}/>
-                        <label htmlFor='ae_actaid'>CORRELATIVO</label>
-                        </span>
-                    </div>
+        <div className='card'>
+            <Toast ref={toast} />
+            <h5 className="text-black mb-3 mt-0">Registro de Pre-valoradas</h5>
+            
+            <div className="grid mb-5">
+
+                <div className="col-12 md:col-3">
+                    <InputText type='number' id='ae_actaid' value={correlativo} onChange={(e) => setCorrelativo(e.target.value)} placeholder='Correlativo' className='w-full'/> 
                 </div>
-                <div className="col-12 md:col-3 mt-5">
-                    <div className="p-inputgroup">
-                        <span className="p-inputgroup-addon">
-                            <Checkbox checked={true} />
-                        </span>
-                        <span className="p-float-label">
-                            <Calendar id='ae_fecha' value={fecha} onChange={(e) => setFecha(e.value)} showIcon className="p-inputtext-sm" />
-                        <label htmlFor='ae_fecha'>FECHA</label>
-                        </span>
-                    </div>
+
+                <div className="col-12 md:col-3">
+                    <Calendar id='ae_fecha' value={fecha} onChange={(e) => setFecha(e.value)} showIcon className="w-full" placeholder='Fecha'/>
                 </div>
-               
-                <div className='col-12 md:col-3 mt-5'>
-                    <Button label='Buscar datos de acta de entrega' icon='pi pi-search' onClick={handleSearch}/>
+
+                <div className='col-12 md:col-6 flex justify-content-end'>
+                    <Button label='Buscar datos de acta de entrega' icon='pi pi-search' onClick={fetchData} className="px-8"/>
                 </div>
+
             </div>
-        </Card>
-        <Card className='mt-3'>
-            <DataTable value={actas} responsiveLayout="scroll" className="p-datatable-sm text-xs" showGridlines>
-                <Column field="ae_actaid" header="ACTA ID" className="text-xs py-1 px-2"/>
+
+            <DataTable value={actas} paginator rows={10} rowsPerPageOptions={[10, 25, 50]} 
+            loading={loading} responsiveLayout="scroll" className="p-datatable-sm text-xs" emptyMessage="No se encontraron actas">
+                <Column field="ae_actaid" header="ACTA ID" className="text-xs py-1 px-2" sortable/>
                 {/* <Column field="ae_correlativo" header="CORRELATIVO" className="text-xs py-1 px-2"/> */}
-                <Column field="punto_recaudacion.puntorecaud_nombre" header="PUNTO RECAUDACIÓN" className="text-xs py-1 px-2"/>
-                <Column field="ae_fecha" header="FECHA" className="text-xs py-1 px-2"/>
-                <Column field='ae_grupo' header="GRUPO" className="text-xs py-1 px-2"/>
-                <Column field="ae_operador1erturno" header="OPERADOR 1ER TURNO" className="text-xs py-1 px-2"/>
-                <Column field="ae_operador2doturno" header="OPERADOR 2DO TURNO" className="text-xs py-1 px-2"/>
-                <Column field="ae_observacion" header="OBSERVACIÓN" className="text-xs py-1 px-2"/>
-                <Column field="ae_recaudaciontotalbs" header="RECAUDACIÓN TOTAL BS" className="text-xs py-1 px-2"/>
+                <Column field="punto_recaudacion.puntorecaud_nombre" header="PUNTO RECAUDACIÓN" className="text-xs py-1 px-2" sortable/>
+                <Column field="ae_fecha" header="FECHA" className="text-xs py-1 px-2" sortable/>
+                <Column field='ae_grupo' header="GRUPO" className="text-xs py-1 px-2" sortable/>
+                <Column field="ae_operador1erturno" header="OPERADOR 1ER TURNO" className="text-xs py-1 px-2" sortable/>
+                <Column field="ae_operador2doturno" header="OPERADOR 2DO TURNO" className="text-xs py-1 px-2" sortable/>
+                <Column field="ae_observacion" header="OBSERVACIÓN" className="text-xs py-1 px-2" sortable/>
+                <Column field="ae_recaudaciontotalbs" header="RECAUDACIÓN TOTAL BS" className="text-xs py-1 px-2" sortable/>
                 <Column body={actionTemplate} header="" className="text-xs py-1 px-2"/>
             </DataTable>
-        </Card>
+        </div>
 
         { displayDialog && (
             <Dialog header="Pre-valoradas" visible={displayDialog} style={{ width: '75vw' }} onHide={() => setDisplayDialog(false)}>

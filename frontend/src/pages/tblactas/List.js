@@ -3,7 +3,6 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
-import { Checkbox } from "primereact/checkbox";
 import { Dropdown } from "primereact/dropdown";
 import { Calendar } from "primereact/calendar";
 import { Paginator } from "primereact/paginator";
@@ -17,22 +16,29 @@ import MyPDF from '../../pdf/ActasTemplate'
 import TemplateActa from '../../pdf/ActasTemplate2'
 
 const TblActasList = () => {
-  const [actas, setActas] = useState([]);
-  const [selectedIds, setSelectedIds] = useState([]);
-  const [correlativo, setCorrelativo] = useState("");
-  const [fecha, setFecha] = useState(null);
-  const [estado, setEstado] = useState("");
-  const [first, setFirst] = useState(0);
-  const [rows, setRows] = useState(10);
-  const [modalVisible, setModalVisible] = useState(false);
+  const [ actas, setActas ] = useState([]);
+  const [ selectedIds, setSelectedIds ] = useState([]);
+  const [ correlativo, setCorrelativo ] = useState("");
+  const [ fecha, setFecha ] = useState(null);
+  const [ first, setFirst ] = useState(0);
+  const [ rows, setRows ] = useState(10);
+  const [ modalVisible, setModalVisible ] = useState(false);
+  const [ loading, setLoading ] = useState(false);
 
   useEffect(() => {
     fetchData();
   }, [])
   
   const fetchData = async () => {
-    const { data } = await axios.get('actas/index/ae_estado/E');
-    setActas(data);
+    try{
+      setLoading(true);
+      const { data } = await axios.get('actas/index/ae_estado/E');
+      setActas(data);
+    } catch (error){
+      console.log("Error: " + error);
+    } finally {
+      setLoading(false);
+    }
   }
 
   const toast = useRef(null);
@@ -61,7 +67,7 @@ const TblActasList = () => {
     try {
       const formattedDate = fecha ? fecha.toISOString().split('T')[0] : '';
 
-      const { data } = await axios.get(`/actas/index?ae_estado=${estado}&ae_fecha=${formattedDate}`);
+      const { data } = await axios.get(`/actas/index?ae_estado=E&ae_fecha=${formattedDate}`);
 
       setActas(data);
     } catch (error) {
@@ -147,23 +153,9 @@ const TblActasList = () => {
         </div>
         { selectedIds.length != 0 && <Button label="Imprimir" onClick={printSelectedActas}/>}
         {" "}
-        {/* Añadido margen superior (mt-5) */}
-        <div className="mt-2 mb-4 flex align-items-center text-sm">
-          <div className="mr-2">Mostrar</div>
-          <Dropdown
-            value={rows}
-            options={[5, 10, 20, 50]}
-            onChange={(e) => setRows(e.value)}
-            className="w-6rem mr-2 text-sm p-dropdown-sm"
-          />
-          <div>registros</div>
-          <div className="ml-auto flex align-items-center">
-            <span className="mr-2">Buscar:</span>
-            <InputText className="w-10rem text-sm p-inputtext-sm" />
-          </div>
-        </div>
+        
         {/* DataTable */}
-        <DataTable value={actas} responsiveLayout="scroll" className="p-datatable-sm text-xs" showGridlines>
+        <DataTable value={actas} responsiveLayout="scroll" className="p-datatable-sm text-xs" paginator rows={10} loading={loading} rowsPerPageOptions={[10, 25, 50]} emptyMessage="No se encontraron actas">
           <Column 
               body={(rowData) => (
                   <InputSwitch 
@@ -174,34 +166,20 @@ const TblActasList = () => {
               headerStyle={{ width: '4rem' }}
               className="text-xs py-1 px-2"
           />
-          <Column field="ae_actaid" header="ACTA ID" className="text-xs py-1 px-2"/>
-          <Column field="ae_correlativo" header="CORRELATIVO" className="text-xs py-1 px-2"/>
-          <Column field="punto_recaudacion.puntorecaud_nombre" header="PUNTO RECAUDACIÓN" className="text-xs py-1 px-2"/>
-          <Column field="ae_fecha" header="FECHA" className="text-xs py-1 px-2"/>
-          <Column field="ae_grupo" header="GRUPO" className="text-xs py-1 px-2"/>
-          <Column field="ae_operador1erturno" header="OPERADOR 1ER TURNO" className="text-xs py-1 px-2"/>
-          <Column field="ae_operador2doturno" header="OPERADOR 2DO TURNO" className="text-xs py-1 px-2"/>
-          <Column field="ae_observacion" header="OBSERVACIÓN" className="text-xs py-1 px-2"/>
+          <Column field="ae_actaid" header="ACTA ID" className="text-xs py-1 px-2" sortable/>
+          <Column field="ae_correlativo" header="CORRELATIVO" className="text-xs py-1 px-2" sortable/>
+          <Column field="punto_recaudacion.puntorecaud_nombre" header="PUNTO RECAUDACIÓN" className="text-xs py-1 px-2" sortable/>
+          <Column field="ae_fecha" header="FECHA" className="text-xs py-1 px-2" sortable/>
+          <Column field="ae_grupo" header="GRUPO" className="text-xs py-1 px-2" sortable/>
+          <Column field="ae_operador1erturno" header="OPERADOR 1ER TURNO" className="text-xs py-1 px-2" sortable/>
+          <Column field="ae_operador2doturno" header="OPERADOR 2DO TURNO" className="text-xs py-1 px-2" sortable/>
+          <Column field="ae_observacion" header="OBSERVACIÓN" className="text-xs py-1 px-2" sortable/>
           <Column field="ae_recaudaciontotalbs" header="RECAUDACIÓN TOTAL BS" className="text-xs py-1 px-2"
-            // body={(rowData) => rowData.ae_recaudaciontotalbs.toFixed(2)}
-          />
-          <Column field="ae_estado" header="ESTADO" className="text-xs py-1 px-2"/>
+            // body={(rowData) => rowData.ae_recaudaciontotalbs.toFixed(2)} 
+            sortable/>
           <Column body={actionTemplate} header="" className="text-xs py-1 px-2"/>
         </DataTable>
-        <div className="mt-2 flex justify-content-between align-items-center text-sm">
-          <span>
-            Mostrando registros del 1 al 6 de un total de {actas.length}{" "}
-            registros.
-          </span>
-          <Paginator
-            first={first}
-            rows={rows}
-            totalRecords={actas.length}
-            onPageChange={onPageChange}
-            template="PrevPageLink PageLinks NextPageLink"
-            className="p-paginator-rounded text-sm"
-          />
-        </div>
+        
       </div>
       <div style={{ position: "fixed", bottom: "2rem", right: "2rem" }}>
         <Button
