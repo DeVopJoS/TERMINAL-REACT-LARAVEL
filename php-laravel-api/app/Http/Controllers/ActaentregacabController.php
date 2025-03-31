@@ -130,7 +130,7 @@ class ActaentregacabController extends Controller
                 'ae_fechero' => $request->fechero,
                 'ae_tampo' => $request->tampo,
                 'ae_candados' => $request->candados,
-                'ae_estado' => "E",
+                'ae_estado' => "P",
             ];
             $record = Actaentregacab::create($actaCab);
             if (!$actaCab || !$record->ae_actaid) {
@@ -148,7 +148,7 @@ class ActaentregacabController extends Controller
                     'aed_cantidad' => $registro['cantidad_boletos'],    // Cantidad total para vender
                     'aed_preciounitario' => $registro['precio_unitario'],
                     'aed_importebs' => $registro['importe_total'],
-                    'aed_estado' => "E",
+                    'aed_estado' => "P",
                 ]);
             }
 

@@ -287,7 +287,7 @@ Route::post('/actas', [ActaentregacabController::class, 'store']);
 // Routes for ActaentregadetController
 Route::get('/tblactaentregadet/index', 'ActaentregadetController@index');
 Route::get('/tblactaentregadet/index/{filter?}/{filtervalue?}', 'ActaentregadetController@index');
-Route::post('/registros', 'ActaentregadetController@nuevo'); 
+Route::post('/tblactaentregadet/add', 'ActaentregadetController@add'); 
 Route::put('/registros/{id}', 'ActaentregadetController@nuevo');
 Route::post('/tblactaentregadet/finalizar', 'ActaentregadetController@closeActa'); 
 

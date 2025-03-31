@@ -54,13 +54,28 @@ class ActaentregadetController extends Controller
      * Save form record to the table
      * @return \Illuminate\Http\Response
      */
-	function add(ActaentregadetAddRequest $request){
-		$modeldata = $request->validated();
-		
-		//save Actaentregadet record
-		$record = Actaentregadet::create($modeldata);
-		$rec_id = $record->aed_actaid;
-		return $this->respond($record);
+	function add(Request $request){
+		DB::beginTransaction();
+        try {
+            $actaDet = [
+				'ae_actaid' => $request->ae_actaid,
+				'aed_cantidad' => $request->cantidad_boletos,
+				'servicio_id' => $request->tipo_servicio,
+				'aed_desdenumero' => $request->desde_numero,
+				'aed_hastanumero' => $request->hasta_numero,
+				'aed_vendidohasta' => $request->desde_numero,
+				'aed_importebs' => $request->precio_total,
+				'aed_preciounitario' => $request->precio_unitario,
+                'aed_estado' => "P",
+            ];
+            $record = Actaentregadet::create($actaDet);
+
+            DB::commit();
+            return response()->json(['message' => 'Acta guardada correctamente'], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json(['error' => 'Error al guardar el acta', 'details' => $e->getMessage()], 500);
+        }
 	}
 	
 

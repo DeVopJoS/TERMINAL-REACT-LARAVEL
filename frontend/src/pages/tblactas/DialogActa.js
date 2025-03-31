@@ -68,6 +68,7 @@ function DialogActa({visible, onHide, reloadData}) {
     const handleSaveDet = (newRecord) => {
         const solapamiento = registros.some(record => {
             if (newRecord.id && record.id === newRecord.id) return false;
+            if (newRecord.tipo_servicio !== record.tipo_servicio) return false;
             
             return (
                 (newRecord.desde_numero >= record.desde_numero && newRecord.desde_numero <= record.hasta_numero) ||
