@@ -8,6 +8,8 @@ use App\Models\TblServicios;
 use App\Models\TblPuntosRecaudacion;
 use App\Models\Arqueocab;
 use App\Models\Arqueodetcortes;
+use App\Models\Actaentregacab;
+use App\Models\Actaentregadet;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Exception;
@@ -17,37 +19,37 @@ class ArqueoRecaudacionController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = ArqueorecaudacionCab::with([
-                'puntoRecaudacion:punto_recaud_id,puntorecaud_nombre',
+            // Modificado para obtener datos de actaentregacab
+            $query = Actaentregacab::with([
+                'puntoRecaudacion:punto_recaud_id,puntorecaud_nombre', 
                 'detalles' => function($q) {
                     $q->with('servicio:servicio_id,servicio_descripcion,servicio_abreviatura,servicio_precio_base');
                 }
             ]);
             
+            // Filtrar solo los registros pendientes (ae_estado = 'P')
+            $query->where('ae_estado', 'P');
+            
             if($request->search) {
                 $search = trim($request->search);
                 $query->where(function($query) use ($search) {
-                    $query->where('arqueocorrelativo', 'like', "%$search%")
-                          ->orWhere('arqueonombreoperador', 'like', "%$search%")
-                          ->orWhere('arqueonombresupervisor', 'like', "%$search%");
+                    $query->where(DB::raw("CAST(ae_correlativo AS TEXT)"), 'like', "%$search%")
+                          ->orWhere('ae_operador1erturno', 'like', "%$search%")
+                          ->orWhere('ae_operador2doturno', 'like', "%$search%");
                 });
             }
             
             if($request->fecha_desde && $request->fecha_hasta) {
                 $fechaDesde = date('Y-m-d', strtotime($request->fecha_desde));
                 $fechaHasta = date('Y-m-d', strtotime($request->fecha_hasta));
-                $query->whereBetween(DB::raw("CAST(arqueofecha AS DATE)"), [$fechaDesde, $fechaHasta]);
+                $query->whereBetween(DB::raw("CAST(ae_fecha AS DATE)"), [$fechaDesde, $fechaHasta]);
             } else if($request->fecha) {
                 $fecha = date('Y-m-d', strtotime($request->fecha));
-                $query->where(DB::raw("CAST(arqueofecha AS DATE)"), '=', $fecha);
-            }
-            
-            if($request->turno) {
-                $query->where('arqueoturno', $request->turno);
+                $query->where(DB::raw("CAST(ae_fecha AS DATE)"), '=', $fecha);
             }
 
-            $records = $query->orderBy('arqueofecha', 'desc')
-                           ->orderBy('arqueocorrelativo', 'desc')
+            $records = $query->orderBy('ae_fecha', 'desc')
+                           ->orderBy('ae_correlativo', 'desc')
                            ->get();
             
             return response()->json($records);
@@ -130,7 +132,6 @@ class ArqueoRecaudacionController extends Controller
             $request->validate([
                 'arqueonumero' => 'required|integer',
                 'arqueofecha' => 'required|date',
-                'arqueoturno' => 'required|in:M,T,N',
                 'arqueohorainicio' => 'required',
                 'arqueohorafin' => 'required',
                 'arqueosupervisor' => 'required|string',
@@ -150,7 +151,7 @@ class ArqueoRecaudacionController extends Controller
             $arqueoCab->arqueoid = $arqueoid;
             $arqueoCab->arqueonumero = $request->arqueonumero;
             $arqueoCab->arqueofecha = $fecha;
-            $arqueoCab->arqueoturno = $request->arqueoturno;
+            $arqueoCab->arqueoturno = $request->arqueoturno ?? 'M'; // Por defecto turno mañana
             $arqueoCab->arqueohorainicio = $request->arqueohorainicio;
             $arqueoCab->arqueohorafin = $request->arqueohorafin;
             $arqueoCab->arqueosupervisor = 1; // valor por defecto
@@ -181,13 +182,19 @@ class ArqueoRecaudacionController extends Controller
             $arqueodetcortes->arqueoestado = 'A';
             $arqueodetcortes->save();
 
-            $updatedRows = ArqueorecaudacionCab::where(DB::raw("CAST(arqueofecha AS DATE)"), '=', $fecha)
-                ->where('arqueoturno', $request->arqueoturno)
-                ->where('arqueoestado', 'P')
+            // Actualizar las actas de entrega de estado P a A
+            $updatedRows = Actaentregacab::where(DB::raw("CAST(ae_fecha AS DATE)"), '=', $fecha)
+                ->where('ae_estado', 'P')
                 ->update([
                     'arqueoid' => $arqueoid,
-                    'arqueoestado' => 'A'
+                    'ae_estado' => 'A', 
+                    'ae_fechaarqueo' => now(),
+                    'ae_usuarioarqueo' => auth()->id() ?? 1
                 ]);
+
+            if (!$updatedRows) {
+                throw new Exception('No se encontraron actas pendientes para la fecha seleccionada.');
+            }
 
             DB::commit();
             return response()->json([
@@ -215,54 +222,74 @@ class ArqueoRecaudacionController extends Controller
     {
         try {
             $fecha = $request->fecha;
-            $turno = $request->turno;
             
-            if(!$fecha || !$turno) {
+            if(!$fecha) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Debe especificar fecha y turno'
+                    'message' => 'Debe especificar fecha'
                 ], 400);
             }
             
+            // Mejorar el manejo de fecha
             try {
                 $fecha = date('Y-m-d', strtotime($fecha));
             } catch (\Exception $e) {
+                // Si hay error en la conversión, intentamos otro formato
+                $fecha = $request->fecha;
             }
             
-            // Modificar para solo obtener recaudaciones pendientes (estado = 'P')
-            $resumen = DB::table('arqueorecaudaciondet as det')
-                ->join('arqueorecaudacioncab as cab', 'det.arqueorecid', '=', 'cab.arqueorecid')
+            // Consultar primero si existen actas pendientes para la fecha
+            $existenActas = DB::table('actaentregacab')
+                ->where(DB::raw("TO_CHAR(ae_fecha, 'YYYY-MM-DD')"), '=', $fecha)
+                ->where('ae_estado', 'P')
+                ->count();
+
+            if ($existenActas == 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No hay actas pendientes para la fecha (' . $fecha . '). Verificar que existan actas con estado "P".',
+                    'debug_info' => [
+                        'fecha_consultada' => $fecha,
+                        'query' => "SELECT COUNT(*) FROM actaentregacab WHERE TO_CHAR(ae_fecha, 'YYYY-MM-DD') = '{$fecha}' AND ae_estado = 'P'"
+                    ]
+                ]);
+            }
+                
+            $resumen = DB::table('actaentregadet as det')
+                ->join('actaentregacab as cab', 'det.ae_actaid', '=', 'cab.ae_actaid')
                 ->join('tbl_servicios as srv', 'det.servicio_id', '=', 'srv.servicio_id')
-                ->where(DB::raw("CAST(cab.arqueofecha AS DATE)"), '=', $fecha)
-                ->where('cab.arqueoturno', $turno)
-                ->where('cab.arqueoestado', 'P') // Solo recaudaciones pendientes
+                ->where(DB::raw("TO_CHAR(cab.ae_fecha, 'YYYY-MM-DD')"), '=', $fecha)
+                ->where('cab.ae_estado', 'P') 
                 ->select(
                     'srv.servicio_id',
                     'srv.servicio_abreviatura as codigo',
                     'srv.servicio_descripcion as nombre',
-                    DB::raw('SUM(det.arqueodetcantidad) as cantidad_total'),
-                    DB::raw('SUM(det.arqueodetimportebs) as importe_total')
+                    DB::raw('SUM(det.aed_cantidad) as cantidad_total'),
+                    DB::raw('SUM(det.aed_importebs) as importe_total')
                 )
                 ->groupBy('srv.servicio_id', 'srv.servicio_abreviatura', 'srv.servicio_descripcion')
                 ->orderBy('srv.servicio_descripcion')
                 ->get();
                 
-            // Modificar para solo obtener operadores con recaudaciones pendientes
-            $operadores = DB::table('arqueorecaudacioncab as cab')
-                ->join('arqueorecaudaciondet as det', 'cab.arqueorecid', '=', 'det.arqueorecid')
+            // Modificado: Obtener detalle por operadores con ambos nombres de operadores
+            $operadores = DB::table('actaentregacab as cab')
+                ->join('actaentregadet as det', 'cab.ae_actaid', '=', 'det.ae_actaid')
                 ->join('tbl_puntos_recaudacion as pr', 'cab.punto_recaud_id', '=', 'pr.punto_recaud_id')
                 ->join('tbl_servicios as srv', 'det.servicio_id', '=', 'srv.servicio_id')
-                ->where(DB::raw("CAST(cab.arqueofecha AS DATE)"), '=', $fecha)
-                ->where('cab.arqueoturno', $turno)
-                ->where('cab.arqueoestado', 'P') // Solo recaudaciones pendientes
+                ->where(DB::raw("TO_CHAR(cab.ae_fecha, 'YYYY-MM-DD')"), '=', $fecha)
+                ->where('cab.ae_estado', 'P') // Solo actas pendientes
                 ->select(
-                    'cab.arqueonombreoperador as operador',
+                    'cab.ae_actaid',
+                    'cab.ae_correlativo',
+                    'cab.ae_operador1erturno',
+                    'cab.ae_operador2doturno',
+                    DB::raw('COALESCE(cab.ae_operador1erturno, cab.ae_operador2doturno) as operador'),
                     'pr.puntorecaud_nombre as punto',
                     'srv.servicio_abreviatura as codigo',
-                    'det.arqueodetcantidad as cantidad',
-                    'det.arqueodetimportebs as importe'
+                    'det.aed_cantidad as cantidad',
+                    'det.aed_importebs as importe'
                 )
-                ->orderBy('cab.arqueonombreoperador')
+                ->orderBy('operador')
                 ->orderBy('pr.puntorecaud_nombre')
                 ->get();
             
@@ -270,7 +297,7 @@ class ArqueoRecaudacionController extends Controller
             if ($resumen->isEmpty()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'No hay recaudaciones pendientes para la fecha (' . $fecha . ') y turno (' . $turno . ') indicados'
+                    'message' => 'No hay actas pendientes con detalles para la fecha (' . $fecha . ')'
                 ]);
             }
                 
@@ -278,14 +305,14 @@ class ArqueoRecaudacionController extends Controller
                 'success' => true,
                 'resumen_servicios' => $resumen,
                 'detalle_operadores' => $operadores,
-                'fecha' => $fecha,
-                'turno' => $turno
+                'fecha' => $fecha
             ]);
             
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al obtener resumen: ' . $e->getMessage()
+                'message' => 'Error al obtener resumen: ' . $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ], 500);
         }
     }
@@ -352,12 +379,13 @@ class ArqueoRecaudacionController extends Controller
     public function view($id)
     {
         try {
-            $arqueo = ArqueorecaudacionCab::with([
+            // Modificado para obtener datos de actaentregacab
+            $acta = Actaentregacab::with([
                 'detalles.servicio',
                 'puntoRecaudacion:punto_recaud_id,puntorecaud_nombre'
             ])->findOrFail($id);
             
-            return response()->json($arqueo);
+            return response()->json($acta);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }

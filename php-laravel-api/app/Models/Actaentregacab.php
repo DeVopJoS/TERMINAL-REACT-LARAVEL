@@ -235,7 +235,11 @@ class Actaentregacab extends Model
 	{
 		return $this->belongsTo(TblPuntosRecaudacion::class, 'punto_recaud_id', 'punto_recaud_id');
 	}
-
+	
+	public function detalles()
+	{
+		return $this->hasMany(Actaentregadet::class, 'ae_actaid', 'ae_actaid');
+	}
 
 	/**
      * Indicates if the model should be timestamped.

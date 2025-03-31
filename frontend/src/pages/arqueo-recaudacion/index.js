@@ -17,17 +17,9 @@ export default function ArqueoRecaudacionPage() {
     const [arqueos, setArqueos] = useState([]);
     const [filters, setFilters] = useState({
         search: '',
-        fecha: null,
-        turno: null
+        fecha: null
     });
     
-    const turnoOptions = [
-        { label: 'Todos', value: null },
-        { label: 'Mañana', value: 'M' },
-        { label: 'Tarde', value: 'T' },
-        { label: 'Noche', value: 'N' }
-    ];
-
     useEffect(() => {
         loadArqueos();
     }, []);
@@ -45,10 +37,6 @@ export default function ArqueoRecaudacionPage() {
             if (filters.fecha) {
                 const fechaStr = formatDate(filters.fecha, 'yyyy-MM-dd');
                 params.push(`fecha=${fechaStr}`);
-            }
-            
-            if (filters.turno) {
-                params.push(`turno=${filters.turno}`);
             }
             
             if (params.length > 0) {
@@ -77,7 +65,7 @@ export default function ArqueoRecaudacionPage() {
     };
 
     const estadoTemplate = (rowData) => {
-        const estado = rowData.arqueoestado;
+        const estado = rowData.ae_estado;
         let severity = 'info';
         let label = 'Pendiente';
         
@@ -96,44 +84,30 @@ export default function ArqueoRecaudacionPage() {
     };
     
     const fechaTemplate = (rowData) => {
-        if (!rowData.arqueofecha) return '';
+        if (!rowData.ae_fecha) return '';
         
-        return formatDate(rowData.arqueofecha, 'dd/MM/yyyy');
+        return formatDate(rowData.ae_fecha, 'dd/MM/yyyy');
     };
     
     const importeTemplate = (rowData) => {
-        // Calcular el importe total sumando todos los detalles
-        if (!rowData.detalles || rowData.detalles.length === 0) return 'Bs. 0.00';
-        
-        const total = rowData.detalles.reduce(
-            (sum, item) => sum + parseFloat(item.arqueodetimportebs || 0), 0
-        );
-        
+        // Usar el campo ae_recaudaciontotalbs de actaentregacab
+        const total = parseFloat(rowData.ae_recaudaciontotalbs || 0);
         return `Bs. ${total.toFixed(2)}`;
     };
     
     const accionesTemplate = (rowData) => {
         return (
             <div className="flex justify-content-center">
-                <Link to={`/arqueo-recaudacion/${rowData.arqueorecid}`}>
+                <Link to={`/arqueo-recaudacion/${rowData.ae_actaid}`}>
                     <Button icon="pi pi-eye" className="p-button-rounded p-button-info p-button-sm mr-2" />
                 </Link>
-                {rowData.arqueoestado === 'P' && (
-                    <Link to={`/arqueo-recaudacion/edit/${rowData.arqueorecid}`}>
-                        <Button icon="pi pi-pencil" className="p-button-rounded p-button-warning p-button-sm" />
-                    </Link>
-                )}
             </div>
         );
     };
-
-    const getTurnoDisplay = (turnoCode) => {
-        switch(turnoCode) {
-            case 'M': return 'Mañana';
-            case 'T': return 'Tarde';
-            case 'N': return 'Noche';
-            default: return turnoCode;
-        }
+    
+    const operadorTemplate = (rowData) => {
+        // Usar operador1erturno o operador2doturno
+        return rowData.ae_operador1erturno || rowData.ae_operador2doturno || 'No especificado';
     };
 
     return (
@@ -142,9 +116,6 @@ export default function ArqueoRecaudacionPage() {
             <div className="flex justify-content-between align-items-center mb-3">
                 <h5>Arqueos de Recaudación</h5>
                 <div className="flex">
-                    <Link to="/arqueo-recaudacion/add">
-                        <Button label="Nuevo Arqueo" icon="pi pi-plus" className="mr-2" />
-                    </Link>
                     <Link to="/arqueo-recaudacion/arqueo-final">
                         <Button label="Cerrar Arqueo" icon="pi pi-lock" className="p-button-success" />
                     </Link>
@@ -152,7 +123,7 @@ export default function ArqueoRecaudacionPage() {
             </div>
 
             <div className="grid mb-3">
-                <div className="col-12 md:col-3">
+                <div className="col-12 md:col-4">
                     <InputText
                         placeholder="Buscar..."
                         value={filters.search}
@@ -160,7 +131,7 @@ export default function ArqueoRecaudacionPage() {
                         className="w-full"
                     />
                 </div>
-                <div className="col-12 md:col-3">
+                <div className="col-12 md:col-4">
                     <Calendar
                         placeholder="Fecha"
                         value={filters.fecha}
@@ -171,16 +142,7 @@ export default function ArqueoRecaudacionPage() {
                         showButtonBar
                     />
                 </div>
-                <div className="col-12 md:col-3">
-                    <Dropdown
-                        placeholder="Turno"
-                        value={filters.turno}
-                        options={turnoOptions}
-                        onChange={(e) => handleFilterChange('turno', e.value)}
-                        className="w-full"
-                    />
-                </div>
-                <div className="col-12 md:col-3">
+                <div className="col-12 md:col-4">
                     <Button
                         label="Buscar"
                         icon="pi pi-search"
@@ -197,40 +159,65 @@ export default function ArqueoRecaudacionPage() {
                 rows={10}
                 rowsPerPageOptions={[10, 25, 50]}
                 loading={loading}
-                emptyMessage="No se encontraron arqueos"
+                emptyMessage="No se encontraron actas de entrega pendientes"
+                className="p-datatable-sm text-xs"
+                showGridlines
             >
-                <Column field="arqueocorrelativo" header="Correlativo" sortable />
+                <Column field="ae_actaid" header="ACTA ID" sortable className="text-xs py-1 px-2" />
+                <Column field="ae_correlativo" header="CORRELATIVO" sortable className="text-xs py-1 px-2" />
                 <Column 
-                    field="arqueofecha" 
-                    header="Fecha" 
-                    body={fechaTemplate} 
-                    sortable 
-                />
-                <Column 
-                    field="arqueoturno" 
-                    header="Turno" 
-                    sortable
-                    body={(rowData) => getTurnoDisplay(rowData.arqueoturno)}
-                />
-                <Column field="arqueonombreoperador" header="Operador" sortable />
-                <Column 
-                    field="puntoRecaudacion.puntorecaud_nombre" 
-                    header="Punto Recaudación" 
+                    field="punto_recaudacion.puntorecaud_nombre" 
+                    header="PUNTO RECAUDACIÓN" 
                     body={(rowData) => {
-                        if (rowData.puntoRecaudacion && rowData.puntoRecaudacion.puntorecaud_nombre) {
-                            return rowData.puntoRecaudacion.puntorecaud_nombre;
-                        } else if (rowData.punto_recaudacion && rowData.punto_recaudacion.puntorecaud_nombre) {
+                        if (rowData.punto_recaudacion && rowData.punto_recaudacion.puntorecaud_nombre) {
                             return rowData.punto_recaudacion.puntorecaud_nombre;
                         } else {
                             return 'No especificado';
                         }
                     }}
                     sortable
+                    className="text-xs py-1 px-2"
                 />
-                <Column header="Total" body={importeTemplate} sortable />
-                <Column header="Estado" body={estadoTemplate} sortable />
-                <Column header="Acciones" body={accionesTemplate} />
+                <Column 
+                    field="ae_fecha" 
+                    header="FECHA" 
+                    body={fechaTemplate} 
+                    sortable 
+                    className="text-xs py-1 px-2"
+                />
+                <Column field="ae_grupo" header="GRUPO" sortable className="text-xs py-1 px-2" />
+                <Column field="ae_operador1erturno" header="OPERADOR 1ER TURNO" sortable className="text-xs py-1 px-2" />
+                <Column field="ae_operador2doturno" header="OPERADOR 2DO TURNO" sortable className="text-xs py-1 px-2" />
+                <Column field="ae_observacion" header="OBSERVACIÓN" sortable className="text-xs py-1 px-2" />
+                <Column 
+                    field="ae_recaudaciontotalbs" 
+                    header="RECAUDACIÓN TOTAL BS" 
+                    body={(rowData) => {
+                        const total = parseFloat(rowData.ae_recaudaciontotalbs || 0);
+                        return `Bs. ${total.toFixed(2)}`;
+                    }}
+                    sortable 
+                    className="text-xs py-1 px-2"
+                />
+                <Column 
+                    field="ae_estado" 
+                    header="ESTADO" 
+                    body={estadoTemplate} 
+                    sortable 
+                    className="text-xs py-1 px-2"
+                />
+                <Column 
+                    header="ACCIONES" 
+                    body={accionesTemplate}
+                    className="text-xs py-1 px-2"
+                />
             </DataTable>
+            
+            <div className="mt-2 flex justify-content-between align-items-center text-sm">
+                <span>
+                    Mostrando registros del 1 al {arqueos.length < 10 ? arqueos.length : 10} de un total de {arqueos.length} registros.
+                </span>
+            </div>
         </div>
     );
 }

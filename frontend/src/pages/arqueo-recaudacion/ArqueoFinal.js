@@ -121,13 +121,13 @@ export default function ArqueoFinal() {
     const handleConsultarResumen = async () => {
         try {
             setLoading(true);
-            const { arqueofecha, arqueoturno } = formData;
+            const { arqueofecha } = formData;
             
-            if (!arqueofecha || !arqueoturno) {
+            if (!arqueofecha) {
                 toast.current.show({
                     severity: 'warn',
                     summary: 'Datos incompletos',
-                    detail: 'Debe seleccionar fecha y turno'
+                    detail: 'Debe seleccionar fecha'
                 });
                 return;
             }
@@ -144,7 +144,7 @@ export default function ArqueoFinal() {
                 }
             }
                 
-            const response = await api.get(`arqueo-recaudacion-resumen?fecha=${fechaStr}&turno=${arqueoturno}`);
+            const response = await api.get(`arqueo-recaudacion-resumen?fecha=${fechaStr}`);
             
             if (response.data.success) {
                 setResumenServicios(response.data.resumen_servicios);
@@ -290,6 +290,36 @@ export default function ArqueoFinal() {
         }
     };
 
+    const getOperadorSummary = () => {
+        if (!detalleOperadores.length) return [];
+        
+        const operadorMap = {};
+        
+        detalleOperadores.forEach(item => {
+            const key = `${item.ae_actaid}`;
+            if (!operadorMap[key]) {
+                operadorMap[key] = {
+                    ae_correlativo: item.ae_correlativo,
+                    ae_actaid: item.ae_actaid,
+                    ae_operador1erturno: item.ae_operador1erturno,
+                    ae_operador2doturno: item.ae_operador2doturno,
+                    punto: item.punto,
+                    total_servicios: 0,
+                    total_importe: 0,
+                    servicios: new Set()
+                };
+            }
+            
+            operadorMap[key].servicios.add(item.codigo);
+            operadorMap[key].total_importe += parseFloat(item.importe || 0);
+        });
+        
+        return Object.values(operadorMap).map(item => ({
+            ...item,
+            total_servicios: item.servicios.size,
+        }));
+    };
+
     return (
         <div className="card p-4">
             <Toast ref={toast} />
@@ -312,7 +342,7 @@ export default function ArqueoFinal() {
             <div className="surface-100 p-4 border-round mb-4">
                 <h3 className="text-lg font-semibold mb-3">Búsqueda de Arqueo</h3>
                 <div className="grid">
-                    <div className="col-12 md:col-3">
+                    <div className="col-12 md:col-6">
                         <Calendar
                             value={formData.arqueofecha}
                             onChange={(e) => setFormData({...formData, arqueofecha: e.value})}
@@ -323,19 +353,6 @@ export default function ArqueoFinal() {
                             showTime={false}
                             showButtonBar={true}
                             touchUI={false}
-                        />
-                    </div>
-                    <div className="col-12 md:col-3">
-                        <Dropdown
-                            value={formData.arqueoturno}
-                            options={[
-                                { label: 'MAÑANA', value: 'M' },
-                                { label: 'TARDE', value: 'T' },
-                                { label: 'NOCHE', value: 'N' }
-                            ]}
-                            onChange={(e) => setFormData({...formData, arqueoturno: e.value})}
-                            className="w-full"
-                            placeholder="Seleccione turno"
                         />
                     </div>
                     <div className="col-12 md:col-6">
@@ -481,13 +498,28 @@ export default function ArqueoFinal() {
                                     <DataTable 
                                         value={detalleOperadores}
                                         scrollable 
-                                        scrollHeight="200px"
+                                        scrollHeight="300px"
                                         size="small"
+                                        showGridlines
+                                        stripedRows
+                                        rowHover
+                                        groupRowsBy="ae_actaid"
                                     >
-                                        <Column field="operador" header="Operador" />
-                                        <Column field="punto" header="Punto" style={{width: '100px'}} />
-                                        <Column field="codigo" header="Codigo Serv." style={{width: '70px'}} />
-                                        <Column field="cantidad" header="Cantidad" style={{width: '70px'}} />
+                                        <Column 
+                                            field="ae_operador1erturno" 
+                                            header="Operador 1er Turno" 
+                                            style={{width: '150px'}}
+                                            body={(row) => row.ae_operador1erturno || '---'} 
+                                        />
+                                        <Column 
+                                            field="ae_operador2doturno" 
+                                            header="Operador 2do Turno" 
+                                            style={{width: '150px'}}
+                                            body={(row) => row.ae_operador2doturno || '---'} 
+                                        />
+                                        <Column field="punto" header="Punto" style={{width: '150px'}} />
+                                        <Column field="codigo" header="Serv." style={{width: '70px'}} />
+                                        <Column field="cantidad" header="Cant." style={{width: '70px'}} />
                                         <Column 
                                             field="importe" 
                                             header="Importe" 
@@ -495,6 +527,7 @@ export default function ArqueoFinal() {
                                             style={{width: '100px'}}
                                         />
                                     </DataTable>
+                                    
                                 </div>
                             </div>
                         </div>
