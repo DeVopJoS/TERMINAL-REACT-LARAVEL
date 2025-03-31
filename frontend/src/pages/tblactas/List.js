@@ -20,8 +20,6 @@ const TblActasList = () => {
   const [ selectedIds, setSelectedIds ] = useState([]);
   const [ correlativo, setCorrelativo ] = useState("");
   const [ fecha, setFecha ] = useState(null);
-  const [ first, setFirst ] = useState(0);
-  const [ rows, setRows ] = useState(10);
   const [ modalVisible, setModalVisible ] = useState(false);
   const [ loading, setLoading ] = useState(false);
 
@@ -32,7 +30,7 @@ const TblActasList = () => {
   const fetchData = async () => {
     try{
       setLoading(true);
-      const { data } = await axios.get('actas/index/ae_estado/E');
+      const { data } = await axios.get('actas/index/ae_estado/P');
       setActas(data);
     } catch (error){
       console.log("Error: " + error);
@@ -46,19 +44,11 @@ const TblActasList = () => {
   const actionTemplate = (rowData) => {
     return (
       <div className="flex gap-2">
-        {/* <Button
-          icon="pi pi-pencil"
-          className="p-button-rounded p-button-success p-button-sm"
-        /> */}
         <Button
           icon="pi pi-download"
           className="p-button-rounded p-button-info p-button-sm"
           onClick={() => findActa(rowData.ae_actaid)}
         />
-        {/* <Button
-          icon="pi pi-trash"
-          className="p-button-rounded p-button-danger p-button-sm"
-        /> */}
       </div>
     );
   };
@@ -67,17 +57,12 @@ const TblActasList = () => {
     try {
       const formattedDate = fecha ? fecha.toISOString().split('T')[0] : '';
 
-      const { data } = await axios.get(`/actas/index?ae_estado=E&ae_fecha=${formattedDate}`);
+      const { data } = await axios.get(`/actas/index?ae_estado=P&ae_fecha=${formattedDate}`);
 
       setActas(data);
     } catch (error) {
         console.error("Error al buscar datos:", error);
     }
-  };
-
-  const onPageChange = (event) => {
-    setFirst(event.first);
-    setRows(event.rows);
   };
 
   const findActa = async (ae_actaid) => {
@@ -88,7 +73,8 @@ const TblActasList = () => {
         console.error("No se encontraron datos en la cabecera");
         return;
       }
-
+      console.log(data.cabecera[0])
+      console.log(data.detalles)
       const blob = await pdf(<MyPDF cabecera={data.cabecera[0]} detalles={data.detalles} />).toBlob();
       saveAs(blob, "acta.pdf");
     } catch (error) {

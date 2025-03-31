@@ -277,17 +277,32 @@ const styles = StyleSheet.create({
     observationTitle: {
       width: '24%',
     },
-    signatureRow: {
-      flexDirection: 'row',
-      marginTop: 20,
-      borderTopWidth: 1,
-      borderTopStyle: 'dotted',
+    signatureContainer: {
+      width: '50%',
+      flexDirection: 'column',
+      borderWidth: 1,
+      borderColor: '#000000',
+      fontSize: 10,
+    },
+    signatureHeader: {
+      textAlign: 'center',
+      borderBottom: 1,
       borderColor: '#000000',
     },
-    signatureColumn: {
+    bodySignature: {
+      height: '100px',
+      flexDirection: 'row',
+      alignItems: 'flex-end'
+    },  
+    signature: {
       width: '50%',
-      padding: 10,
+      fontSize: 8,
       textAlign: 'center',
+      margin: 10,
+      borderTopWidth: 1,
+      borderTopStyle: 'dashed', 
+      borderTopColor: '#000', 
+      paddingTop: 5,
     },
     redText: {
       color: '#cc0000',
@@ -353,7 +368,7 @@ const MyPDF = ({ cabecera = {}, detalles = [] }) => {
                   <Text>Fecha:</Text>
               </View>
               <View style={styles.dateCell}>
-                <Text>{cabecera.ae_fecha}</Text>
+                <Text>{cabecera.formatted_fecha}</Text>
               </View>
               <View style={styles.groupCell}>
                 <Text>GRUPO: {cabecera.ae_grupo}</Text>
@@ -366,22 +381,21 @@ const MyPDF = ({ cabecera = {}, detalles = [] }) => {
                 <Text>OPERADOR(A) TURNO 1:</Text>
               </View>
               <View style={styles.operatorValue}>
-                <Text></Text>
+                <Text>{cabecera.ae_operador1erturno}</Text>
               </View>
               <View style={styles.operatorRight}>
-                <Text>OPERADOR(A) TURNO 2:</Text>
               </View>
             </View>
           
             <View style={styles.operatorRow}>
               <View style={styles.operatorLabel}>
-                <Text>OPERADOR(A) 2ᴰᴼ TURNO:</Text>
+                <Text>OPERADOR(A) TURNO 2:</Text>
               </View>
               <View style={styles.operatorValue}>
-                <Text></Text>
+                <Text>{cabecera.ae_operador2doturno}</Text>
               </View>
               <View style={styles.operatorRight}>
-                <Text>Nº</Text>
+                
               </View>
             </View>
           
@@ -443,7 +457,7 @@ const MyPDF = ({ cabecera = {}, detalles = [] }) => {
               <Text>RESPONSABLE - OPERADOR 1ER TURNO</Text>
             </View>
             <View style={styles.tableRow}>
-              <Text>PUESTOS SEGÚN TIPO DE PREVALORADA: UTP =2,50 - GE = 0,00 - PV =4,00</Text>
+              <Text>PUESTOS SEGÚN TIPO DE PREVALORADA:</Text>
             </View>
 
             <View style={styles.tableHeader}>
@@ -721,14 +735,37 @@ const MyPDF = ({ cabecera = {}, detalles = [] }) => {
         </View>
         
         {/* Firmas */}
-        <View style={styles.signatureRow}>
-          <View style={styles.signatureColumn}>
-            <Text>ENTREGUE CONFORME - Cajero de turno - firma y sello</Text>
+
+        <View style={styles.tablesRow}>
+          <View style={styles.signatureContainer}>
+            <View style={[styles.signatureHeader, styles.boldText]}>
+              <Text> FIRMA DE PREVALORADAS (DE OPERADOR 1ER TURNO A OPERADOR)</Text>
+            </View>
+            <View style={styles.bodySignature}>
+              <View style={styles.signature}>
+                <Text>ENTREGUE CONFORME - Operador de 1er turno firma</Text>
+              </View>
+              <View style={styles.signature}>
+                <Text>ENTREGUE CONFORME - Operador de 1er turno firma</Text>
+              </View>
+            </View>
           </View>
-          <View style={styles.signatureColumn}>
-            <Text>RECIBI CONFORME - Operador de 1ᴱᴿ turno - firma y sello</Text>
+
+          <View style={styles.signatureContainer}>
+            <View style={[styles.signatureHeader, styles.boldText]}>
+              <Text> FIRMA DE PREVALORADAS (DE OPERADOR 1ER TURNO A OPERADOR)</Text>
+            </View>
+            <View style={styles.bodySignature}>
+              <View style={styles.signature}>
+                <Text>ENTREGUE CONFORME - Operador de 1er turno firma</Text>
+              </View>
+              <View style={styles.signature}>
+                <Text>ENTREGUE CONFORME - Operador de 1er turno firma</Text>
+              </View>
+            </View>
           </View>
         </View>
+
       </Page>
     </Document>);
 };
