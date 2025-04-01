@@ -23,7 +23,7 @@ function PrevaloradasList() {
         try {
             setLoading(true);
             const formattedDate = fecha ? fecha.toISOString().split('T')[0] : '';
-            let url = '/actas/index?ae_estado=E';
+            let url = '/actas/index?ae_estado=P';
 
             if(fecha)
                 url += `&ae_fecha=${formattedDate}`;
