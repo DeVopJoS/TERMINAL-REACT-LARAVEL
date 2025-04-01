@@ -7,6 +7,7 @@ import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { Calendar } from 'primereact/calendar';
 import { Toast } from 'primereact/toast';
+import { ToggleButton } from 'primereact/togglebutton';
 import { Dropdown } from 'primereact/dropdown';
 import { formatDate } from '../../utils/utils';
 
@@ -19,10 +20,15 @@ export default function ArqueoRecaudacionPage() {
         search: '',
         fecha: null
     });
+    const [showClosed, setShowClosed] = useState(false);
     
     useEffect(() => {
         loadArqueos();
     }, []);
+
+    useEffect(() => {
+        loadArqueos();
+    }, [showClosed]);
 
     const loadArqueos = async () => {
         try {
@@ -38,6 +44,8 @@ export default function ArqueoRecaudacionPage() {
                 const fechaStr = formatDate(filters.fecha, 'yyyy-MM-dd');
                 params.push(`fecha=${fechaStr}`);
             }
+
+            params.push(`showClosed=${showClosed}`);
             
             if (params.length > 0) {
                 url += '?' + params.join('&');
@@ -115,7 +123,7 @@ export default function ArqueoRecaudacionPage() {
             <Toast ref={toast} />
             <div className="flex justify-content-between align-items-center mb-3">
                 <h5>Arqueos de Recaudación</h5>
-                <div className="flex">
+                <div className="flex gap-2">
                     <Link to="/arqueo-recaudacion/arqueo-final">
                         <Button label="Cerrar Arqueo" icon="pi pi-lock" className="p-button-success" />
                     </Link>
@@ -123,7 +131,7 @@ export default function ArqueoRecaudacionPage() {
             </div>
 
             <div className="grid mb-3">
-                <div className="col-12 md:col-4">
+                <div className="col-12 md:col-3">
                     <InputText
                         placeholder="Buscar..."
                         value={filters.search}
@@ -131,7 +139,7 @@ export default function ArqueoRecaudacionPage() {
                         className="w-full"
                     />
                 </div>
-                <div className="col-12 md:col-4">
+                <div className="col-12 md:col-3">
                     <Calendar
                         placeholder="Fecha"
                         value={filters.fecha}
@@ -142,7 +150,20 @@ export default function ArqueoRecaudacionPage() {
                         showButtonBar
                     />
                 </div>
-                <div className="col-12 md:col-4">
+                <div className="col-12 md:col-3">
+                    <div className="flex align-items-center">
+                        <span className="text-sm mr-2">¿Mostrar actas cerradas?</span>
+                        <ToggleButton
+                            checked={showClosed}
+                            onChange={(e) => setShowClosed(e.value)}
+                            onLabel="Si"
+                            offLabel="No"
+                            className="p-button-sm"
+                            style={{ width: '4rem' }}
+                        />
+                    </div>
+                </div>
+                <div className="col-12 md:col-3">
                     <Button
                         label="Buscar"
                         icon="pi pi-search"

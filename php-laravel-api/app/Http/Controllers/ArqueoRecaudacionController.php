@@ -19,7 +19,6 @@ class ArqueoRecaudacionController extends Controller
     public function index(Request $request)
     {
         try {
-            // Modificado para obtener datos de actaentregacab
             $query = Actaentregacab::with([
                 'puntoRecaudacion:punto_recaud_id,puntorecaud_nombre', 
                 'detalles' => function($q) {
@@ -27,8 +26,9 @@ class ArqueoRecaudacionController extends Controller
                 }
             ]);
             
-            // Filtrar solo los registros pendientes (ae_estado = 'P')
-            $query->where('ae_estado', 'P');
+            if (!$request->has('showClosed') || $request->showClosed === 'false') {
+                $query->where('ae_estado', 'P');
+            }
             
             if($request->search) {
                 $search = trim($request->search);
@@ -271,7 +271,7 @@ class ArqueoRecaudacionController extends Controller
                 ->orderBy('srv.servicio_descripcion')
                 ->get();
                 
-            // Modificado: Obtener detalle por operadores con ambos nombres de operadores
+            //Obtener detalle por operadores con ambos nombres de operadores
             $operadores = DB::table('actaentregacab as cab')
                 ->join('actaentregadet as det', 'cab.ae_actaid', '=', 'det.ae_actaid')
                 ->join('tbl_puntos_recaudacion as pr', 'cab.punto_recaud_id', '=', 'pr.punto_recaud_id')
