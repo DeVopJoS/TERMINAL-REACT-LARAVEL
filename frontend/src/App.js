@@ -125,6 +125,7 @@ import 'primereact/resources/primereact.css';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import 'assets/styles/layout.scss';
+import PrevaloradasEdit from 'pages/registroprevaloradas/Edit';
 const App = () => {
 	const auth = useAuth();
 	function DefaultPage(){
@@ -341,13 +342,13 @@ const App = () => {
 
 				{/* Registro de prevaloradas */}
 				<Route path='/cajas/registro/prevaloradas' element={<PrevaloradasList/>}/>
+				<Route path="/cajas/registro/prevaloradas/:id" element={<PrevaloradasEdit />} />
 
 				{/* Servicios Prevalorados */}
 				<Route path="/serviciosprevalorados/busquedaacta/" element={<BusquedaActa />} /> 
 
 				{/* <Route path="/serviciosprevalorados/busquedaacta1/" element={<BusquedaActa2 />} />  */}
 				<Route path="/serviciosprevalorados/actaentregapopup/" element={<actaentregapopup />} /> 
-
 				
 				
 				<Route path="/tblactas/view" element={<TblActasList />} /> 

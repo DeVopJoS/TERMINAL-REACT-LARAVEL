@@ -35,6 +35,10 @@ class ActaentregacabController extends Controller
             $query->whereDate('ae_fecha', $request->ae_fecha);
         }
 
+        if ($request->has('ae_actaid') && !empty($request->ae_actaid)) {
+            $query->where('ae_actaid', $request->ae_actaid);
+        }
+
 		if($request->search){
 			$search = trim($request->search);
 			Actaentregacab::search($query, $search);
@@ -129,7 +133,6 @@ class ActaentregacabController extends Controller
                 'ae_estado' => "P",
             ];
             $record = Actaentregacab::create($actaCab);
-            // Verifica que el ID se haya generado correctamente
             if (!$actaCab || !$record->ae_actaid) {
                 throw new \Exception("No se pudo obtener el ID del acta creada.");
             }
@@ -140,9 +143,9 @@ class ActaentregacabController extends Controller
                     //'ae_actaid' => $registro['id'],
                     'servicio_id' => $registro['tipo_servicio'],
                     'aed_desdenumero' => $registro['desde_numero'],
-                    'aed_hastanumero' => $registro['hasta_numero'],
-                    'aed_vendidohasta' => $registro['cantidad_boletos'],
-                    'aed_cantidad' => $registro['cantidad_boletos'],
+                    'aed_hastanumero' => $registro['hasta_numero'],     
+                    'aed_vendidohasta' => $registro['desde_numero'],    // Vendido hasta empieza desde 'aed_desdenumero'
+                    'aed_cantidad' => $registro['cantidad_boletos'],    // Cantidad total para vender
                     'aed_preciounitario' => $registro['precio_unitario'],
                     'aed_importebs' => $registro['importe_total'],
                     'aed_estado' => "P",
