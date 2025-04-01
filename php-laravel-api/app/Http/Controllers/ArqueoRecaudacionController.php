@@ -160,7 +160,7 @@ class ArqueoRecaudacionController extends Controller
             $arqueoCab->arqueorecaudaciontotal = $request->arqueorecaudaciontotal;
             $arqueoCab->arqueodiferencia = $request->arqueodiferencia;
             $arqueoCab->arqueoobservacion = $request->arqueoobservacion;
-            $arqueoCab->arqueoestado = 'A'; // estado activo
+            $arqueoCab->arqueoestado = 'R'; // estado cambiado de 'A' a 'R'
             $arqueoCab->arqueofecharegistro = now();
             $arqueoCab->arqueousuario = auth()->id() ?? 1;
             $arqueoCab->save();
@@ -182,12 +182,12 @@ class ArqueoRecaudacionController extends Controller
             $arqueodetcortes->arqueoestado = 'A';
             $arqueodetcortes->save();
 
-            // Actualizar las actas de entrega de estado P a A
+            // Actualizar las actas de entrega de estado P a R
             $updatedRows = Actaentregacab::where(DB::raw("CAST(ae_fecha AS DATE)"), '=', $fecha)
                 ->where('ae_estado', 'P')
                 ->update([
                     'arqueoid' => $arqueoid,
-                    'ae_estado' => 'A', 
+                    'ae_estado' => 'R', // estado cambiado de 'A' a 'R'
                     'ae_fechaarqueo' => now(),
                     'ae_usuarioarqueo' => auth()->id() ?? 1
                 ]);
