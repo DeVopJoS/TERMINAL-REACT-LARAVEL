@@ -77,7 +77,7 @@ export default function ArqueoFinal() {
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         arqueonumero: '',
-        arqueofecha: new Date(),
+        arqueofecha: null,
         arqueoturno: 'M',
         arqueohorainicio: new Date(),  
         arqueohorafin: new Date(),  
