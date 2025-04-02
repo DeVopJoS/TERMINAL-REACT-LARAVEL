@@ -196,21 +196,21 @@ const styles = StyleSheet.create({
     },
     indexCell: {
       width: '10%',
-      padding: 5,
+      paddingVertical: 0,
       borderRight: 1,
       textAlign: 'center',
       borderColor: '#000000',
     },
     typeCell: {
       width: '10%',
-      padding: 5,
+      paddingVertical: 0,
       borderRight: 1,
       textAlign: 'center',
       borderColor: '#000000',
     },
     dataCell: {
       width: '18%',
-      padding: 5,
+      paddingVertical: 0,
       borderRight: 1,
       textAlign: 'center',
       borderColor: '#000000',
@@ -277,17 +277,32 @@ const styles = StyleSheet.create({
     observationTitle: {
       width: '24%',
     },
-    signatureRow: {
-      flexDirection: 'row',
-      marginTop: 20,
-      borderTopWidth: 1,
-      borderTopStyle: 'dotted',
+    signatureContainer: {
+      width: '50%',
+      flexDirection: 'column',
+      borderWidth: 1,
+      borderColor: '#000000',
+      fontSize: 10,
+    },
+    signatureHeader: {
+      textAlign: 'center',
+      borderBottom: 1,
       borderColor: '#000000',
     },
-    signatureColumn: {
+    bodySignature: {
+      height: '100px',
+      flexDirection: 'row',
+      alignItems: 'flex-end'
+    },  
+    signature: {
       width: '50%',
-      padding: 10,
+      fontSize: 8,
       textAlign: 'center',
+      margin: 10,
+      borderTopWidth: 1,
+      borderTopStyle: 'dashed', 
+      borderTopColor: '#000', 
+      paddingTop: 5,
     },
     redText: {
       color: '#cc0000',
@@ -300,6 +315,11 @@ const styles = StyleSheet.create({
     },
     centerText: {
       textAlign: 'center',
+    },
+    textSmall: {
+      fontSize: 8,
+      marginVertical: 0, 
+      paddingVertical: 0,
     }
   });
 
@@ -309,7 +329,7 @@ const styles = StyleSheet.create({
         const { cabecera, detalles } = acta;
   
         // Lógica para la primera tabla (First Operator)
-        const totalFilasFirstOperator = 20;
+        const totalFilasFirstOperator = 35;
         const filasCompletasFirstOperator = Array.from({ length: totalFilasFirstOperator }).map((_, i) => {
           const rowNumber = i + 1;
           return detalles[i] || { index: rowNumber };
@@ -324,7 +344,7 @@ const styles = StyleSheet.create({
         }, []);
   
         // Lógica para la segunda tabla
-        const filasSecondTable = Array.from({ length: 32 }, (_, i) => i + 1);
+        const filasSecondTable = Array.from({ length: 52 }, (_, i) => i + 1);
   
         return (
             <Page size="A3" style={styles.page} key={index}>
@@ -357,7 +377,7 @@ const styles = StyleSheet.create({
                         <Text>Fecha:</Text>
                     </View>
                     <View style={styles.dateCell}>
-                        <Text>{cabecera[0]?.ae_fecha}</Text>
+                        <Text>{cabecera[0]?.formatted_fecha}</Text>
                     </View>
                     <View style={styles.groupCell}>
                         <Text>GRUPO: {cabecera[0]?.ae_grupo}</Text>
@@ -366,26 +386,25 @@ const styles = StyleSheet.create({
                 
                     {/* Filas de operadores */}
                     <View style={styles.operatorRow}>
-                    <View style={styles.operatorLabel}>
-                        <Text>OPERADOR(A) TURNO 1:</Text>
-                    </View>
-                    <View style={styles.operatorValue}>
-                        <Text></Text>
-                    </View>
-                    <View style={styles.operatorRight}>
-                        <Text>OPERADOR(A) TURNO 2:</Text>
-                    </View>
+                      <View style={styles.operatorLabel}>
+                          <Text>OPERADOR(A) TURNO 1:</Text>
+                      </View>
+                      <View style={styles.operatorValue}>
+                          <Text>{cabecera[0]?.ae_operador1erturno}</Text>
+                      </View>
+                      <View style={styles.operatorRight}>
+                      </View>
                     </View>
                 
                     <View style={styles.operatorRow}>
                     <View style={styles.operatorLabel}>
-                        <Text>OPERADOR(A) 2ᴰᴼ TURNO:</Text>
+                        <Text>OPERADOR(A) TURNO 2:</Text>
                     </View>
                     <View style={styles.operatorValue}>
-                        <Text></Text>
+                        <Text>{cabecera[0].ae_operador2doturno}</Text>
                     </View>
                     <View style={styles.operatorRight}>
-                        <Text>Nº</Text>
+                       
                     </View>
                     </View>
                 
@@ -447,35 +466,35 @@ const styles = StyleSheet.create({
                     <Text>RESPONSABLE - OPERADOR 1ER TURNO</Text>
                     </View>
                     <View style={styles.tableRow}>
-                    <Text>PUESTOS SEGÚN TIPO DE PREVALORADA: UTP =2,50 - GE = 0,00 - PV =4,00</Text>
+                    <Text>PUESTOS SEGÚN TIPO DE PREVALORADA:</Text>
                     </View>
         
                     <View style={styles.tableHeader}>
                     <View style={styles.columnHeader}>
-                        <Text></Text>
+                        <Text>Nº</Text>
                     </View>
                     <View style={styles.columnHeader}>
-                        <Text>TIPO DE PRE</Text>
+                        <Text style={styles.textSmall}>TIPO DE PRE</Text>
                     </View>
                     <View style={styles.dataColumn}>
                         <Text style={styles.redText}>A</Text>
-                        <Text style={styles.redText}>DESDE EL NÚMERO:</Text>
+                        <Text style={[styles.redText, styles.textSmall]}>DESDE EL NÚMERO:</Text>
                     </View>
                     <View style={styles.dataColumn}>
                         <Text>B</Text>
-                        <Text>HASTA EL NÚMERO:</Text>
+                        <Text style={styles.textSmall}>HASTA EL NÚMERO:</Text>
                     </View>
                     <View style={styles.dataColumn}>
                         <Text>C</Text>
-                        <Text>VENDIDO HASTA EL:</Text>
+                        <Text style={styles.textSmall}>VENDIDO HASTA EL:</Text>
                     </View>
                     <View style={styles.dataColumn}>
                         <Text>D</Text>
-                        <Text>CANTIDAD (C-A+1)</Text>
+                        <Text style={styles.textSmall}>CANTIDAD (C-A+1)</Text>
                     </View>
                     <View style={styles.dataColumn}>
                         <Text>E</Text>
-                        <Text>IMPORTE Bs.- (D*COST)</Text>
+                        <Text style={styles.textSmall}>IMPORTE Bs.- (D*COST)</Text>
                     </View>
                     </View>
                     
@@ -483,17 +502,17 @@ const styles = StyleSheet.create({
                     {filasCompletasFirstOperator.map((item, idx) => (
                     <View key={idx} style={styles.tableRow}>
                         <View style={styles.indexCell}>
-                        <Text>{idx + 1}</Text>
+                        <Text style={styles.textSmall}>{idx + 1}</Text>
                         </View>
                         <View style={styles.typeCell}>
-                        <Text>{item.servicio_abreviatura}</Text> 
+                        <Text style={styles.textSmall}>{item.servicio_abreviatura}</Text> 
                         </View>
                         <View style={[styles.dataCell, 
                         (item.aed_hastanumero - item.aed_desdenumero) < 99 ? styles.redCell : null]}>
-                        <Text style={styles.blueText}>{item.aed_desdenumero}</Text>
+                        <Text style={styles.textSmall}>{item.aed_desdenumero}</Text>
                         </View>
                         <View style={styles.dataCell}>
-                        <Text style={styles.blueText}>{item.aed_hastanumero}</Text>
+                        <Text style={styles.textSmall}>{item.aed_hastanumero}</Text>
                         </View>
                         <View style={styles.dataCell}>
                         <Text></Text>
@@ -595,7 +614,7 @@ const styles = StyleSheet.create({
         
                     <View style={styles.tableHeader}>
                     <View style={styles.columnHeader}>
-                        <Text>TIPO DE PRE</Text>
+                        <Text style={styles.textSmall}>TIPO DE PRE</Text>
                     </View>
                     <View style={styles.dataColumn}>
                         <Text>A</Text>
@@ -615,7 +634,7 @@ const styles = StyleSheet.create({
                     </View>
                     <View style={styles.dataColumn}>
                         <Text>E</Text>
-                        <Text>IMPORTE Bs.- (D*COST)</Text>
+                        <Text style={styles.textSmall}>IMPORTE Bs.- (D*COST)</Text>
                     </View>
                     </View>
                     
@@ -623,7 +642,7 @@ const styles = StyleSheet.create({
                     {filasSecondTable.map((i) => (
                     <View key={i} style={styles.tableRow}>
                         <View style={styles.indexCell}>
-                        <Text>{i}</Text>
+                        <Text style={styles.textSmall}>{i}</Text>
                         </View>
                         <View style={styles.dataCell}>
                         <Text></Text>
@@ -725,13 +744,34 @@ const styles = StyleSheet.create({
                 </View>
                 
                 {/* Firmas */}
-                <View style={styles.signatureRow}>
-                <View style={styles.signatureColumn}>
-                    <Text>ENTREGUE CONFORME - Cajero de turno - firma y sello</Text>
-                </View>
-                <View style={styles.signatureColumn}>
-                    <Text>RECIBI CONFORME - Operador de 1ᴱᴿ turno - firma y sello</Text>
-                </View>
+                <View style={styles.tablesRow}>
+                  <View style={styles.signatureContainer}>
+                    <View style={[styles.signatureHeader, styles.boldText]}>
+                      <Text> FIRMA DE PREVALORADAS (DE OPERADOR 1ER TURNO A OPERADOR)</Text>
+                    </View>
+                    <View style={styles.bodySignature}>
+                      <View style={styles.signature}>
+                        <Text>ENTREGUE CONFORME - Operador de 1er turno firma</Text>
+                      </View>
+                      <View style={styles.signature}>
+                        <Text>ENTREGUE CONFORME - Operador de 1er turno firma</Text>
+                      </View>
+                    </View>
+                  </View>
+        
+                  <View style={styles.signatureContainer}>
+                    <View style={[styles.signatureHeader, styles.boldText]}>
+                      <Text> FIRMA DE PREVALORADAS (DE OPERADOR 1ER TURNO A OPERADOR)</Text>
+                    </View>
+                    <View style={styles.bodySignature}>
+                      <View style={styles.signature}>
+                        <Text>ENTREGUE CONFORME - Operador de 1er turno firma</Text>
+                      </View>
+                      <View style={styles.signature}>
+                        <Text>ENTREGUE CONFORME - Operador de 1er turno firma</Text>
+                      </View>
+                    </View>
+                  </View>
                 </View>
             </Page>
         );
