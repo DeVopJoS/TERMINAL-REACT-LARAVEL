@@ -271,25 +271,31 @@ Route::get('home', 'HomeController@index');
 
 
 /* routes for FileUpload Controller  */	
-Route::post('fileuploader/upload/{fieldname}', 'FileUploaderController@upload');
-Route::post('fileuploader/s3upload/{fieldname}', 'FileUploaderController@s3upload');
-Route::post('fileuploader/remove_temp_file', 'FileUploaderController@remove_temp_file');
+	Route::post('fileuploader/upload/{fieldname}', 'FileUploaderController@upload');
+	Route::post('fileuploader/s3upload/{fieldname}', 'FileUploaderController@s3upload');
+	Route::post('fileuploader/remove_temp_file', 'FileUploaderController@remove_temp_file');
 
 // Routes from TblServicioController
-Route::get('/servicios', [TblServiciosController::class, 'obtenerServicios']);
+	Route::get('/servicios', [TblServiciosController::class, 'obtenerServicios']);
 
 // Routes for ActaentregacabController
-Route::get('/actas/index/{filter?}/{filtervalue?}', 'ActaentregacabController@index');
-Route::get('/actas/cabecera/{rec_id}', 'ActaentregacabController@showActaWithDet');
-Route::post('/actas/cabecera', 'ActaentregacabController@showMultipleActas');
-Route::post('/actas', [ActaentregacabController::class, 'store']);
+	Route::get('/actas/index/{filter?}/{filtervalue?}', 'ActaentregacabController@index');
+	Route::get('/actas/cabecera/{rec_id}', 'ActaentregacabController@showActaWithDet');
+	Route::post('/actas/cabecera', 'ActaentregacabController@showMultipleActas');
+	Route::post('/actas', [ActaentregacabController::class, 'store']);
 
 // Routes for ActaentregadetController
-Route::get('/tblactaentregadet/index', 'ActaentregadetController@index');
-Route::get('/tblactaentregadet/index/{filter?}/{filtervalue?}', 'ActaentregadetController@index');
-Route::post('/tblactaentregadet/add', 'ActaentregadetController@add'); 
-Route::put('/registros/{id}', 'ActaentregadetController@nuevo');
-Route::post('/tblactaentregadet/finalizar', 'ActaentregadetController@closeActa'); 
+	Route::get('/tblactaentregadet/index', 'ActaentregadetController@index');
+	Route::get('/tblactaentregadet/index/{filter?}/{filtervalue?}', 'ActaentregadetController@index');
+	Route::post('/tblactaentregadet/add', 'ActaentregadetController@add'); 
+	Route::put('/registros/{id}', 'ActaentregadetController@nuevo');
+	Route::post('/tblactaentregadet/finalizar', 'ActaentregadetController@closeActa'); 
 
 // Routes for TblPuntosRecaudacionController
-Route::get('tblpuntosrecaudacion/index/{filter?}/{filtervalue?}', 'TblPuntosRecaudacionController@index');
+	Route::get('tblpuntosrecaudacion/index/{filter?}/{filtervalue?}', 'TblPuntosRecaudacionController@index');
+
+/* routes for ControlDiarioController */
+	Route::get('control-diario/totales', 'ControlDiarioController@obtenerTotales');
+	Route::get('control-diario/historial', 'ControlDiarioController@obtenerHistorial');
+	Route::post('control-diario/deposito', 'ControlDiarioController@registrarDeposito');
+	Route::get('control-diario/reporte-rango', 'ControlDiarioController@obtenerReporteRango');

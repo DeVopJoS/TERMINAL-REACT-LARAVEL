@@ -126,6 +126,7 @@ import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import 'assets/styles/layout.scss';
 import PrevaloradasEdit from 'pages/registroprevaloradas/Edit';
+import ControlDiarioList from 'pages/control-diario/List';
 const App = () => {
 	const auth = useAuth();
 	function DefaultPage(){
@@ -350,8 +351,11 @@ const App = () => {
 				{/* <Route path="/serviciosprevalorados/busquedaacta1/" element={<BusquedaActa2 />} />  */}
 				<Route path="/serviciosprevalorados/actaentregapopup/" element={<actaentregapopup />} /> 
 				
-				
+				{/* Actas de Recaudación */}
 				<Route path="/tblactas/view" element={<TblActasList />} /> 
+				
+				{/* Control Diario */}
+				<Route path="/control-diario" element={<ControlDiarioList />} />
 			</Route>
 			</Route>
 			<Route exact element={<IndexLayout />}>

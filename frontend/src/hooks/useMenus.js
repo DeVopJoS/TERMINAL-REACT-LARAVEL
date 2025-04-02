@@ -41,6 +41,13 @@ export default function useMenus() {
     "target": "",
   },
   {
+    "to": "/control-diario",
+    "label": "Control de Recaudación",
+    "icon": "pi pi-chart-line",
+    "iconcolor": "",
+    "target": "",
+  },
+  {
     "to": "/actaentregacab",
     "label": "Actaentregacab",
     "icon": "pi pi-th-large",
