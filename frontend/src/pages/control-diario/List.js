@@ -140,78 +140,50 @@ export default function ControlDiarioList() {
     };
 
     const handlePrint = async () => {
-        if (!dateRange.from || !dateRange.to) {
-            toast.current.show({
-                severity: 'warn',
-                summary: 'Datos incompletos',
-                detail: 'Seleccione rango de fechas'
-            });
-            return;
-        }
-        if (dateRange.from > dateRange.to) {
-            toast.current.show({
-                severity: 'error',
-                summary: 'Error en fechas',
-                detail: 'La fecha inicial debe ser anterior o igual a la fecha final'
-            });
-            return;
-        }
-        
-        const fromDate = formatDateForAPI(dateRange.from);
-        const toDate = formatDateForAPI(dateRange.to);
-        
-        if (!fromDate || !toDate) {
-            toast.current.show({
-                severity: 'error',
-                summary: 'Error en fechas',
-                detail: 'El formato de las fechas es inválido'
-            });
-            return;
-        }
-
-        setLoading(true);
-        
         try {
-            const params = {
-                fecha_desde: fromDate,
-                fecha_hasta: toDate
-            };
-            
-            console.log("Solicitando reporte con parámetros:", params);
-            
-            const response = await api.get('control-diario/reporte-rango', { params });
-            
-            if (!response || !response.data) {
-                throw new Error('No se recibieron datos del servidor');
-            }
-            
-            if (Array.isArray(response.data) && response.data.length === 0) {
+            if (!dateRange.from || !dateRange.to) {
                 toast.current.show({
                     severity: 'warn',
-                    summary: 'Sin datos',
-                    detail: 'No hay datos disponibles para el rango de fechas seleccionado'
+                    summary: 'Datos incompletos',
+                    detail: 'Seleccione rango de fechas'
                 });
                 return;
+            }
+
+            setLoading(true);
+            const params = new URLSearchParams();
+            
+            // Asegurar que las fechas estén en formato ISO
+            const fromDate = dateRange.from instanceof Date ? 
+                dateRange.from.toISOString().split('T')[0] : 
+                new Date(dateRange.from).toISOString().split('T')[0];
+                
+            const toDate = dateRange.to instanceof Date ? 
+                dateRange.to.toISOString().split('T')[0] : 
+                new Date(dateRange.to).toISOString().split('T')[0];
+
+            params.append('fecha_desde', fromDate);
+            params.append('fecha_hasta', toDate);
+            
+            console.log('Enviando parámetros:', {
+                fecha_desde: fromDate,
+                fecha_hasta: toDate
+            });
+
+            const response = await api.get(`control-diario/reporte-rango?${params.toString()}`);
+            
+            if (!response.data) {
+                throw new Error('No se recibieron datos del servidor');
             }
             
             setReportData(response.data);
             setShowPrintDialog(true);
         } catch (error) {
-            let errorMessage = 'No se pudo generar el reporte. ';
-            
-            if (error.response?.data?.error) {
-                errorMessage += error.response.data.error;
-            } else if (error.message) {
-                errorMessage += error.message;
-            } else {
-                errorMessage += 'Intente nuevamente o contacte al administrador del sistema.';
-            }
-            
-            console.error("Error en generación de reporte:", error);
+            console.error('Error al generar reporte:', error);
             toast.current.show({
                 severity: 'error',
                 summary: 'Error',
-                detail: errorMessage
+                detail: error.response?.data?.error || error.message
             });
         } finally {
             setLoading(false);

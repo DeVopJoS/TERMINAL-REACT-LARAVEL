@@ -176,28 +176,55 @@ class ControlDiarioController extends Controller
     public function obtenerReporteRango(Request $request)
     {
         try {
-            \Log::info('Inicio de obtenerReporteRango', ['request_params' => $request->all()]);
+            \Log::info('Parámetros recibidos:', $request->all());
             
-            $request->validate([
-                'fecha_desde' => 'required',
-                'fecha_hasta' => 'required'
+            $fechaDesde = $request->input('fecha_desde');
+            $fechaHasta = $request->input('fecha_hasta');
+            
+            \Log::info('Fechas recibidas:', [
+                'fecha_desde' => $fechaDesde,
+                'fecha_hasta' => $fechaHasta
             ]);
+            
+            // Validar que ambas fechas existan y no estén vacías
+            if (empty($fechaDesde) || empty($fechaHasta)) {
+                return response()->json([
+                    'error' => 'Debe seleccionar ambas fechas (desde y hasta)',
+                    'debug' => [
+                        'fecha_desde' => $fechaDesde,
+                        'fecha_hasta' => $fechaHasta,
+                        'request_all' => $request->all()
+                    ]
+                ], 400);
+            }
 
-            $fechaDesde = date('Y-m-d', strtotime($request->fecha_desde));
-            $fechaHasta = date('Y-m-d', strtotime($request->fecha_hasta));
+            try {
+                $fechaDesde = date('Y-m-d', strtotime($fechaDesde));
+                $fechaHasta = date('Y-m-d', strtotime($fechaHasta));
+            } catch (\Exception $e) {
+                return response()->json([
+                    'error' => 'Formato de fecha inválido',
+                    'debug' => [
+                        'fecha_desde' => $fechaDesde,
+                        'fecha_hasta' => $fechaHasta,
+                        'error' => $e->getMessage()
+                    ]
+                ], 400);
+            }
 
             \Log::info('Fechas formateadas', [
                 'fechaDesde' => $fechaDesde,
                 'fechaHasta' => $fechaHasta
             ]);
 
-            // Asegurarse que fecha_hasta es mayor o igual a fecha_desde
-            if (strtotime($fechaDesde) > strtotime($fechaHasta)) {
+            // Asegurarse que fecha_hasta no es menor que fecha_desde
+            if (strtotime($fechaHasta) < strtotime($fechaDesde)) {
                 return response()->json([
-                    'error' => 'La fecha final debe ser mayor o igual a la fecha inicial'
+                    'error' => 'La fecha final no puede ser menor a la fecha inicial'
                 ], 400);
             }
 
+            // Verificar rango máximo de 90 días
             $diff = (new \DateTime($fechaDesde))->diff(new \DateTime($fechaHasta));
             if ($diff->days > 90) {
                 return response()->json([
@@ -307,6 +334,59 @@ class ControlDiarioController extends Controller
             return response()->json([
                 'error' => 'Error generando reporte: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function reporteRango(Request $request)
+    {
+        try {
+            $fechaDesde = $request->fecha_desde;
+            $fechaHasta = $request->fecha_hasta;
+
+            if (!$fechaDesde || !$fechaHasta) {
+                return response()->json([]);
+            }
+
+            $datos = DB::table('actaentregacab as cab')
+                ->join('tbl_puntos_recaudacion as pr', 'cab.punto_recaud_id', '=', 'pr.punto_recaud_id')
+                ->leftJoin('tbl_depositos as dep', function($join) {
+                    $join->on('cab.ae_fecha', '=', 'dep.fecha_recaudacion');
+                })
+                ->whereBetween(DB::raw('DATE(cab.ae_fecha)'), [$fechaDesde, $fechaHasta])
+                ->select(
+                    DB::raw("to_char(cab.ae_fecha, 'DD/MM/YYYY') as fecha"),
+                    'cab.ae_recaudaciontotalbs as total_actas',
+                    DB::raw("COALESCE(SUM(CASE WHEN det.servicio_id = 1 THEN det.aed_importebs ELSE 0 END), 0) as total_prevaloradas"),
+                    'dep.total_efectivo',
+                    'dep.numero_deposito_1',
+                    'dep.numero_deposito_2',
+                    'dep.depositantes',
+                    'dep.observacion'
+                )
+                ->leftJoin('actaentregadet as det', 'cab.ae_actaid', '=', 'det.ae_actaid')
+                ->groupBy(
+                    'cab.ae_fecha',
+                    'cab.ae_recaudaciontotalbs',
+                    'dep.total_efectivo',
+                    'dep.numero_deposito_1',
+                    'dep.numero_deposito_2',
+                    'dep.depositantes',
+                    'dep.observacion'
+                )
+                ->orderBy('cab.ae_fecha')
+                ->get();
+
+            $datos = $datos->map(function($item) {
+                $item->total_actas = floatval($item->total_actas);
+                $item->total_prevaloradas = floatval($item->total_prevaloradas);
+                $item->total_efectivo = floatval($item->total_efectivo);
+                return $item;
+            });
+
+            return response()->json($datos);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 }

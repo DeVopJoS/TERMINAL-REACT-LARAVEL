@@ -253,13 +253,13 @@ Route::middleware(['auth:api'])->group(function () {
 	Route::get('arqueo-recaudacion-numero', 'ArqueoRecaudacionController@getNextNumeroArqueo');
 });
 
-/* routes for ControlDiarioController */
+/* routes for Control Diario */
 	Route::get('control-diario/totales', 'ControlDiarioController@obtenerTotales');
 	Route::get('control-diario/historial', 'ControlDiarioController@obtenerHistorial');
-	Route::post('control-diario/deposito', 'ControlDiarioController@registrarDeposito');
 	Route::get('control-diario/reporte-rango', 'ControlDiarioController@obtenerReporteRango');
+	Route::post('control-diario/deposito', 'DepositoController@store');
 
-/* routes for Deposito Controller */
+/* routes for Deposito */
 	Route::get('depositos', 'DepositoController@index');
 	Route::post('depositos', 'DepositoController@store');
 	Route::get('depositos/{id}', 'DepositoController@show');

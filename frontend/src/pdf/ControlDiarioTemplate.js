@@ -76,12 +76,11 @@ const styles = StyleSheet.create({
 });
 
 const ControlDiarioTemplate = ({ data, dateRange }) => {
-    const totals = data.reduce((acc, row) => {
-        acc.total_actas += parseFloat(row.total_actas || 0);
-        acc.total_prevaloradas += parseFloat(row.total_prevaloradas || 0);
-        acc.total_efectivo += parseFloat(row.total_efectivo || 0);
-        return acc;
-    }, {
+    const totals = data.reduce((acc, row) => ({
+        total_actas: acc.total_actas + parseFloat(row.total_actas || 0),
+        total_prevaloradas: acc.total_prevaloradas + parseFloat(row.total_prevaloradas || 0),
+        total_efectivo: acc.total_efectivo + parseFloat(row.total_efectivo || 0)
+    }), {
         total_actas: 0,
         total_prevaloradas: 0,
         total_efectivo: 0
@@ -99,7 +98,7 @@ const ControlDiarioTemplate = ({ data, dateRange }) => {
                 </Text>
                 
                 <Text style={styles.subtitle}>
-                    Terminal de Buses Potosí
+                    Terminal de Buses
                 </Text>
                 
                 <Text style={styles.header}>
@@ -125,7 +124,7 @@ const ControlDiarioTemplate = ({ data, dateRange }) => {
                         {data.map((row, index) => (
                             <View key={index} style={[
                                 styles.tableRow, 
-                                Math.abs((row.total_actas || 0) - (row.total_efectivo || 0)) > 1 
+                                Math.abs((row.total_actas || 0) - (row.total_efectivo || 0)) > 0.01 
                                     ? { backgroundColor: '#fff0f0' } 
                                     : {}
                             ]}>
