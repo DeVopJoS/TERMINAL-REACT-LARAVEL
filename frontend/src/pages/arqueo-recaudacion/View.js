@@ -36,6 +36,28 @@ export default function ArqueoRecaudacionView() {
         }
     };
 
+    const getDiferenciaText = (tipo, monto) => {
+        // Validar que exista un monto de diferencia
+        if (monto === undefined || monto === null) return 'Sin diferencia';
+        
+        const montoAbs = Math.abs(parseFloat(monto));
+        
+        // Si tiene tipo y monto, mostrar el mensaje correspondiente
+        if (tipo && monto) {
+            switch (tipo) {
+                case 'S':
+                    return `Sobrante: Bs. ${montoAbs.toFixed(2)}`;
+                case 'F':
+                    return `Faltante: Bs. ${montoAbs.toFixed(2)}`;
+                default:
+                    return `Diferencia: Bs. ${montoAbs.toFixed(2)}`;
+            }
+        }
+        
+        // Si solo tiene monto pero no tipo
+        return `Diferencia: Bs. ${montoAbs.toFixed(2)}`;
+    };
+
     if (loading || !acta) {
         return (
             <div className="card">
@@ -99,6 +121,21 @@ export default function ArqueoRecaudacionView() {
                             <p className="text-lg">
                                 {acta.punto_recaudacion?.puntorecaud_nombre || 
                                  `No especificado (ID: ${acta.punto_recaud_id || 'No ID'})`}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="col-12 md:col-6 lg:col-3">
+                    <div className="card">
+                        <div className="card-body">
+                            <h6>Diferencia</h6>
+                            <p className={`text-lg ${
+                                acta.diferenciatipo === 'S' ? 'text-blue-600' :
+                                acta.diferenciatipo === 'F' ? 'text-red-600' :
+                                'text-gray-600'
+                            }`}>
+                                {getDiferenciaText(acta.diferenciatipo, acta.arqueodiferencia)}
                             </p>
                         </div>
                     </div>

@@ -147,6 +147,14 @@ class ArqueoRecaudacionController extends Controller
             $arqueoid = DB::table('arqueocab')->max('arqueoid') + 1;
             $arqueodetcorteid = DB::table('arqueodetcortes')->max('arqueodetcorteid') + 1;
 
+            // Determinar el tipo de diferencia
+            $diferenciatipo = null;
+            if ($request->arqueodiferencia > 0) {
+                $diferenciatipo = 'S'; // Sobrante
+            } elseif ($request->arqueodiferencia < 0) {
+                $diferenciatipo = 'F'; // Faltante
+            }
+
             $arqueoCab = new Arqueocab();
             $arqueoCab->arqueoid = $arqueoid;
             $arqueoCab->arqueonumero = $request->arqueonumero;
@@ -154,11 +162,12 @@ class ArqueoRecaudacionController extends Controller
             $arqueoCab->arqueoturno = $request->arqueoturno ?? 'M'; // Por defecto turno mañana
             $arqueoCab->arqueohorainicio = $request->arqueohorainicio;
             $arqueoCab->arqueohorafin = $request->arqueohorafin;
-            $arqueoCab->arqueosupervisor = 1; // valor por defecto
+            $arqueoCab->arqueosupervisor = $request->arqueosupervisor; // Ahora guarda el nombre directamente
             $arqueoCab->arqueorealizadopor = auth()->id() ?? 1;
-            $arqueoCab->arqueorevisadopor = 1; // valor por defecto
+            $arqueoCab->arqueorevisadopor = $request->arqueosupervisor; // También usar el nombre aquí
             $arqueoCab->arqueorecaudaciontotal = $request->arqueorecaudaciontotal;
             $arqueoCab->arqueodiferencia = $request->arqueodiferencia;
+            $arqueoCab->diferenciatipo = $diferenciatipo; // Nuevo campo
             $arqueoCab->arqueoobservacion = $request->arqueoobservacion;
             $arqueoCab->arqueoestado = 'R'; // estado cambiado de 'A' a 'R'
             $arqueoCab->arqueofecharegistro = now();
@@ -379,11 +388,25 @@ class ArqueoRecaudacionController extends Controller
     public function view($id)
     {
         try {
-            // Modificado para obtener datos de actaentregacab
             $acta = Actaentregacab::with([
                 'detalles.servicio',
                 'puntoRecaudacion:punto_recaud_id,puntorecaud_nombre'
             ])->findOrFail($id);
+            
+            // Obtener datos del arqueo si existe
+            if ($acta->arqueoid) {
+                $arqueo = Arqueocab::select(
+                    'arqueodiferencia',
+                    'diferenciatipo',
+                    'arqueorecaudaciontotal'
+                )->where('arqueoid', $acta->arqueoid)->first();
+                
+                if ($arqueo) {
+                    $acta->arqueodiferencia = $arqueo->arqueodiferencia;
+                    $acta->diferenciatipo = $arqueo->diferenciatipo;
+                    $acta->arqueorecaudaciontotal = $arqueo->arqueorecaudaciontotal;
+                }
+            }
             
             return response()->json($acta);
         } catch (Exception $e) {

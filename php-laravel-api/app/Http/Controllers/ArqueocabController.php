@@ -39,10 +39,32 @@ class ArqueocabController extends Controller
 	 * @param string $rec_id
      * @return \Illuminate\View\View
      */
-	function view($rec_id = null){
-		$query = Arqueocab::query();
-		$record = $query->findOrFail($rec_id, Arqueocab::viewFields());
-		return $this->respond($record);
+	public function view($rec_id = null) {
+		try {
+			$query = Arqueocab::query();
+			$record = $query->select([
+				'arqueoid',
+				'arqueonumero',
+				'arqueofecha',
+				'arqueoturno',
+				'arqueohorainicio',
+				'arqueohorafin',
+				'arqueosupervisor',
+				'arqueorealizadopor',
+				'arqueorevisadopor',
+				'arqueorecaudaciontotal',
+				'arqueodiferencia',
+				'diferenciatipo', 
+				'arqueoobservacion',
+				'arqueoestado',
+				'arqueofecharegistro',
+				'arqueousuario'
+			])->findOrFail($rec_id);
+			
+			return $this->respond($record);
+		} catch (Exception $e) {
+			return response()->json(['error' => $e->getMessage()], 500);
+		}
 	}
 	
 

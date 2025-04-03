@@ -77,9 +77,9 @@ export default function ArqueoRecaudacionPage() {
         let severity = 'info';
         let label = 'Pendiente';
         
-        if (estado === 'R') {  // modificado estado A a R
+        if (estado === 'R') {
             severity = 'success';
-            label = 'Recaudado';  // cambio etiqueta a Recaudado
+            label = 'Recaudado';
         } else if (estado === 'P') {
             severity = 'warning';
             label = 'Pendiente';
