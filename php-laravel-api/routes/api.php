@@ -253,6 +253,19 @@ Route::middleware(['auth:api'])->group(function () {
 	Route::get('arqueo-recaudacion-numero', 'ArqueoRecaudacionController@getNextNumeroArqueo');
 });
 
+/* routes for ControlDiarioController */
+	Route::get('control-diario/totales', 'ControlDiarioController@obtenerTotales');
+	Route::get('control-diario/historial', 'ControlDiarioController@obtenerHistorial');
+	Route::post('control-diario/deposito', 'ControlDiarioController@registrarDeposito');
+	Route::get('control-diario/reporte-rango', 'ControlDiarioController@obtenerReporteRango');
+
+/* routes for Deposito Controller */
+	Route::get('depositos', 'DepositoController@index');
+	Route::post('depositos', 'DepositoController@store');
+	Route::get('depositos/{id}', 'DepositoController@show');
+	Route::put('depositos/{id}', 'DepositoController@update');
+	Route::delete('depositos/{id}', 'DepositoController@destroy');
+
 Route::get('home', 'HomeController@index');
 	
 	Route::post('auth/register', 'AuthController@register');	
@@ -293,9 +306,3 @@ Route::get('home', 'HomeController@index');
 
 // Routes for TblPuntosRecaudacionController
 	Route::get('tblpuntosrecaudacion/index/{filter?}/{filtervalue?}', 'TblPuntosRecaudacionController@index');
-
-/* routes for ControlDiarioController */
-	Route::get('control-diario/totales', 'ControlDiarioController@obtenerTotales');
-	Route::get('control-diario/historial', 'ControlDiarioController@obtenerHistorial');
-	Route::post('control-diario/deposito', 'ControlDiarioController@registrarDeposito');
-	Route::get('control-diario/reporte-rango', 'ControlDiarioController@obtenerReporteRango');

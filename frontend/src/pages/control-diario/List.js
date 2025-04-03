@@ -6,8 +6,10 @@ import { Button } from 'primereact/button';
 import { InputNumber } from 'primereact/inputnumber';
 import { InputText } from 'primereact/inputtext';
 import { Toast } from 'primereact/toast';
+import { InputTextarea } from 'primereact/inputtextarea';
 import useApi from 'hooks/useApi';
-import { PDFViewer } from '@react-pdf/renderer';
+import { PDFViewer, pdf } from '@react-pdf/renderer';
+import { saveAs } from 'file-saver';
 import ControlDiarioTemplate from '../../pdf/ControlDiarioTemplate';
 import { Dialog } from 'primereact/dialog';
 
@@ -18,16 +20,55 @@ export default function ControlDiarioList() {
     const [fecha, setFecha] = useState(new Date());
     const [data, setData] = useState(null);
     const [deposito, setDeposito] = useState({
-        monto: 0,
+        fecha_recaudacion: new Date(),
+        fecha_deposito_1: new Date(),
+        numero_deposito_1: '',
+        efectivo_1: 0,
+        fecha_deposito_2: null,
+        numero_deposito_2: '',
+        efectivo_2: 0,
+        depositantes: '',
         observacion: ''
     });
     const [dateRange, setDateRange] = useState({ from: null, to: null });
     const [showPrintDialog, setShowPrintDialog] = useState(false);
+    const [showDepositoDialog, setShowDepositoDialog] = useState(false);
     const [reportData, setReportData] = useState(null);
+    const [showAdditionalDeposit, setShowAdditionalDeposit] = useState(false);
 
     useEffect(() => {
         loadData();
     }, [fecha]);
+
+    useEffect(() => {
+        if (data && data.deposito) {
+            setShowAdditionalDeposit(!!data.deposito.efectivo_2);
+            setDeposito({
+                fecha_recaudacion: new Date(data.deposito.fecha_recaudacion),
+                fecha_deposito_1: data.deposito.fecha_deposito_1 ? new Date(data.deposito.fecha_deposito_1) : new Date(),
+                numero_deposito_1: data.deposito.numero_deposito_1 || '',
+                efectivo_1: data.deposito.efectivo_1 || 0,
+                fecha_deposito_2: data.deposito.fecha_deposito_2 ? new Date(data.deposito.fecha_deposito_2) : null,
+                numero_deposito_2: data.deposito.numero_deposito_2 || '',
+                efectivo_2: data.deposito.efectivo_2 || 0,
+                depositantes: data.deposito.depositantes || '',
+                observacion: data.deposito.observacion || ''
+            });
+        } else {
+            setShowAdditionalDeposit(false);
+            setDeposito({
+                fecha_recaudacion: fecha,
+                fecha_deposito_1: new Date(),
+                numero_deposito_1: '',
+                efectivo_1: 0,
+                fecha_deposito_2: null,
+                numero_deposito_2: '',
+                efectivo_2: 0,
+                depositantes: '',
+                observacion: ''
+            });
+        }
+    }, [data]);
 
     const loadData = async () => {
         try {
@@ -48,17 +89,25 @@ export default function ControlDiarioList() {
 
     const handleSaveDeposito = async () => {
         try {
-            const fechaStr = fecha.toISOString().split('T')[0];
             await api.post('control-diario/deposito', {
-                fecha: fechaStr,
-                monto: deposito.monto,
+                fecha_recaudacion: deposito.fecha_recaudacion.toISOString().split('T')[0],
+                fecha_deposito_1: deposito.fecha_deposito_1.toISOString().split('T')[0],
+                numero_deposito_1: deposito.numero_deposito_1,
+                efectivo_1: deposito.efectivo_1,
+                fecha_deposito_2: deposito.fecha_deposito_2 ? deposito.fecha_deposito_2.toISOString().split('T')[0] : null,
+                numero_deposito_2: deposito.numero_deposito_2,
+                efectivo_2: deposito.efectivo_2 || 0,
+                depositantes: deposito.depositantes,
                 observacion: deposito.observacion
             });
+            
             toast.current.show({
                 severity: 'success',
                 summary: 'Éxito',
                 detail: 'Depósito registrado correctamente'
             });
+            
+            setShowDepositoDialog(false);
             loadData();
         } catch (error) {
             toast.current.show({
@@ -67,6 +116,28 @@ export default function ControlDiarioList() {
                 detail: 'Error al registrar depósito'
             });
         }
+    };
+
+    const formatDateForAPI = (date) => {
+        if (!date) return '';
+        try {
+            const d = new Date(date);
+            if (isNaN(d.getTime())) {
+                console.error("Invalid date:", date);
+                return '';
+            }
+            d.setHours(12, 0, 0, 0);
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        } catch (error) {
+            console.error("Error formatting date:", error);
+            return '';
+        }
+    };
+    const formatDateDisplay = (dateString) => {
+        if (!dateString) return '';
+        const d = new Date(dateString);
+        d.setHours(12, 0, 0, 0);
+        return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
     };
 
     const handlePrint = async () => {
@@ -78,22 +149,111 @@ export default function ControlDiarioList() {
             });
             return;
         }
-
-        try {
-            setLoading(true);
-            const response = await api.get('control-diario/reporte-rango', {
-                params: {
-                    fecha_desde: dateRange.from.toISOString().split('T')[0],
-                    fecha_hasta: dateRange.to.toISOString().split('T')[0]
-                }
+        if (dateRange.from > dateRange.to) {
+            toast.current.show({
+                severity: 'error',
+                summary: 'Error en fechas',
+                detail: 'La fecha inicial debe ser anterior o igual a la fecha final'
             });
+            return;
+        }
+        
+        const fromDate = formatDateForAPI(dateRange.from);
+        const toDate = formatDateForAPI(dateRange.to);
+        
+        if (!fromDate || !toDate) {
+            toast.current.show({
+                severity: 'error',
+                summary: 'Error en fechas',
+                detail: 'El formato de las fechas es inválido'
+            });
+            return;
+        }
+
+        setLoading(true);
+        
+        try {
+            const params = {
+                fecha_desde: fromDate,
+                fecha_hasta: toDate
+            };
+            
+            console.log("Solicitando reporte con parámetros:", params);
+            
+            const response = await api.get('control-diario/reporte-rango', { params });
+            
+            if (!response || !response.data) {
+                throw new Error('No se recibieron datos del servidor');
+            }
+            
+            if (Array.isArray(response.data) && response.data.length === 0) {
+                toast.current.show({
+                    severity: 'warn',
+                    summary: 'Sin datos',
+                    detail: 'No hay datos disponibles para el rango de fechas seleccionado'
+                });
+                return;
+            }
+            
             setReportData(response.data);
             setShowPrintDialog(true);
         } catch (error) {
+            let errorMessage = 'No se pudo generar el reporte. ';
+            
+            if (error.response?.data?.error) {
+                errorMessage += error.response.data.error;
+            } else if (error.message) {
+                errorMessage += error.message;
+            } else {
+                errorMessage += 'Intente nuevamente o contacte al administrador del sistema.';
+            }
+            
+            console.error("Error en generación de reporte:", error);
             toast.current.show({
                 severity: 'error',
                 summary: 'Error',
-                detail: 'No se pudo generar el reporte'
+                detail: errorMessage
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDownloadPdf = async () => {
+        try {
+            setLoading(true);
+            if (!reportData || reportData.length === 0) {
+                toast.current.show({
+                    severity: 'warn',
+                    summary: 'Sin datos',
+                    detail: 'No hay datos para generar el PDF'
+                });
+                return;
+            }
+            
+            const blob = await pdf(
+                <ControlDiarioTemplate
+                    data={reportData}
+                    dateRange={{
+                        from: formatDateDisplay(dateRange.from),
+                        to: formatDateDisplay(dateRange.to)
+                    }}
+                />
+            ).toBlob();
+            
+            const fileName = `control_diario_${formatDateForAPI(dateRange.from)}_${formatDateForAPI(dateRange.to)}.pdf`;
+            saveAs(blob, fileName);
+            toast.current.show({
+                severity: 'success',
+                summary: 'Éxito',
+                detail: 'PDF generado correctamente'
+            });
+        } catch (error) {
+            console.error("Error al generar PDF:", error);
+            toast.current.show({
+                severity: 'error',
+                summary: 'Error',
+                detail: 'No se pudo generar el archivo PDF: ' + (error.message || '')
             });
         } finally {
             setLoading(false);
@@ -106,6 +266,26 @@ export default function ControlDiarioList() {
             currency: 'BOB'
         }) || 'Bs. 0.00';
     };
+
+    const openDepositoDialog = () => {
+        setShowDepositoDialog(true);
+    };
+
+    const toggleAdditionalDeposit = () => {
+        setShowAdditionalDeposit(!showAdditionalDeposit);
+        if (!showAdditionalDeposit) {
+            setDeposito({...deposito, fecha_deposito_2: new Date(), numero_deposito_2: '', efectivo_2: 0});
+        } else {
+            setDeposito({...deposito, fecha_deposito_2: null, numero_deposito_2: '', efectivo_2: 0});
+        }
+    };
+
+    const depositoDialogFooter = (
+        <div>
+            <Button label="Cancelar" icon="pi pi-times" className="p-button-text" onClick={() => setShowDepositoDialog(false)} />
+            <Button label="Guardar" icon="pi pi-check" onClick={handleSaveDeposito} />
+        </div>
+    );
 
     if (!data) return null;
 
@@ -167,35 +347,118 @@ export default function ControlDiarioList() {
             </div>
 
             <div className="card">
-                <h6>Registro de Depósito</h6>
-                <div className="grid">
-                    <div className="col-12 md:col-4">
-                        <InputNumber
-                            value={deposito.monto}
-                            onValueChange={(e) => setDeposito({...deposito, monto: e.value})}
-                            mode="currency"
-                            currency="BOB"
-                            locale="es-BO"
-                            className="w-full"
-                            placeholder="Monto depositado"
-                        />
-                    </div>
-                    <div className="col-12 md:col-6">
-                        <InputText
-                            value={deposito.observacion}
-                            onChange={(e) => setDeposito({...deposito, observacion: e.target.value})}
-                            className="w-full"
-                            placeholder="Observación"
-                        />
-                    </div>
-                    <div className="col-12 md:col-2">
-                        <Button
-                            label="Registrar"
-                            onClick={handleSaveDeposito}
-                            className="w-full"
-                        />
-                    </div>
+                <div className="flex justify-content-between align-items-center mb-3">
+                    <h6>Registro de Depósito</h6>
+                    <Button 
+                        label={data.deposito ? "Editar Depósito" : "Registrar Depósito"} 
+                        icon={data.deposito ? "pi pi-pencil" : "pi pi-plus"} 
+                        onClick={openDepositoDialog}
+                    />
                 </div>
+                
+                {data.deposito ? (
+                    <div className="grid">
+                        <div className="col-12 md:col-6">
+                            <div className="card">
+                                <h6>Depósito Principal</h6>
+                                <div className="p-field mb-3">
+                                    <label className="block font-bold">Fecha de Depósito</label>
+                                    <p>{new Date(data.deposito.fecha_deposito_1).toLocaleDateString()}</p>
+                                </div>
+                                <div className="p-field mb-3">
+                                    <label className="block font-bold">Número de Depósito</label>
+                                    <p>{data.deposito.numero_deposito_1}</p>
+                                </div>
+                                <div className="p-field">
+                                    <label className="block font-bold">Monto</label>
+                                    <p className="text-lg">{formatCurrency(data.deposito.efectivo_1)}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {data.deposito.efectivo_2 > 0 && (
+                            <div className="col-12 md:col-6">
+                                <div className="card">
+                                    <h6>Depósito Adicional</h6>
+                                    <div className="p-field mb-3">
+                                        <label className="block font-bold">Fecha de Depósito</label>
+                                        <p>{data.deposito.fecha_deposito_2 ? new Date(data.deposito.fecha_deposito_2).toLocaleDateString() : 'N/A'}</p>
+                                    </div>
+                                    <div className="p-field mb-3">
+                                        <label className="block font-bold">Número de Depósito</label>
+                                        <p>{data.deposito.numero_deposito_2 || 'N/A'}</p>
+                                    </div>
+                                    <div className="p-field">
+                                        <label className="block font-bold">Monto</label>
+                                        <p className="text-lg">{formatCurrency(data.deposito.efectivo_2)}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        
+                        <div className="col-12">
+                            <div className="card">
+                                <div className="grid">
+                                    <div className="col-12 md:col-6">
+                                        <div className="p-field mb-3">
+                                            <label className="block font-bold">Total Depositado</label>
+                                            <p className="font-bold text-xl">{formatCurrency(data.deposito.total_efectivo)}</p>
+                                        </div>
+                                        
+                                        <div className="p-field mb-3">
+                                            <label className="block font-bold">Total Recaudado</label>
+                                            <p className="font-bold text-xl">{formatCurrency(data.total_actas)}</p>
+                                        </div>
+                                        
+                                        <div className="p-field flex align-items-center">
+                                            <label className="block font-bold mr-3">Diferencia</label>
+                                            <p className={`font-bold text-xl ${
+                                                Math.abs(data.total_actas - data.deposito.total_efectivo) < 0.01 ? 'text-green-500' : 'text-red-500'
+                                            }`}>
+                                                {formatCurrency(data.total_actas - data.deposito.total_efectivo)}
+                                            </p>
+                                            {data.total_actas != data.deposito.total_efectivo && (
+                                                <Button 
+                                                    icon="pi pi-pencil" 
+                                                    className="p-button-text p-button-sm ml-3" 
+                                                    tooltip="Editar depósito para corregir diferencia"
+                                                    onClick={openDepositoDialog}
+                                                />
+                                            )}
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="col-12 md:col-6">
+                                        {data.deposito.depositantes && (
+                                            <div className="p-field mb-3">
+                                                <label className="block font-bold">Depositantes</label>
+                                                <p>{data.deposito.depositantes}</p>
+                                            </div>
+                                        )}
+                                        
+                                        {data.deposito.observacion && (
+                                            <div className="p-field">
+                                                <label className="block font-bold">Observación</label>
+                                                <p>{data.deposito.observacion}</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="text-center p-4 surface-100 border-round">
+                        <i className="pi pi-money-bill text-4xl mb-3 text-blue-500"></i>
+                        <p className="text-lg">No hay depósitos registrados para esta fecha</p>
+                        <Button 
+                            label="Registrar Depósito" 
+                            icon="pi pi-plus" 
+                            onClick={openDepositoDialog} 
+                            className="mt-3"
+                        />
+                    </div>
+                )}
             </div>
 
             <div className="card mb-3">
@@ -237,18 +500,232 @@ export default function ControlDiarioList() {
                 style={{ width: '90vw' }}
                 maximizable
                 header="Vista Previa del Reporte"
+                footer={
+                    <div className="flex justify-content-end">
+                        <Button 
+                            label="Imprimir / Guardar PDF" 
+                            icon="pi pi-file-pdf" 
+                            onClick={handleDownloadPdf}
+                            loading={loading}
+                            className="p-button-success"
+                        />
+                        <Button 
+                            label="Cerrar" 
+                            icon="pi pi-times" 
+                            onClick={() => setShowPrintDialog(false)} 
+                            className="p-button-text ml-2"
+                        />
+                    </div>
+                }
             >
-                {reportData && (
-                    <PDFViewer style={{ width: '100%', height: '80vh' }}>
+                {reportData && reportData.length > 0 ? (
+                    <PDFViewer style={{ width: '100%', height: '70vh' }}>
                         <ControlDiarioTemplate
                             data={reportData}
                             dateRange={{
-                                from: dateRange.from.toLocaleDateString(),
-                                to: dateRange.to.toLocaleDateString()
+                                from: formatDateDisplay(dateRange.from),
+                                to: formatDateDisplay(dateRange.to)
                             }}
                         />
                     </PDFViewer>
+                ) : (
+                    <div className="flex flex-column align-items-center justify-content-center" style={{height: '50vh'}}>
+                        <i className="pi pi-exclamation-circle" style={{fontSize: '3rem', color: '#FBC02D'}}></i>
+                        <h3>No hay datos disponibles para mostrar</h3>
+                        <p>Intente con un rango de fechas diferente</p>
+                    </div>
                 )}
+            </Dialog>
+
+            <Dialog
+                visible={showDepositoDialog}
+                style={{ width: '50vw' }}
+                header="Registro de Depósito"
+                modal
+                footer={depositoDialogFooter}
+                onHide={() => setShowDepositoDialog(false)}
+            >
+                <div className="grid p-fluid">
+                    <div className="col-12">
+                        <h6>Fecha de Recaudación</h6>
+                        <Calendar 
+                            id="fecha_recaudacion" 
+                            value={deposito.fecha_recaudacion}
+                            onChange={(e) => setDeposito({...deposito, fecha_recaudacion: e.value})}
+                            showIcon
+                            dateFormat="dd/mm/yy"
+                            className="w-full"
+                            disabled
+                        />
+                    </div>
+                    
+                    <div className="col-12 mt-3">
+                        <h6>Depósito Principal</h6>
+                    </div>
+                    
+                    <div className="col-12 md:col-6">
+                        <label htmlFor="fecha_deposito_1">Fecha de Depósito</label>
+                        <Calendar 
+                            id="fecha_deposito_1" 
+                            value={deposito.fecha_deposito_1}
+                            onChange={(e) => setDeposito({...deposito, fecha_deposito_1: e.value})}
+                            showIcon
+                            dateFormat="dd/mm/yy"
+                            className="w-full"
+                        />
+                    </div>
+                    
+                    <div className="col-12 md:col-6">
+                        <label htmlFor="numero_deposito_1">Número de Depósito</label>
+                        <InputText 
+                            id="numero_deposito_1" 
+                            value={deposito.numero_deposito_1}
+                            onChange={(e) => setDeposito({...deposito, numero_deposito_1: e.target.value})}
+                        />
+                    </div>
+                    
+                    <div className="col-12">
+                        <label htmlFor="efectivo_1">Monto (Bs.)</label>
+                        <InputNumber 
+                            id="efectivo_1" 
+                            value={deposito.efectivo_1}
+                            onValueChange={(e) => setDeposito({...deposito, efectivo_1: e.value})}
+                            mode="currency" 
+                            currency="BOB" 
+                            locale="es-BO"
+                        />
+                    </div>
+                    
+                    <div className="col-12 mt-3">
+                        <div className="flex align-items-center justify-content-between">
+                            <h6 className="m-0">Depósito Adicional</h6>
+                            <Button 
+                                icon={showAdditionalDeposit ? "pi pi-minus" : "pi pi-plus"}
+                                className={`p-button-rounded p-button-${showAdditionalDeposit ? 'danger' : 'success'} p-button-sm`}
+                                onClick={toggleAdditionalDeposit}
+                                tooltip={showAdditionalDeposit ? "Eliminar depósito adicional" : "Agregar depósito adicional"}
+                            />
+                        </div>
+                    </div>
+                    
+                    {showAdditionalDeposit && (
+                        <>
+                            <div className="col-12 md:col-6">
+                                <label htmlFor="fecha_deposito_2">Fecha de Depósito</label>
+                                <Calendar 
+                                    id="fecha_deposito_2" 
+                                    value={deposito.fecha_deposito_2}
+                                    onChange={(e) => setDeposito({...deposito, fecha_deposito_2: e.value})}
+                                    showIcon
+                                    dateFormat="dd/mm/yy"
+                                    className="w-full"
+                                />
+                            </div>
+                            
+                            <div className="col-12 md:col-6">
+                                <label htmlFor="numero_deposito_2">Número de Depósito</label>
+                                <InputText 
+                                    id="numero_deposito_2" 
+                                    value={deposito.numero_deposito_2}
+                                    onChange={(e) => setDeposito({...deposito, numero_deposito_2: e.target.value})}
+                                />
+                            </div>
+                            
+                            <div className="col-12">
+                                <label htmlFor="efectivo_2">Monto (Bs.)</label>
+                                <InputNumber 
+                                    id="efectivo_2" 
+                                    value={deposito.efectivo_2}
+                                    onValueChange={(e) => setDeposito({...deposito, efectivo_2: e.value})}
+                                    mode="currency" 
+                                    currency="BOB" 
+                                    locale="es-BO"
+                                />
+                            </div>
+                        </>
+                    )}
+                    
+                    <div className="col-12">
+                        <label htmlFor="depositantes">Depositantes</label>
+                        <InputText 
+                            id="depositantes" 
+                            value={deposito.depositantes}
+                            onChange={(e) => setDeposito({...deposito, depositantes: e.target.value})}
+                        />
+                    </div>
+                    
+                    <div className="col-12">
+                        <label htmlFor="observacion">Observación</label>
+                        <InputTextarea 
+                            id="observacion" 
+                            value={deposito.observacion}
+                            onChange={(e) => setDeposito({...deposito, observacion: e.target.value})}
+                            rows={3}
+                        />
+                    </div>
+                    
+                    <div className="col-12">
+                        <div className="card mt-3 p-3 border-1 surface-border">
+                            <div className="flex justify-content-between mb-2">
+                                <label className="font-bold">Total a Depositar:</label>
+                                <span className="font-bold">
+                                    {formatCurrency(data.total_actas || 0)}
+                                </span>
+                            </div>
+                            
+                            <div className="flex justify-content-between mb-2">
+                                <label className="font-bold">Total Depositado:</label>
+                                <span className="font-bold">
+                                    {formatCurrency((deposito.efectivo_1 || 0) + (deposito.efectivo_2 || 0))}
+                                </span>
+                            </div>
+                            
+                            <div className="flex justify-content-between align-items-center">
+                                <label className="font-bold">Diferencia:</label>
+                                <div className="flex align-items-center">
+                                    <span className={`font-bold mr-2 ${
+                                        Math.abs((data.total_actas || 0) - ((deposito.efectivo_1 || 0) + (deposito.efectivo_2 || 0))) < 0.01
+                                            ? 'text-green-500'
+                                            : 'text-red-500'
+                                    }`}>
+                                        {formatCurrency((data.total_actas || 0) - ((deposito.efectivo_1 || 0) + (deposito.efectivo_2 || 0)))}
+                                    </span>
+                                    
+                                    {!showAdditionalDeposit && 
+                                     Math.abs((data.total_actas || 0) - (deposito.efectivo_1 || 0)) > 0.01 && (
+                                        <Button 
+                                            icon="pi pi-plus-circle" 
+                                            className="p-button-text p-button-sm p-button-info"
+                                            onClick={toggleAdditionalDeposit}
+                                            tooltip="Añadir depósito adicional para cubrir la diferencia"
+                                        />
+                                    )}
+                                </div>
+                            </div>
+                            
+                            {!showAdditionalDeposit && 
+                             Math.abs((data.total_actas || 0) - (deposito.efectivo_1 || 0)) > 0.01 && (
+                                <div className="mt-2 p-2 bg-yellow-50 border-round">
+                                    <div className="flex align-items-center">
+                                        <i className="pi pi-exclamation-triangle text-yellow-500 mr-2"></i>
+                                        <span className="text-sm">
+                                            Existe una diferencia de {formatCurrency(Math.abs((data.total_actas || 0) - (deposito.efectivo_1 || 0)))}. 
+                                            Puede registrar un depósito adicional para cubrir esta diferencia.
+                                        </span>
+                                    </div>
+                                    <div className="mt-2 flex justify-content-end">
+                                        <Button
+                                            label="Agregar depósito adicional"
+                                            icon="pi pi-plus"
+                                            className="p-button-sm p-button-warning"
+                                            onClick={toggleAdditionalDeposit}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
             </Dialog>
         </div>
     );
