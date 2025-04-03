@@ -176,25 +176,13 @@ class ControlDiarioController extends Controller
     public function obtenerReporteRango(Request $request)
     {
         try {
-            \Log::info('Parámetros recibidos:', $request->all());
-            
             $fechaDesde = $request->input('fecha_desde');
             $fechaHasta = $request->input('fecha_hasta');
-            
-            \Log::info('Fechas recibidas:', [
-                'fecha_desde' => $fechaDesde,
-                'fecha_hasta' => $fechaHasta
-            ]);
             
             // Validar que ambas fechas existan y no estén vacías
             if (empty($fechaDesde) || empty($fechaHasta)) {
                 return response()->json([
-                    'error' => 'Debe seleccionar ambas fechas (desde y hasta)',
-                    'debug' => [
-                        'fecha_desde' => $fechaDesde,
-                        'fecha_hasta' => $fechaHasta,
-                        'request_all' => $request->all()
-                    ]
+                    'error' => 'Debe seleccionar ambas fechas (desde y hasta)'
                 ], 400);
             }
 
@@ -203,19 +191,9 @@ class ControlDiarioController extends Controller
                 $fechaHasta = date('Y-m-d', strtotime($fechaHasta));
             } catch (\Exception $e) {
                 return response()->json([
-                    'error' => 'Formato de fecha inválido',
-                    'debug' => [
-                        'fecha_desde' => $fechaDesde,
-                        'fecha_hasta' => $fechaHasta,
-                        'error' => $e->getMessage()
-                    ]
+                    'error' => 'Formato de fecha inválido'
                 ], 400);
             }
-
-            \Log::info('Fechas formateadas', [
-                'fechaDesde' => $fechaDesde,
-                'fechaHasta' => $fechaHasta
-            ]);
 
             // Asegurarse que fecha_hasta no es menor que fecha_desde
             if (strtotime($fechaHasta) < strtotime($fechaDesde)) {
@@ -243,13 +221,9 @@ class ControlDiarioController extends Controller
                     $currentDate->modify('+1 day');
                 }
                 
-                \Log::info('Fechas en el rango', ['fechas' => $fechas]);
-                
                 $result = [];
                 
                 foreach ($fechas as $fecha) {
-                    \Log::info('Procesando fecha', ['fecha' => $fecha]);
-                    
                     $actas = DB::table('actaentregacab')
                         ->select(
                             DB::raw('SUM(ae_recaudaciontotalbs) as total_actas'),
@@ -259,7 +233,6 @@ class ControlDiarioController extends Controller
                         ->first();
                     
                     if (!$actas || ($actas->total_actas == 0 && $actas->cantidad_actas == 0)) {
-                        \Log::info('No hay actas para esta fecha', ['fecha' => $fecha]);
                         continue;
                     }
                     
@@ -269,7 +242,6 @@ class ControlDiarioController extends Controller
                         ->sum('det.aed_importebs');
                     
                     $fechaFormateada = date('d/m/Y', strtotime($fecha));
-                    
                     $deposito = Deposito::whereDate('fecha_recaudacion', $fecha)->first();
                     
                     $item = [
@@ -311,26 +283,12 @@ class ControlDiarioController extends Controller
                     return $dateA <=> $dateB;
                 });
                 
-                \Log::info('Reporte generado exitosamente', ['items' => count($result)]);
                 return response()->json($result);
                 
             } catch (\Exception $e) {
-                \Log::error('Error en consulta SQL', [
-                    'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
-                ]);
-                
                 throw $e;
             }
         } catch (\Exception $e) {
-            \Log::error('Error en obtenerReporteRango', [
-                'error' => $e->getMessage(),
-                'line' => $e->getLine(),
-                'file' => $e->getFile(),
-                'trace' => $e->getTraceAsString(),
-                'request' => $request->all()
-            ]);
-            
             return response()->json([
                 'error' => 'Error generando reporte: ' . $e->getMessage()
             ], 500);

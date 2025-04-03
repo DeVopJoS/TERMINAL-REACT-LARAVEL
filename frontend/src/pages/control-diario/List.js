@@ -153,7 +153,6 @@ export default function ControlDiarioList() {
             setLoading(true);
             const params = new URLSearchParams();
             
-            // Asegurar que las fechas estén en formato ISO
             const fromDate = dateRange.from instanceof Date ? 
                 dateRange.from.toISOString().split('T')[0] : 
                 new Date(dateRange.from).toISOString().split('T')[0];
@@ -164,11 +163,6 @@ export default function ControlDiarioList() {
 
             params.append('fecha_desde', fromDate);
             params.append('fecha_hasta', toDate);
-            
-            console.log('Enviando parámetros:', {
-                fecha_desde: fromDate,
-                fecha_hasta: toDate
-            });
 
             const response = await api.get(`control-diario/reporte-rango?${params.toString()}`);
             
@@ -179,7 +173,6 @@ export default function ControlDiarioList() {
             setReportData(response.data);
             setShowPrintDialog(true);
         } catch (error) {
-            console.error('Error al generar reporte:', error);
             toast.current.show({
                 severity: 'error',
                 summary: 'Error',
