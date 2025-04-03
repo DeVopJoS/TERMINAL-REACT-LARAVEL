@@ -51,6 +51,11 @@ class DepositoController extends Controller
             ]);
 
             $totalEfectivo = $request->efectivo_1 + ($request->efectivo_2 ?? 0);
+            $totalRecaudacion = $request->total_recaudacion;
+            
+            // Calcular la diferencia actual
+            $diferenciaMonto = $totalRecaudacion - $totalEfectivo;
+
             $codigo = 'DEP-' . date('Ymd', strtotime($request->fecha_recaudacion));
             
             $deposito = Deposito::create([
@@ -103,8 +108,12 @@ class DepositoController extends Controller
             ]);
 
             $deposito = Deposito::findOrFail($id);
-            $totalEfectivo = $request->efectivo_1 + ($request->efectivo_2 ?? 0);
+            $totalEfectivo = floatval($request->efectivo_1) + floatval($request->efectivo_2 ?? 0);
+            $totalRecaudacion = floatval($request->total_recaudacion);
             
+            // Asegurar que se calcule siempre la diferencia
+            $diferenciaMonto = $totalRecaudacion - $totalEfectivo;
+
             $deposito->update([
                 'fecha_recaudacion' => $request->fecha_recaudacion,
                 'fecha_deposito_1' => $request->fecha_deposito_1,
@@ -121,7 +130,7 @@ class DepositoController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Depósito actualizado correctamente',
-                'deposito' => $deposito
+                'deposito' => $deposito->fresh() // Recargar el modelo con los datos actualizados
             ]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);

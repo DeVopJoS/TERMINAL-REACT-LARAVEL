@@ -89,17 +89,16 @@ export default function ControlDiarioList() {
 
     const handleSaveDeposito = async () => {
         try {
-            await api.post('control-diario/deposito', {
+            const requestData = {
+                ...deposito,
                 fecha_recaudacion: deposito.fecha_recaudacion.toISOString().split('T')[0],
                 fecha_deposito_1: deposito.fecha_deposito_1.toISOString().split('T')[0],
-                numero_deposito_1: deposito.numero_deposito_1,
-                efectivo_1: deposito.efectivo_1,
                 fecha_deposito_2: deposito.fecha_deposito_2 ? deposito.fecha_deposito_2.toISOString().split('T')[0] : null,
-                numero_deposito_2: deposito.numero_deposito_2,
-                efectivo_2: deposito.efectivo_2 || 0,
-                depositantes: deposito.depositantes,
-                observacion: deposito.observacion
-            });
+                total_recaudacion: data.total_actas || 0,  // Asegurar que se envíe el total
+                efectivo_2: deposito.efectivo_2 || 0
+            };
+
+            await api.post('control-diario/deposito', requestData);
             
             toast.current.show({
                 severity: 'success',
@@ -280,6 +279,21 @@ export default function ControlDiarioList() {
         }
     };
 
+    const validateDepositAmount = (value, isSecondDeposit = false) => {
+        const currentTotal = isSecondDeposit ? deposito.efectivo_1 : 0;
+        const remainingAmount = (data.total_actas || 0) - currentTotal;
+        
+        if (value > remainingAmount) {
+            toast.current.show({
+                severity: 'warn',
+                summary: 'Monto excedido',
+                detail: `El monto máximo permitido es ${formatCurrency(remainingAmount)}`
+            });
+            return remainingAmount;
+        }
+        return value;
+    };
+
     const depositoDialogFooter = (
         <div>
             <Button label="Cancelar" icon="pi pi-times" className="p-button-text" onClick={() => setShowDepositoDialog(false)} />
@@ -413,15 +427,17 @@ export default function ControlDiarioList() {
                                         <div className="p-field flex align-items-center">
                                             <label className="block font-bold mr-3">Diferencia</label>
                                             <p className={`font-bold text-xl ${
-                                                Math.abs(data.total_actas - data.deposito.total_efectivo) < 0.01 ? 'text-green-500' : 'text-red-500'
+                                                Math.abs(data.total_actas - data.deposito.total_efectivo) < 0.01 
+                                                    ? 'text-green-500' 
+                                                    : 'text-red-500'
                                             }`}>
                                                 {formatCurrency(data.total_actas - data.deposito.total_efectivo)}
                                             </p>
-                                            {data.total_actas != data.deposito.total_efectivo && (
+                                            {Math.abs(data.total_actas - data.deposito.total_efectivo) > 0.01 && (
                                                 <Button 
                                                     icon="pi pi-pencil" 
                                                     className="p-button-text p-button-sm ml-3" 
-                                                    tooltip="Editar depósito para corregir diferencia"
+                                                    tooltip="Editar depósito para cubrir diferencia"
                                                     onClick={openDepositoDialog}
                                                 />
                                             )}
@@ -589,10 +605,14 @@ export default function ControlDiarioList() {
                         <InputNumber 
                             id="efectivo_1" 
                             value={deposito.efectivo_1}
-                            onValueChange={(e) => setDeposito({...deposito, efectivo_1: e.value})}
+                            onValueChange={(e) => setDeposito({
+                                ...deposito, 
+                                efectivo_1: validateDepositAmount(e.value)
+                            })}
                             mode="currency" 
                             currency="BOB" 
                             locale="es-BO"
+                            max={data.total_actas || 0}
                         />
                     </div>
                     
@@ -636,10 +656,14 @@ export default function ControlDiarioList() {
                                 <InputNumber 
                                     id="efectivo_2" 
                                     value={deposito.efectivo_2}
-                                    onValueChange={(e) => setDeposito({...deposito, efectivo_2: e.value})}
+                                    onValueChange={(e) => setDeposito({
+                                        ...deposito, 
+                                        efectivo_2: validateDepositAmount(e.value, true)
+                                    })}
                                     mode="currency" 
                                     currency="BOB" 
                                     locale="es-BO"
+                                    max={Math.max(0, (data.total_actas || 0) - (deposito.efectivo_1 || 0))}
                                 />
                             </div>
                         </>
@@ -669,14 +693,14 @@ export default function ControlDiarioList() {
                             <div className="flex justify-content-between mb-2">
                                 <label className="font-bold">Total a Depositar:</label>
                                 <span className="font-bold">
-                                    {formatCurrency(data.total_actas || 0)}
+                                    {formatCurrency(data.total_actas)}
                                 </span>
                             </div>
                             
                             <div className="flex justify-content-between mb-2">
                                 <label className="font-bold">Total Depositado:</label>
                                 <span className="font-bold">
-                                    {formatCurrency((deposito.efectivo_1 || 0) + (deposito.efectivo_2 || 0))}
+                                    {formatCurrency(parseFloat(deposito.efectivo_1 || 0) + parseFloat(deposito.efectivo_2 || 0))}
                                 </span>
                             </div>
                             
@@ -684,11 +708,11 @@ export default function ControlDiarioList() {
                                 <label className="font-bold">Diferencia:</label>
                                 <div className="flex align-items-center">
                                     <span className={`font-bold mr-2 ${
-                                        Math.abs((data.total_actas || 0) - ((deposito.efectivo_1 || 0) + (deposito.efectivo_2 || 0))) < 0.01
+                                        Math.abs(data.total_actas - ((parseFloat(deposito.efectivo_1) || 0) + (parseFloat(deposito.efectivo_2) || 0))) < 0.01
                                             ? 'text-green-500'
                                             : 'text-red-500'
                                     }`}>
-                                        {formatCurrency((data.total_actas || 0) - ((deposito.efectivo_1 || 0) + (deposito.efectivo_2 || 0)))}
+                                        {formatCurrency(data.total_actas - ((parseFloat(deposito.efectivo_1) || 0) + (parseFloat(deposito.efectivo_2) || 0)))}
                                     </span>
                                     
                                     {!showAdditionalDeposit && 
