@@ -274,7 +274,6 @@ export default function ArqueoRecaudacionAdd() {
                         options={[
                             { label: 'MAÑANA', value: 'M' },
                             { label: 'TARDE', value: 'T' },
-                            { label: 'NOCHE', value: 'N' }
                         ]}
                         onChange={(e) => setFormData({...formData, arqueoturno: e.value})}
                         className="w-full"

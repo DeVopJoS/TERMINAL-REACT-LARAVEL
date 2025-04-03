@@ -1,6 +1,8 @@
 import { Formik, Form, ErrorMessage } from 'formik';
 import * as yup from 'yup';
 import { Button } from 'primereact/button';
+import { DataSource } from 'components/DataSource';
+import { Dropdown } from 'primereact/dropdown';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { PageRequestError } from 'components/PageRequestError';
@@ -14,7 +16,7 @@ const TblfacturadetalleEditPage = (props) => {
 	// form validation schema
 	const validationSchema = yup.object().shape({
 		factura_id: yup.number().nullable().label("Factura Id"),
-		arrendamiento_id: yup.number().nullable().label("Arrendamiento Id"),
+		arrendamiento_id: yup.string().nullable().label("Arrendamiento Id"),
 		fact_detalle_periodo_pago: yup.string().required().label("Fact Detalle Periodo Pago"),
 		fact_detalle_canon_alquiler: yup.number().required().label("Fact Detalle Canon Alquiler"),
 		fact_detalle_morosidad_penalidad: yup.number().nullable().label("Fact Detalle Morosidad Penalidad"),
@@ -48,6 +50,27 @@ const TblfacturadetalleEditPage = (props) => {
 		else if(props.redirect) {
 			app.navigate(`/tblfacturadetalle`);
 		}
+	}
+	function ArrendamientoIdItemTemplate(data){
+		if(data){
+			return (
+					<div className="">
+		<div className="font-bold">{data.label}</div>
+		<div className="text-sm text-500">{data.caption}</div>
+	</div>
+			);
+		}
+	}
+	function ArrendamientoIdValueTemplate(data, props){
+			if(data){
+		return (
+			<div className="">
+				<div className="font-bold">{data.label}</div>
+				<div className="text-sm text-500">{data.caption}</div>
+			</div>
+		);
+	}
+	return (<span>{props.placeholder}</span>);
 	}
 	// loading form data from api
 	if(loading){
@@ -117,8 +140,15 @@ const TblfacturadetalleEditPage = (props) => {
                                                 Arrendamiento Id 
                                             </div>
                                             <div className="col-12 md:col-9">
-                                                <InputText name="arrendamiento_id"  onChange={formik.handleChange}  value={formik.values.arrendamiento_id}   label="Arrendamiento Id" type="number" placeholder="Escribir Arrendamiento Id"  min={0}  step="any"    className={inputClassName(formik?.errors?.arrendamiento_id)} />
-                                                <ErrorMessage name="arrendamiento_id" component="span" className="p-error" />
+                                                <DataSource   apiPath="components_data/arrendamiento_id_option_list"  >
+                                                    {
+                                                    ({ response }) => 
+                                                    <>
+                                                    <Dropdown  name="arrendamiento_id"     optionLabel="label" optionValue="value" value={formik.values.arrendamiento_id} onChange={formik.handleChange} options={response} label="Arrendamiento Id"  placeholder="Seleccione un valor"  className={inputClassName(formik?.errors?.arrendamiento_id)} valueTemplate={ArrendamientoIdValueTemplate} itemTemplate={ArrendamientoIdItemTemplate} />
+                                                    <ErrorMessage name="arrendamiento_id" component="span" className="p-error" />
+                                                    </>
+                                                    }
+                                                </DataSource>
                                             </div>
                                         </div>
                                     </div>

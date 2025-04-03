@@ -25,7 +25,6 @@ class TblEdificioSeccionEditRequest extends FormRequest
 		
         return [
             
-				"nivel_id" => "nullable|numeric",
 				"seccion_nombre" => "filled",
 				"seccion_estado" => "filled|string",
         ];

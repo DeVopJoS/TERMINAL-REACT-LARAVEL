@@ -220,6 +220,14 @@ const TblarrendamientosViewPage = (props) => {
                                     </div>
                                 </div>
                             </div>
+                            <div className="col-12 md:col-4">
+                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                    <div className="">
+                                        <div className="text-400 font-medium mb-1">Arrendamiento Fecha</div>
+                                        <div className="font-bold">{ item.arrendamiento_fecha }</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         {/*PageComponentEnd*/}
                     </div>

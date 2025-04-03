@@ -5,11 +5,14 @@ import { DataTable } from 'primereact/datatable';
 import { FilterTags } from 'components/FilterTags';
 import { InputText } from 'primereact/inputtext';
 import { Link } from 'react-router-dom';
+import { Menubar } from 'primereact/menubar';
 import { PageRequestError } from 'components/PageRequestError';
 import { Paginator } from 'primereact/paginator';
 import { ProgressSpinner } from 'primereact/progressspinner';
-import { SplitButton } from 'primereact/splitbutton';
 import { Title } from 'components/Title';
+import TblfacturadetalleAddPage from 'pages/tblfacturadetalle/Add';
+import TblfacturadetalleEditPage from 'pages/tblfacturadetalle/Edit';
+import TblfacturadetalleViewPage from 'pages/tblfacturadetalle/View';
 import useApp from 'hooks/useApp';
 
 import useListPage from 'hooks/useListPage';
@@ -31,14 +34,19 @@ const TblfacturadetalleListPage = (props) => {
 	function ActionButton(data){
 		const items = [
 		{
-			label: "View",
-			command: (event) => { app.navigate(`/tblfacturadetalle/view/${data.detalle_id}`) },
-			icon: "pi pi-eye"
+			label: "Adicionar",
+			command: (event) => { app.openPageDialog(<TblfacturadetalleAddPage isSubPage apiPath={`/tblfacturadetalle/add`} />, {closeBtn: true }) },
+			icon: "pi pi-plus"
 		},
 		{
 			label: "Edit",
-			command: (event) => { app.navigate(`/tblfacturadetalle/edit/${data.detalle_id}`) },
+			command: (event) => { app.openPageDialog(<TblfacturadetalleEditPage isSubPage apiPath={`/tblfacturadetalle/edit/${data.detalle_id}`} />, {closeBtn: true }) },
 			icon: "pi pi-pencil"
+		},
+		{
+			label: "View",
+			command: (event) => { app.openPageDialog(<TblfacturadetalleViewPage isSubPage apiPath={`/tblfacturadetalle/view/${data.detalle_id}`} />, {closeBtn: true }) },
+			icon: "pi pi-eye"
 		},
 		{
 			label: "Delete",
@@ -46,7 +54,7 @@ const TblfacturadetalleListPage = (props) => {
 			icon: "pi pi-trash"
 		}
 	]
-		return (<SplitButton dropdownIcon="pi pi-bars" className="dropdown-only p-button-text p-button-plain" model={items} />);
+		return (<Menubar className="p-0 " model={items} />);
 	}
 	function DetalleIdTemplate(data){
 		if(data){
@@ -142,9 +150,13 @@ const TblfacturadetalleListPage = (props) => {
                     <Title title="Tbl Factura Detalle"   titleClass="text-2xl text-primary font-bold" subTitleClass="text-500"      separator={false} />
                 </div>
                 <div className="col-fixed " >
-                    <Link to={`/tblfacturadetalle/add`}>
-                        <Button label="Agregar nuevo" icon="pi pi-plus" type="button" className="p-button w-full bg-primary "  />
-                        </Link>
+                    <Button 
+                        label="Agregar nuevo" 
+                        icon="pi pi-plus" 
+                        type="button" 
+                        className="p-button w-full bg-primary"
+                        onClick={() => app.openPageDialog(<TblfacturadetalleAddPage isSubPage apiPath={`/tblfacturadetalle/add`} />, {closeBtn: true })}
+                    />
                     </div>
                     <div className="col-12 md:col-3 " >
                         <span className="p-input-icon-left w-full">
@@ -192,7 +204,7 @@ const TblfacturadetalleListPage = (props) => {
                                     <Column  field="fact_detalle_total_mora" header="Fact Detalle Total Mora"   ></Column>
                                     <Column  field="fact_detalle_importe_bs" header="Fact Detalle Importe Bs"   ></Column>
                                     <Column  field="fact_detalle_observaciones" header="Fact Detalle Observaciones"   ></Column>
-                                    <Column headerStyle={{width: '2rem'}} headerClass="text-center" body={ActionButton}></Column>
+                                    <Column headerStyle={{width: 'auto'}} headerClass="text-center" body={ActionButton}></Column>
                                     {/*PageComponentEnd*/}
                                 </DataTable>
                             </div>

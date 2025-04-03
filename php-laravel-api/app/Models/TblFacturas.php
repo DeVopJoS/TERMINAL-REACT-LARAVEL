@@ -134,14 +134,14 @@ class TblFacturas extends Model
      */
 	public static function editFields(){
 		return [ 
-			"factura_id", 
 			"arrendatario_nombre", 
 			"arrendatario_ci", 
 			"factura_numero", 
 			"factura_fecha_emision", 
 			"factura_total", 
 			"factura_fecha_pago", 
-			"factura_estado" 
+			"factura_estado", 
+			"factura_id" 
 		];
 	}
 	

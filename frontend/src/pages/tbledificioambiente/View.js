@@ -63,7 +63,7 @@ const TbledificioambienteViewPage = (props) => {
                 </div>
                 }
                 <div className="col " >
-                    <Title title="Ver"   titleClass="text-2xl text-primary font-bold" subTitleClass="text-500"      separator={false} />
+                    <Title title="Tbl Edificio Ambiente Details"   titleClass="text-2xl text-primary font-bold" subTitleClass="text-500"      separator={false} />
                 </div>
             </div>
         </div>
@@ -81,6 +81,22 @@ const TbledificioambienteViewPage = (props) => {
                                     <div className="">
                                         <div className="text-400 font-medium mb-1">Ambiente Id</div>
                                         <div className="font-bold">{ item.ambiente_id }</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="col-12 md:col-4">
+                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                    <div className="">
+                                        <div className="text-400 font-medium mb-1">Edificio Id</div>
+                                        <div className="font-bold">{ item.edificio_id }</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="col-12 md:col-4">
+                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                    <div className="">
+                                        <div className="text-400 font-medium mb-1">Nivel Id</div>
+                                        <div className="font-bold">{ item.nivel_id }</div>
                                     </div>
                                 </div>
                             </div>
@@ -148,6 +164,30 @@ const TbledificioambienteViewPage = (props) => {
                                     </div>
                                 </div>
                             </div>
+                            <div className="col-12 md:col-4">
+                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                    <div className="">
+                                        <div className="text-400 font-medium mb-1">Tbledificio Edificio Id</div>
+                                        <div className="font-bold">{ item.tbledificio_edificio_id }</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="col-12 md:col-4">
+                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                    <div className="">
+                                        <div className="text-400 font-medium mb-1">Tbledificio Edificio Nombre</div>
+                                        <div className="font-bold">{ item.tbledificio_edificio_nombre }</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="col-12 md:col-4">
+                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                    <div className="">
+                                        <div className="text-400 font-medium mb-1">Tbledificio Edificio Direccion</div>
+                                        <div className="font-bold">{ item.tbledificio_edificio_direccion }</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         {/*PageComponentEnd*/}
                     </div>
@@ -167,9 +207,9 @@ TbledificioambienteViewPage.defaultProps = {
 	pageName: 'tbledificioambiente',
 	apiPath: 'tbledificioambiente/view',
 	routeName: 'tbledificioambienteview',
-	msgBeforeDelete: "¿Seguro que quieres borrar este registro?",
-	msgTitle: "Eliminar el registro",
-	msgAfterDelete: "Grabar eliminado con éxito",
+	msgBeforeDelete: "Are you sure you want to delete this record?",
+	msgTitle: "Delete record",
+	msgAfterDelete: "Record deleted successfully",
 	showHeader: true,
 	showFooter: true,
 	exportButton: true,

@@ -183,7 +183,6 @@ const TbledificionivelListPage = (props) => {
                                     {/*PageComponentStart*/}
                                     <Column selectionMode="multiple" headerStyle={{width: '2rem'}}></Column>
                                     <Column  field="nivel_id" header="Nivel Id" body={NivelIdTemplate}  ></Column>
-                                    <Column  field="edificio_id" header="Edificio Id"   ></Column>
                                     <Column  field="nivel_nombre" header="Nivel Nombre"   ></Column>
                                     <Column  field="nivel_estado" header="Nivel Estado"   ></Column>
                                     <Column headerStyle={{width: '2rem'}} headerClass="text-center" body={ActionButton}></Column>

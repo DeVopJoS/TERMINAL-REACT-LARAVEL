@@ -87,14 +87,6 @@ const TbledificionivelViewPage = (props) => {
                             <div className="col-12 md:col-4">
                                 <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
                                     <div className="">
-                                        <div className="text-400 font-medium mb-1">Edificio Id</div>
-                                        <div className="font-bold">{ item.edificio_id }</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-12 md:col-4">
-                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
-                                    <div className="">
                                         <div className="text-400 font-medium mb-1">Nivel Nombre</div>
                                         <div className="font-bold">{ item.nivel_nombre }</div>
                                     </div>

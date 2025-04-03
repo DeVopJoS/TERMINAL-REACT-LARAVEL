@@ -34,6 +34,56 @@ class Components_dataController extends Controller{
 		$arr = DB::select($sqltext, $query_params);
 		return $arr;
 	}
+		/**
+     * ambiente_id_option_list Model Action
+     * @return array
+     */
+	function ambiente_id_option_list(Request $request){
+		$sqltext = "SELECT ambiente_id AS value,ambiente_nombre AS label,ambiente_codigo_interno AS caption FROM tbl_edificio_ambiente";
+		$query_params = [];
+		$arr = DB::select($sqltext, $query_params);
+		return $arr;
+	}
+		/**
+     * edificio_id_option_list Model Action
+     * @return array
+     */
+	function edificio_id_option_list(Request $request){
+		$sqltext = "SELECT edificio_id AS value, edificio_nombre AS label FROM tbl_edificio";
+		$query_params = [];
+		$arr = DB::select($sqltext, $query_params);
+		return $arr;
+	}
+	/**
+     * nivel_id_option_list Model Action
+     * @return array
+     */
+	function nivel_id_option_list(Request $request){
+		$sqltext = "SELECT nivel_id AS value, nivel_nombre AS label FROM tbl_edificio_nivel";
+		$query_params = [];
+		$arr = DB::select($sqltext, $query_params);
+		return $arr;
+	}
+	/**
+     * seccion_id_option_list Model Action
+     * @return array
+     */
+	function seccion_id_option_list(Request $request){
+		$sqltext = "SELECT seccion_id AS value, seccion_nombre AS label FROM tbl_edificio_seccion";
+		$query_params = [];
+		$arr = DB::select($sqltext, $query_params);
+		return $arr;
+	}
+		/**
+     * arrendamiento_id_option_list Model Action
+     * @return array
+     */
+	function arrendamiento_id_option_list(Request $request){
+		$sqltext = "SELECT arrendamiento_id AS value,arrendatario_nombre AS label,num_contrato AS caption FROM tbl_arrendamientos";
+		$query_params = [];
+		$arr = DB::select($sqltext, $query_params);
+		return $arr;
+	}
 	/**
      * servicio_id_option_list Model Action
      * @return array
@@ -78,4 +128,5 @@ class Components_dataController extends Controller{
 		$arr = DB::select($sqltext, $query_params);
 		return $arr;
 	}
+
 }

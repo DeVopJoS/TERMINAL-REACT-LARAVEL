@@ -26,7 +26,7 @@ class TblFacturaDetalleEditRequest extends FormRequest
         return [
             
 				"factura_id" => "nullable|numeric",
-				"arrendamiento_id" => "nullable|numeric",
+				"arrendamiento_id" => "nullable",
 				"fact_detalle_periodo_pago" => "filled",
 				"fact_detalle_canon_alquiler" => "filled|numeric",
 				"fact_detalle_morosidad_penalidad" => "nullable|numeric",

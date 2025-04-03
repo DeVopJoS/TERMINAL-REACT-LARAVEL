@@ -25,7 +25,6 @@ class TblEdificioNivelAddRequest extends FormRequest
 		
         return [
             
-				"edificio_id" => "nullable|numeric",
 				"nivel_nombre" => "required",
 				"nivel_estado" => "required|string",
         ];

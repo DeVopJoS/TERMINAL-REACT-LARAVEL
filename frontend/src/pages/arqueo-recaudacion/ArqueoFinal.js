@@ -35,8 +35,7 @@ const DiferenciaIndicator = ({ totalCortes, totalRecaudacion }) => {
         color: 'surface-200',
         textColor: 'text-green-500',
         label: 'COMPLETO',
-        description: 'Los montos coinciden exactamente',
-        tipo: null
+        description: 'Los montos coinciden exactamente'
     };
 
     if (diferencia > 0) {
@@ -45,8 +44,7 @@ const DiferenciaIndicator = ({ totalCortes, totalRecaudacion }) => {
             color: 'surface-200',
             textColor: 'text-blue-500',
             label: 'SOBRANTE',
-            description: `Hay un sobrante de Bs. ${diferencia.toFixed(2)}`,
-            tipo: 'S'
+            description: `Hay un sobrante de Bs. ${diferencia.toFixed(2)}`
         };
     } else if (diferencia < 0) {
         status = {
@@ -54,8 +52,7 @@ const DiferenciaIndicator = ({ totalCortes, totalRecaudacion }) => {
             color: 'surface-200',
             textColor: 'text-red-500',
             label: 'FALTANTE',
-            description: `Falta Bs. ${Math.abs(diferencia).toFixed(2)}`,
-            tipo: 'F'
+            description: `Falta Bs. ${Math.abs(diferencia).toFixed(2)}`
         };
     }
 
@@ -250,7 +247,6 @@ export default function ArqueoFinal() {
             setLoading(true);
             const totalCortes = calcularTotalCortes();
             const diferencia = totalCortes - totalRecaudacion;
-            const diferenciatipo = diferencia > 0 ? 'S' : diferencia < 0 ? 'F' : null;
 
             const requestData = {
                 arqueonumero: formData.arqueonumero,
@@ -264,7 +260,6 @@ export default function ArqueoFinal() {
                 arqueoobservacion: formData.arqueoobservacion,
                 arqueorecaudaciontotal: totalRecaudacion,
                 arqueodiferencia: diferencia,
-                diferenciatipo: diferenciatipo,
                 cortes: formData.cortes
             };
 

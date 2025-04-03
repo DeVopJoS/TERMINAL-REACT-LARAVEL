@@ -13,13 +13,11 @@ const TbledificioseccionEditPage = (props) => {
 		const app = useApp();
 	// form validation schema
 	const validationSchema = yup.object().shape({
-		nivel_id: yup.number().nullable().label("Nivel Id"),
 		seccion_nombre: yup.string().required().label("Seccion Nombre"),
 		seccion_estado: yup.string().required().label("Seccion Estado")
 	});
 	// form default values
 	const formDefaultValues = {
-		nivel_id: '', 
 		seccion_nombre: '', 
 		seccion_estado: '', 
 	}
@@ -88,17 +86,6 @@ const TbledificioseccionEditPage = (props) => {
                             return (
                             <Form className={`${!props.isSubPage ? 'card  ' : ''}`}>
                                 <div className="grid">
-                                    <div className="col-12">
-                                        <div className="formgrid grid">
-                                            <div className="col-12 md:col-3">
-                                                Nivel Id 
-                                            </div>
-                                            <div className="col-12 md:col-9">
-                                                <InputText name="nivel_id"  onChange={formik.handleChange}  value={formik.values.nivel_id}   label="Nivel Id" type="number" placeholder="Escribir Nivel Id"  min={0}  step="any"    className={inputClassName(formik?.errors?.nivel_id)} />
-                                                <ErrorMessage name="nivel_id" component="span" className="p-error" />
-                                            </div>
-                                        </div>
-                                    </div>
                                     <div className="col-12">
                                         <div className="formgrid grid">
                                             <div className="col-12 md:col-3">

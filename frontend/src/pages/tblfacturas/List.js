@@ -13,6 +13,7 @@ import { Title } from 'components/Title';
 import useApp from 'hooks/useApp';
 
 import useListPage from 'hooks/useListPage';
+import MasterDetailPages from './MasterDetailPages';
 const TblfacturasListPage = (props) => {
 		const app = useApp();
 	const filterSchema = {
@@ -25,7 +26,7 @@ const TblfacturasListPage = (props) => {
 	}
 	const pageController = useListPage(props, filterSchema);
 	const filterController = pageController.filterController;
-	const { records, pageReady, loading, selectedItems, sortBy, sortOrder, apiRequestError, setSelectedItems, getPageBreadCrumbs, onSort, deleteItem, pagination } = pageController;
+	const { records, pageReady, loading, selectedItems, currentRecord, sortBy, sortOrder, apiRequestError, setSelectedItems, getPageBreadCrumbs, onSort, deleteItem, setCurrentRecord, pagination } = pageController;
 	const { filters, setFilterValue } = filterController;
 	const { totalRecords, totalPages, recordsPosition, firstRow, limit, onPageChange } =  pagination;
 	function ActionButton(data){
@@ -52,6 +53,13 @@ const TblfacturasListPage = (props) => {
 		if(data){
 			return (
 				<Link to={`/tblfacturas/view/${data.factura_id}`}> { data.factura_id }</Link>
+			);
+		}
+	}
+	function MasterDetailBtnTemplate(data){
+		if(data){
+			return (
+				<><Button className="p-button-text" onClick={()=>setCurrentRecord(data)} icon="pi pi-caret-down" label="" /></>
 			);
 		}
 	}
@@ -163,38 +171,51 @@ const TblfacturasListPage = (props) => {
                         <FilterTags filterController={filterController} />
                         <div >
                             <PageBreadcrumbs />
-                            <div className="page-records">
-                                <DataTable 
-                                    lazy={true} 
-                                    loading={loading} 
-                                    selectionMode="checkbox" selection={selectedItems} onSelectionChange={e => setSelectedItems(e.value)}
-                                    value={records} 
-                                    dataKey="factura_id" 
-                                    sortField={sortBy} 
-                                    sortOrder={sortOrder} 
-                                    onSort={onSort}
-                                    className=" p-datatable-sm" 
-                                    stripedRows={true}
-                                    showGridlines={false} 
-                                    rowHover={true} 
-                                    responsiveLayout="stack" 
-                                    emptyMessage={<EmptyRecordMessage />} 
-                                    >
-                                    {/*PageComponentStart*/}
-                                    <Column selectionMode="multiple" headerStyle={{width: '2rem'}}></Column>
-                                    <Column  field="factura_id" header="Factura Id" body={FacturaIdTemplate}  ></Column>
-                                    <Column  field="arrendatario_nombre" header="Arrendatario Nombre"   ></Column>
-                                    <Column  field="arrendatario_ci" header="Arrendatario Ci"   ></Column>
-                                    <Column  field="factura_numero" header="Factura Numero"   ></Column>
-                                    <Column  field="factura_fecha_emision" header="Factura Fecha Emision"   ></Column>
-                                    <Column  field="factura_total" header="Factura Total"   ></Column>
-                                    <Column  field="factura_fecha_pago" header="Factura Fecha Pago"   ></Column>
-                                    <Column  field="factura_estado" header="Factura Estado"   ></Column>
-                                    <Column headerStyle={{width: '2rem'}} headerClass="text-center" body={ActionButton}></Column>
-                                    {/*PageComponentEnd*/}
-                                </DataTable>
+                            <div className="grid ">
+                                <div className="col">
+                                    <div className="page-records">
+                                        <DataTable 
+                                            lazy={true} 
+                                            loading={loading} 
+                                            selectionMode="checkbox" selection={selectedItems} onSelectionChange={e => setSelectedItems(e.value)}
+                                            value={records} 
+                                            dataKey="factura_id" 
+                                            sortField={sortBy} 
+                                            sortOrder={sortOrder} 
+                                            onSort={onSort}
+                                            className=" p-datatable-sm" 
+                                            stripedRows={true}
+                                            showGridlines={false} 
+                                            rowHover={true} 
+                                            responsiveLayout="stack" 
+                                            emptyMessage={<EmptyRecordMessage />} 
+                                            >
+                                            {/*PageComponentStart*/}
+                                            <Column selectionMode="multiple" headerStyle={{width: '2rem'}}></Column>
+                                            <Column headerStyle={{width: '3rem'}} field=""  body={MasterDetailBtnTemplate}  ></Column>
+                                            <Column  field="factura_id" header="Factura Id" body={FacturaIdTemplate}  ></Column>
+                                            <Column  field="arrendatario_nombre" header="Arrendatario Nombre"   ></Column>
+                                            <Column  field="arrendatario_ci" header="Arrendatario Ci"   ></Column>
+                                            <Column  field="factura_numero" header="Factura Numero"   ></Column>
+                                            <Column  field="factura_fecha_emision" header="Factura Fecha Emision"   ></Column>
+                                            <Column  field="factura_total" header="Factura Total"   ></Column>
+                                            <Column  field="factura_fecha_pago" header="Factura Fecha Pago"   ></Column>
+                                            <Column  field="factura_estado" header="Factura Estado"   ></Column>
+                                            <Column headerStyle={{width: '2rem'}} headerClass="text-center" body={ActionButton}></Column>
+                                            {/*PageComponentEnd*/}
+                                        </DataTable>
+                                    </div>
+                                    <PageFooter />
+                                </div>
+                                {
+                                (currentRecord && !props.isSubPage) && 
+                                <div className="col-12">
+                                    <div className="card p-0">
+                                        <MasterDetailPages masterRecord={currentRecord} scrollIntoView={true} />
+                                    </div>
+                                </div>
+                                }
                             </div>
-                            <PageFooter />
                         </div>
                     </div>
                 </div>

@@ -23,6 +23,7 @@ class TblEdificioAmbienteController extends Controller
 			$search = trim($request->search);
 			TblEdificioAmbiente::search($query, $search);
 		}
+		$query->join("tbl_edificio", "tbl_edificio_ambiente.edificio_id", "=", "tbl_edificio.edificio_id");
 		$orderby = $request->orderby ?? "tbl_edificio_ambiente.ambiente_id";
 		$ordertype = $request->ordertype ?? "desc";
 		$query->orderBy($orderby, $ordertype);
@@ -41,6 +42,7 @@ class TblEdificioAmbienteController extends Controller
      */
 	function view($rec_id = null){
 		$query = TblEdificioAmbiente::query();
+		$query->join("tbl_edificio", "tbl_edificio_ambiente.edificio_id", "=", "tbl_edificio.edificio_id");
 		$record = $query->findOrFail($rec_id, TblEdificioAmbiente::viewFields());
 		return $this->respond($record);
 	}

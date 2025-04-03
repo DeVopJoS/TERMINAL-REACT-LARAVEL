@@ -251,36 +251,20 @@ Route::middleware(['auth:api'])->group(function () {
 	Route::post('arqueo-recaudacion-final', 'ArqueoRecaudacionController@generarArqueoFinal');
 	Route::get('arqueo-recaudacion-resumen', 'ArqueoRecaudacionController@obtenerResumenPorServicios');
 	Route::get('arqueo-recaudacion-numero', 'ArqueoRecaudacionController@getNextNumeroArqueo');
-});
 
-/* routes for Control Diario */
-	Route::get('control-diario/totales', 'ControlDiarioController@obtenerTotales');
-	Route::get('control-diario/historial', 'ControlDiarioController@obtenerHistorial');
-	Route::get('control-diario/reporte-rango', 'ControlDiarioController@obtenerReporteRango');
-	Route::post('control-diario/deposito', 'DepositoController@store');
+    /* routes for Components Data */
+    Route::get('components_data/punto_recaud_id_option_list/{arg1?}', 'Components_dataController@punto_recaud_id_option_list');	
+    Route::get('components_data/arqueorecid_option_list/{arg1?}', 'Components_dataController@arqueorecid_option_list');	
+    Route::get('components_data/ambiente_id_option_list/{arg1?}', 'Components_dataController@ambiente_id_option_list');	
+    Route::get('components_data/edificio_id_option_list/{arg1?}', 'Components_dataController@edificio_id_option_list');	
+    Route::get('components_data/nivel_id_option_list/{arg1?}', 'Components_dataController@nivel_id_option_list');	
+    Route::get('components_data/seccion_id_option_list/{arg1?}', 'Components_dataController@seccion_id_option_list');	
+    Route::get('components_data/arrendamiento_id_option_list/{arg1?}', 'Components_dataController@arrendamiento_id_option_list');	
+    Route::get('components_data/users_username_exist/{arg1?}', 'Components_dataController@users_username_exist');	
+    Route::get('components_data/users_email_exist/{arg1?}', 'Components_dataController@users_email_exist');	
+    Route::get('components_data/role_id_option_list/{arg1?}', 'Components_dataController@role_id_option_list');
+    Route::get('components_data/servicio_id_option_list/{arg1?}', 'Components_dataController@servicio_id_option_list');	
 
-/* routes for Deposito */
-	Route::get('depositos', 'DepositoController@index');
-	Route::post('depositos', 'DepositoController@store');
-	Route::get('depositos/{id}', 'DepositoController@show');
-	Route::put('depositos/{id}', 'DepositoController@update');
-	Route::delete('depositos/{id}', 'DepositoController@destroy');
-
-Route::get('home', 'HomeController@index');
-	
-	Route::post('auth/register', 'AuthController@register');	
-	Route::post('auth/login', 'AuthController@login');
-	Route::get('login', 'AuthController@login')->name('login');
-		
-	Route::post('auth/forgotpassword', 'AuthController@forgotpassword')->name('password.reset');	
-	Route::post('auth/resetpassword', 'AuthController@resetpassword');
-	
-	Route::get('components_data/punto_recaud_id_option_list/{arg1?}', 'Components_dataController@punto_recaud_id_option_list');	
-	Route::get('components_data/arqueorecid_option_list/{arg1?}', 'Components_dataController@arqueorecid_option_list');	
-	Route::get('components_data/servicio_id_option_list/{arg1?}', 'Components_dataController@servicio_id_option_list');	
-	Route::get('components_data/users_username_exist/{arg1?}', 'Components_dataController@users_username_exist');	
-	Route::get('components_data/users_email_exist/{arg1?}', 'Components_dataController@users_email_exist');	
-	Route::get('components_data/role_id_option_list/{arg1?}', 'Components_dataController@role_id_option_list');
 
 
 /* routes for FileUpload Controller  */	
@@ -306,3 +290,19 @@ Route::get('home', 'HomeController@index');
 
 // Routes for TblPuntosRecaudacionController
 	Route::get('tblpuntosrecaudacion/index/{filter?}/{filtervalue?}', 'TblPuntosRecaudacionController@index');
+
+/* routes for ControlDiarioController */
+	Route::get('control-diario/totales', 'ControlDiarioController@obtenerTotales');
+	Route::get('control-diario/historial', 'ControlDiarioController@obtenerHistorial');
+	Route::post('control-diario/deposito', 'ControlDiarioController@registrarDeposito');
+	Route::get('control-diario/reporte-rango', 'ControlDiarioController@obtenerReporteRango');
+});
+
+Route::get('home', 'HomeController@index');
+	
+	Route::post('auth/register', 'AuthController@register');	
+	Route::post('auth/login', 'AuthController@login');
+	Route::get('login', 'AuthController@login')->name('login');
+		
+	Route::post('auth/forgotpassword', 'AuthController@forgotpassword')->name('password.reset');	
+	Route::post('auth/resetpassword', 'AuthController@resetpassword');

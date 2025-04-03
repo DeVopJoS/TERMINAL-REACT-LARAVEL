@@ -25,7 +25,6 @@ class TblEdificioSeccionAddRequest extends FormRequest
 		
         return [
             
-				"nivel_id" => "nullable|numeric",
 				"seccion_nombre" => "required",
 				"seccion_estado" => "required|string",
         ];

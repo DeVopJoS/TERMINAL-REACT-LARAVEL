@@ -26,7 +26,7 @@ class TblEdificioAmbiente extends Model
      *
      * @var array
      */
-	protected $fillable = ["seccion_id","ambiente_nombre","ambiente_tamano","ambiente_tipo_uso","ambiente_precio_alquiler","ambiente_codigo_interno","ambiente_superficie_m2","ambiente_estado"];
+	protected $fillable = ["edificio_id","nivel_id","seccion_id","ambiente_nombre","ambiente_tamano","ambiente_tipo_uso","ambiente_precio_alquiler","ambiente_codigo_interno","ambiente_superficie_m2","ambiente_estado"];
 	
 
 	/**
@@ -37,14 +37,17 @@ class TblEdificioAmbiente extends Model
 	public static function search($query, $text){
 		//search table record 
 		$search_condition = '(
-				CAST(ambiente_id AS TEXT) LIKE ?  OR 
-				ambiente_nombre LIKE ?  OR 
-				ambiente_tipo_uso LIKE ?  OR 
-				ambiente_codigo_interno LIKE ?  OR 
-				ambiente_estado LIKE ? 
+				CAST(tbl_edificio_ambiente.ambiente_id AS TEXT) LIKE ?  OR 
+				tbl_edificio_ambiente.ambiente_nombre LIKE ?  OR 
+				tbl_edificio_ambiente.ambiente_tipo_uso LIKE ?  OR 
+				tbl_edificio_ambiente.ambiente_codigo_interno LIKE ?  OR 
+				tbl_edificio_ambiente.ambiente_estado LIKE ?  OR 
+				CAST(tbl_edificio.edificio_id AS TEXT) LIKE ?  OR 
+				tbl_edificio.edificio_nombre LIKE ?  OR 
+				tbl_edificio.edificio_direccion LIKE ? 
 		)';
 		$search_params = [
-			"%$text%","%$text%","%$text%","%$text%","%$text%"
+			"%$text%","%$text%","%$text%","%$text%","%$text%","%$text%","%$text%","%$text%"
 		];
 		//setting search conditions
 		$query->whereRaw($search_condition, $search_params);
@@ -58,15 +61,20 @@ class TblEdificioAmbiente extends Model
      */
 	public static function listFields(){
 		return [ 
-			"ambiente_id", 
-			"seccion_id", 
-			"ambiente_nombre", 
-			"ambiente_tamano", 
-			"ambiente_tipo_uso", 
-			"ambiente_precio_alquiler", 
-			"ambiente_codigo_interno", 
-			"ambiente_superficie_m2", 
-			"ambiente_estado" 
+			"tbl_edificio_ambiente.ambiente_id AS ambiente_id", 
+			"tbl_edificio_ambiente.edificio_id AS edificio_id", 
+			"tbl_edificio_ambiente.nivel_id AS nivel_id", 
+			"tbl_edificio_ambiente.seccion_id AS seccion_id", 
+			"tbl_edificio_ambiente.ambiente_nombre AS ambiente_nombre", 
+			"tbl_edificio_ambiente.ambiente_tamano AS ambiente_tamano", 
+			"tbl_edificio_ambiente.ambiente_tipo_uso AS ambiente_tipo_uso", 
+			"tbl_edificio_ambiente.ambiente_precio_alquiler AS ambiente_precio_alquiler", 
+			"tbl_edificio_ambiente.ambiente_codigo_interno AS ambiente_codigo_interno", 
+			"tbl_edificio_ambiente.ambiente_superficie_m2 AS ambiente_superficie_m2", 
+			"tbl_edificio_ambiente.ambiente_estado AS ambiente_estado", 
+			"tbl_edificio.edificio_id AS tbledificio_edificio_id", 
+			"tbl_edificio.edificio_nombre AS tbledificio_edificio_nombre", 
+			"tbl_edificio.edificio_direccion AS tbledificio_edificio_direccion" 
 		];
 	}
 	
@@ -78,15 +86,20 @@ class TblEdificioAmbiente extends Model
      */
 	public static function exportListFields(){
 		return [ 
-			"ambiente_id", 
-			"seccion_id", 
-			"ambiente_nombre", 
-			"ambiente_tamano", 
-			"ambiente_tipo_uso", 
-			"ambiente_precio_alquiler", 
-			"ambiente_codigo_interno", 
-			"ambiente_superficie_m2", 
-			"ambiente_estado" 
+			"tbl_edificio_ambiente.ambiente_id AS ambiente_id", 
+			"tbl_edificio_ambiente.edificio_id AS edificio_id", 
+			"tbl_edificio_ambiente.nivel_id AS nivel_id", 
+			"tbl_edificio_ambiente.seccion_id AS seccion_id", 
+			"tbl_edificio_ambiente.ambiente_nombre AS ambiente_nombre", 
+			"tbl_edificio_ambiente.ambiente_tamano AS ambiente_tamano", 
+			"tbl_edificio_ambiente.ambiente_tipo_uso AS ambiente_tipo_uso", 
+			"tbl_edificio_ambiente.ambiente_precio_alquiler AS ambiente_precio_alquiler", 
+			"tbl_edificio_ambiente.ambiente_codigo_interno AS ambiente_codigo_interno", 
+			"tbl_edificio_ambiente.ambiente_superficie_m2 AS ambiente_superficie_m2", 
+			"tbl_edificio_ambiente.ambiente_estado AS ambiente_estado", 
+			"tbl_edificio.edificio_id AS tbledificio_edificio_id", 
+			"tbl_edificio.edificio_nombre AS tbledificio_edificio_nombre", 
+			"tbl_edificio.edificio_direccion AS tbledificio_edificio_direccion" 
 		];
 	}
 	
@@ -98,15 +111,20 @@ class TblEdificioAmbiente extends Model
      */
 	public static function viewFields(){
 		return [ 
-			"ambiente_id", 
-			"seccion_id", 
-			"ambiente_nombre", 
-			"ambiente_tamano", 
-			"ambiente_tipo_uso", 
-			"ambiente_precio_alquiler", 
-			"ambiente_codigo_interno", 
-			"ambiente_superficie_m2", 
-			"ambiente_estado" 
+			"tbl_edificio_ambiente.ambiente_id AS ambiente_id", 
+			"tbl_edificio_ambiente.edificio_id AS edificio_id", 
+			"tbl_edificio_ambiente.nivel_id AS nivel_id", 
+			"tbl_edificio_ambiente.seccion_id AS seccion_id", 
+			"tbl_edificio_ambiente.ambiente_nombre AS ambiente_nombre", 
+			"tbl_edificio_ambiente.ambiente_tamano AS ambiente_tamano", 
+			"tbl_edificio_ambiente.ambiente_tipo_uso AS ambiente_tipo_uso", 
+			"tbl_edificio_ambiente.ambiente_precio_alquiler AS ambiente_precio_alquiler", 
+			"tbl_edificio_ambiente.ambiente_codigo_interno AS ambiente_codigo_interno", 
+			"tbl_edificio_ambiente.ambiente_superficie_m2 AS ambiente_superficie_m2", 
+			"tbl_edificio_ambiente.ambiente_estado AS ambiente_estado", 
+			"tbl_edificio.edificio_id AS tbledificio_edificio_id", 
+			"tbl_edificio.edificio_nombre AS tbledificio_edificio_nombre", 
+			"tbl_edificio.edificio_direccion AS tbledificio_edificio_direccion" 
 		];
 	}
 	
@@ -118,15 +136,20 @@ class TblEdificioAmbiente extends Model
      */
 	public static function exportViewFields(){
 		return [ 
-			"ambiente_id", 
-			"seccion_id", 
-			"ambiente_nombre", 
-			"ambiente_tamano", 
-			"ambiente_tipo_uso", 
-			"ambiente_precio_alquiler", 
-			"ambiente_codigo_interno", 
-			"ambiente_superficie_m2", 
-			"ambiente_estado" 
+			"tbl_edificio_ambiente.ambiente_id AS ambiente_id", 
+			"tbl_edificio_ambiente.edificio_id AS edificio_id", 
+			"tbl_edificio_ambiente.nivel_id AS nivel_id", 
+			"tbl_edificio_ambiente.seccion_id AS seccion_id", 
+			"tbl_edificio_ambiente.ambiente_nombre AS ambiente_nombre", 
+			"tbl_edificio_ambiente.ambiente_tamano AS ambiente_tamano", 
+			"tbl_edificio_ambiente.ambiente_tipo_uso AS ambiente_tipo_uso", 
+			"tbl_edificio_ambiente.ambiente_precio_alquiler AS ambiente_precio_alquiler", 
+			"tbl_edificio_ambiente.ambiente_codigo_interno AS ambiente_codigo_interno", 
+			"tbl_edificio_ambiente.ambiente_superficie_m2 AS ambiente_superficie_m2", 
+			"tbl_edificio_ambiente.ambiente_estado AS ambiente_estado", 
+			"tbl_edificio.edificio_id AS tbledificio_edificio_id", 
+			"tbl_edificio.edificio_nombre AS tbledificio_edificio_nombre", 
+			"tbl_edificio.edificio_direccion AS tbledificio_edificio_direccion" 
 		];
 	}
 	
@@ -138,7 +161,8 @@ class TblEdificioAmbiente extends Model
      */
 	public static function editFields(){
 		return [ 
-			"ambiente_id", 
+			"edificio_id", 
+			"nivel_id", 
 			"seccion_id", 
 			"ambiente_nombre", 
 			"ambiente_tamano", 
@@ -146,7 +170,8 @@ class TblEdificioAmbiente extends Model
 			"ambiente_precio_alquiler", 
 			"ambiente_codigo_interno", 
 			"ambiente_superficie_m2", 
-			"ambiente_estado" 
+			"ambiente_estado", 
+			"ambiente_id" 
 		];
 	}
 	

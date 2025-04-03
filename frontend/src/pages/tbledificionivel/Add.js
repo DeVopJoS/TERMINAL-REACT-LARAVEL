@@ -13,14 +13,12 @@ const TbledificionivelAddPage = (props) => {
 	
 	//form validation rules
 	const validationSchema = yup.object().shape({
-		edificio_id: yup.number().nullable().label("Edificio Id"),
 		nivel_nombre: yup.string().required().label("Nivel Nombre"),
 		nivel_estado: yup.string().required().label("Nivel Estado")
 	});
 	
 	//form default values
 	const formDefaultValues = {
-		edificio_id: '', 
 		nivel_nombre: '', 
 		nivel_estado: '', 
 	}
@@ -82,17 +80,6 @@ const TbledificionivelAddPage = (props) => {
                             <>
                             <Form className={`${!props.isSubPage ? 'card  ' : ''}`}>
                                 <div className="grid">
-                                    <div className="col-12">
-                                        <div className="formgrid grid">
-                                            <div className="col-12 md:col-3">
-                                                Edificio Id 
-                                            </div>
-                                            <div className="col-12 md:col-9">
-                                                <InputText name="edificio_id"  onChange={formik.handleChange}  value={formik.values.edificio_id}   label="Edificio Id" type="number" placeholder="Escribir Edificio Id"  min={0}  step="any"    className={inputClassName(formik?.errors?.edificio_id)} />
-                                                <ErrorMessage name="edificio_id" component="span" className="p-error" />
-                                            </div>
-                                        </div>
-                                    </div>
                                     <div className="col-12">
                                         <div className="formgrid grid">
                                             <div className="col-12 md:col-3">

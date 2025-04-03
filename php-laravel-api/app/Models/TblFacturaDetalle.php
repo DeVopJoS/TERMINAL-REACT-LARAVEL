@@ -140,7 +140,6 @@ class TblFacturaDetalle extends Model
      */
 	public static function editFields(){
 		return [ 
-			"detalle_id", 
 			"factura_id", 
 			"arrendamiento_id", 
 			"fact_detalle_periodo_pago", 
@@ -149,7 +148,8 @@ class TblFacturaDetalle extends Model
 			"fact_detalle_dias_morosidad", 
 			"fact_detalle_total_mora", 
 			"fact_detalle_importe_bs", 
-			"fact_detalle_observaciones" 
+			"fact_detalle_observaciones", 
+			"detalle_id" 
 		];
 	}
 	
