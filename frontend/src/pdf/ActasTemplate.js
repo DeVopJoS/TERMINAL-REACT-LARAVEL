@@ -196,21 +196,21 @@ const styles = StyleSheet.create({
     },
     indexCell: {
       width: '10%',
-      padding: 5,
+      paddingVertical: 0,
       borderRight: 1,
       textAlign: 'center',
       borderColor: '#000000',
     },
     typeCell: {
       width: '10%',
-      padding: 5,
+      paddingVertical: 0,
       borderRight: 1,
       textAlign: 'center',
       borderColor: '#000000',
     },
     dataCell: {
       width: '18%',
-      padding: 5,
+      paddingVertical: 0,
       borderRight: 1,
       textAlign: 'center',
       borderColor: '#000000',
@@ -315,11 +315,16 @@ const styles = StyleSheet.create({
     },
     centerText: {
       textAlign: 'center',
+    },
+    textSmall: {
+      fontSize: 8,
+      marginVertical: 0, 
+      paddingVertical: 0,
     }
   });
 
 const MyPDF = ({ cabecera = {}, detalles = [] }) => {
-  const totalFilasFirstOperator = 20;
+  const totalFilasFirstOperator = 35;
   const filasCompletasFirstOperator = Array.from({ length: totalFilasFirstOperator }).map((_, index) => {
     const rowNumber = index + 1;
     return detalles[index] || { index: rowNumber };
@@ -333,7 +338,7 @@ const MyPDF = ({ cabecera = {}, detalles = [] }) => {
   }, []);
 
   const filasSecondTable = [];
-  for(let i=0; i<32; i++){
+  for(let i=0; i<52; i++){
     filasSecondTable.push(i);
   }
 
@@ -462,30 +467,30 @@ const MyPDF = ({ cabecera = {}, detalles = [] }) => {
 
             <View style={styles.tableHeader}>
               <View style={styles.columnHeader}>
-                <Text></Text>
+                <Text>Nº</Text>
               </View>
               <View style={styles.columnHeader}>
-                <Text>TIPO DE PRE</Text>
+                <Text style={styles.textSmall}>TIPO DE PRE</Text>
               </View>
               <View style={styles.dataColumn}>
                 <Text style={styles.redText}>A</Text>
-                <Text style={styles.redText}>DESDE EL NÚMERO:</Text>
+                <Text style={[styles.redText, styles.textSmall]}>DESDE EL NÚMERO:</Text>
               </View>
               <View style={styles.dataColumn}>
                 <Text>B</Text>
-                <Text>HASTA EL NÚMERO:</Text>
+                <Text style={styles.textSmall}>HASTA EL NÚMERO:</Text>
               </View>
               <View style={styles.dataColumn}>
                 <Text>C</Text>
-                <Text>VENDIDO HASTA EL:</Text>
+                <Text style={styles.textSmall}>VENDIDO HASTA EL:</Text>
               </View>
               <View style={styles.dataColumn}>
                 <Text>D</Text>
-                <Text>CANTIDAD (C-A+1)</Text>
+                <Text style={styles.textSmall}>CANTIDAD (C-A+1)</Text>
               </View>
               <View style={styles.dataColumn}>
                 <Text>E</Text>
-                <Text>IMPORTE Bs.- (D*COST)</Text>
+                <Text style={styles.textSmall}>IMPORTE Bs.- (D*COST)</Text>
               </View>
             </View>
             
@@ -493,17 +498,17 @@ const MyPDF = ({ cabecera = {}, detalles = [] }) => {
             {filasCompletasFirstOperator.map((item, idx) => (
               <View key={idx} style={styles.tableRow}>
                 <View style={styles.indexCell}>
-                  <Text>{idx + 1}</Text>
+                  <Text style={styles.textSmall}>{idx + 1}</Text>
                 </View>
                 <View style={styles.typeCell}>
-                  <Text>{item.servicio_abreviatura}</Text> 
+                  <Text style={styles.textSmall}>{item.servicio_abreviatura}</Text> 
                 </View>
                 <View style={[styles.dataCell, 
                   (item.aed_hastanumero - item.aed_desdenumero) < 99 ? styles.redCell : null]}>
-                  <Text style={styles.blueText}>{item.aed_desdenumero}</Text>
+                  <Text style={styles.textSmall}>{item.aed_desdenumero}</Text>
                 </View>
                 <View style={styles.dataCell}>
-                  <Text style={styles.blueText}>{item.aed_hastanumero}</Text>
+                  <Text style={styles.textSmall}>{item.aed_hastanumero}</Text>
                 </View>
                 <View style={styles.dataCell}>
                   <Text></Text>
@@ -605,7 +610,7 @@ const MyPDF = ({ cabecera = {}, detalles = [] }) => {
 
             <View style={styles.tableHeader}>
               <View style={styles.columnHeader}>
-                <Text>TIPO DE PRE</Text>
+                <Text style={styles.textSmall}>TIPO DE PRE</Text>
               </View>
               <View style={styles.dataColumn}>
                 <Text>A</Text>
@@ -625,7 +630,7 @@ const MyPDF = ({ cabecera = {}, detalles = [] }) => {
               </View>
               <View style={styles.dataColumn}>
                 <Text>E</Text>
-                <Text>IMPORTE Bs.- (D*COST)</Text>
+                <Text style={styles.textSmall}>IMPORTE Bs.- (D*COST)</Text>
               </View>
             </View>
             
@@ -633,7 +638,7 @@ const MyPDF = ({ cabecera = {}, detalles = [] }) => {
             {filasSecondTable.map((i) => (
               <View key={i} style={styles.tableRow}>
                 <View style={styles.indexCell}>
-                  <Text>{i}</Text>
+                  <Text style={styles.textSmall}>{i}</Text>
                 </View>
                 <View style={styles.dataCell}>
                   <Text></Text>
