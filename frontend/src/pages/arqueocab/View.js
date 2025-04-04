@@ -191,11 +191,11 @@ const ArqueocabViewPage = (props) => {
                                     <div className="">
                                         <div className="text-400 font-medium mb-1">Diferencia</div>
                                         <div className={`font-bold ${
-                                            item.diferenciatipo === 'S' ? 'text-blue-600' :
-                                            item.diferenciatipo === 'F' ? 'text-red-600' :
+                                            item.arqueodiferenciatipo === 'S' ? 'text-blue-600' :
+                                            item.arqueodiferenciatipo === 'F' ? 'text-red-600' :
                                             'text-gray-600'
                                         }`}>
-                                            {getDiferenciaText(item.diferenciatipo, item.arqueodiferencia)}
+                                            {getDiferenciaText(item.arqueodiferenciatipo, item.arqueodiferencia)}
                                         </div>
                                     </div>
                                 </div>

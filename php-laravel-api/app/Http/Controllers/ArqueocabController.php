@@ -54,7 +54,7 @@ class ArqueocabController extends Controller
 				'arqueorevisadopor',
 				'arqueorecaudaciontotal',
 				'arqueodiferencia',
-				'diferenciatipo', 
+				'arqueodiferenciatipo',
 				'arqueoobservacion',
 				'arqueoestado',
 				'arqueofecharegistro',

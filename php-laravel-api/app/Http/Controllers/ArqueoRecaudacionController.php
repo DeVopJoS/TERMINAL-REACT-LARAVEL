@@ -148,11 +148,11 @@ class ArqueoRecaudacionController extends Controller
             $arqueodetcorteid = DB::table('arqueodetcortes')->max('arqueodetcorteid') + 1;
 
             // Determinar el tipo de diferencia
-            $diferenciatipo = null;
+            $arqueodiferenciatipo = null;
             if ($request->arqueodiferencia > 0) {
-                $diferenciatipo = 'S'; // Sobrante
+                $arqueodiferenciatipo = 'S'; // Sobrante
             } elseif ($request->arqueodiferencia < 0) {
-                $diferenciatipo = 'F'; // Faltante
+                $arqueodiferenciatipo = 'F'; // Faltante
             }
 
             $arqueoCab = new Arqueocab();
@@ -167,7 +167,7 @@ class ArqueoRecaudacionController extends Controller
             $arqueoCab->arqueorevisadopor = $request->arqueosupervisor; // También usar el nombre aquí
             $arqueoCab->arqueorecaudaciontotal = $request->arqueorecaudaciontotal;
             $arqueoCab->arqueodiferencia = $request->arqueodiferencia;
-            $arqueoCab->diferenciatipo = $diferenciatipo; // Nuevo campo
+            $arqueoCab->arqueodiferenciatipo = $arqueodiferenciatipo; // Actualizado aquí
             $arqueoCab->arqueoobservacion = $request->arqueoobservacion;
             $arqueoCab->arqueoestado = 'R'; // estado cambiado de 'A' a 'R'
             $arqueoCab->arqueofecharegistro = now();
