@@ -126,7 +126,7 @@ import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import 'assets/styles/layout.scss';
 import PrevaloradasEdit from 'pages/registroprevaloradas/Edit';
-import ControlDiarioList from 'pages/control-diario/List';
+import ControlDiarioList from 'pages/control-recaudacion/List';
 const App = () => {
 	const auth = useAuth();
 	function DefaultPage(){
