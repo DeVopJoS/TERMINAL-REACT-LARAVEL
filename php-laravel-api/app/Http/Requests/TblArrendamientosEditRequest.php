@@ -25,7 +25,7 @@ class TblArrendamientosEditRequest extends FormRequest
 		
         return [
             
-				"ambiente_id" => "nullable|numeric",
+				"ambiente_id" => "nullable",
 				"num_contrato" => "filled|string",
 				"operador_nombre" => "filled|string",
 				"arrendatario_nombre" => "filled",
@@ -42,6 +42,7 @@ class TblArrendamientosEditRequest extends FormRequest
 				"arrendamiento_funcion" => "nullable",
 				"arrendamiento_forma_pago" => "nullable|string",
 				"arrendamiento_estado" => "nullable|string",
+				"arrendamiento_fecha" => "nullable|date",
         ];
     }
 

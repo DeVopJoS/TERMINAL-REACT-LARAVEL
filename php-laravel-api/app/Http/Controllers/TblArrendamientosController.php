@@ -5,6 +5,9 @@ use App\Http\Requests\TblArrendamientosAddRequest;
 use App\Http\Requests\TblArrendamientosEditRequest;
 use App\Models\TblArrendamientos;
 use Illuminate\Http\Request;
+use \PDF;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\TblarrendamientosListExport;
 use Exception;
 class TblArrendamientosController extends Controller
 {
@@ -28,6 +31,10 @@ class TblArrendamientosController extends Controller
 		$query->orderBy($orderby, $ordertype);
 		if($fieldname){
 			$query->where($fieldname , $fieldvalue); //filter by a single field name
+		}
+		// if request format is for export example:- product/index?export=pdf
+		if($this->getExportFormat()){
+			return $this->ExportList($query); // export current query
 		}
 		$records = $this->paginate($query, TblArrendamientos::listFields());
 		return $this->respond($records);
@@ -89,5 +96,33 @@ class TblArrendamientosController extends Controller
 		$query->whereIn("arrendamiento_id", $arr_id);
 		$query->delete();
 		return $this->respond($arr_id);
+	}
+	
+
+	/**
+     * Export table records to different format
+	 * supported format:- PDF, CSV, EXCEL, HTML
+	 * @param \Illuminate\Database\Eloquent\Model $query
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+     */
+	private function ExportList($query){
+		ob_end_clean(); // clean any output to allow file download
+		$filename = "ListTblArrendamientosReport-" . date_now();
+		$format = $this->getExportFormat();
+		if($format == "print"){
+			$records = $query->get(TblArrendamientos::exportListFields());
+			return view("reports.tblarrendamientos-list", ["records" => $records]);
+		}
+		elseif($format == "pdf"){
+			$records = $query->get(TblArrendamientos::exportListFields());
+			$pdf = PDF::loadView("reports.tblarrendamientos-list", ["records" => $records]);
+			return $pdf->download("$filename.pdf");
+		}
+		elseif($format == "csv"){
+			return Excel::download(new TblarrendamientosListExport($query), "$filename.csv", \Maatwebsite\Excel\Excel::CSV);
+		}
+		elseif($format == "excel"){
+			return Excel::download(new TblarrendamientosListExport($query), "$filename.xlsx", \Maatwebsite\Excel\Excel::XLSX);
+		}
 	}
 }

@@ -26,7 +26,7 @@ class TblEdificioSeccion extends Model
      *
      * @var array
      */
-	protected $fillable = ["nivel_id","seccion_nombre","seccion_estado"];
+	protected $fillable = ["seccion_nombre","seccion_estado"];
 	
 
 	/**
@@ -57,7 +57,6 @@ class TblEdificioSeccion extends Model
 	public static function listFields(){
 		return [ 
 			"seccion_id", 
-			"nivel_id", 
 			"seccion_nombre", 
 			"seccion_estado" 
 		];
@@ -72,7 +71,6 @@ class TblEdificioSeccion extends Model
 	public static function exportListFields(){
 		return [ 
 			"seccion_id", 
-			"nivel_id", 
 			"seccion_nombre", 
 			"seccion_estado" 
 		];
@@ -87,7 +85,6 @@ class TblEdificioSeccion extends Model
 	public static function viewFields(){
 		return [ 
 			"seccion_id", 
-			"nivel_id", 
 			"seccion_nombre", 
 			"seccion_estado" 
 		];
@@ -102,7 +99,6 @@ class TblEdificioSeccion extends Model
 	public static function exportViewFields(){
 		return [ 
 			"seccion_id", 
-			"nivel_id", 
 			"seccion_nombre", 
 			"seccion_estado" 
 		];
@@ -117,7 +113,6 @@ class TblEdificioSeccion extends Model
 	public static function editFields(){
 		return [ 
 			"seccion_id", 
-			"nivel_id", 
 			"seccion_nombre", 
 			"seccion_estado" 
 		];

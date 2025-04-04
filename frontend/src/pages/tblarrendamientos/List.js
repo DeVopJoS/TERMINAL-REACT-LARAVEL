@@ -2,6 +2,7 @@ import { BreadCrumb } from 'primereact/breadcrumb';
 import { Button } from 'primereact/button';
 import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
+import { ExportPageData } from 'components/ExportPageData';
 import { FilterTags } from 'components/FilterTags';
 import { InputText } from 'primereact/inputtext';
 import { Link } from 'react-router-dom';
@@ -11,10 +12,12 @@ import { ProgressSpinner } from 'primereact/progressspinner';
 import { SplitButton } from 'primereact/splitbutton';
 import { Title } from 'components/Title';
 import useApp from 'hooks/useApp';
+import useUtils from 'hooks/useUtils';
 
 import useListPage from 'hooks/useListPage';
 const TblarrendamientosListPage = (props) => {
 		const app = useApp();
+	const utils = useUtils();
 	const filterSchema = {
 		search: {
 			tagTitle: "Search",
@@ -25,7 +28,7 @@ const TblarrendamientosListPage = (props) => {
 	}
 	const pageController = useListPage(props, filterSchema);
 	const filterController = pageController.filterController;
-	const { records, pageReady, loading, selectedItems, sortBy, sortOrder, apiRequestError, setSelectedItems, getPageBreadCrumbs, onSort, deleteItem, pagination } = pageController;
+	const { records, pageReady, loading, selectedItems, apiUrl, sortBy, sortOrder, apiRequestError, setSelectedItems, getPageBreadCrumbs, onSort, deleteItem, pagination } = pageController;
 	const { filters, setFilterValue } = filterController;
 	const { totalRecords, totalPages, recordsPosition, firstRow, limit, onPageChange } =  pagination;
 	function ActionButton(data){
@@ -85,6 +88,16 @@ const TblarrendamientosListPage = (props) => {
 			)
 		}
 	}
+	function ExportData() {
+		if (props.exportData && records.length) {
+			const downloadFileName = `${utils.dateNow()}-tblarrendamientos`;
+			return (
+				<div className="m-2">
+					<ExportPageData  pageUrl={apiUrl} downloadFileName={downloadFileName} butonLabel="Exportar" tooltip="Exportar" buttonIcon="pi pi-print" />
+				</div>
+			);
+		}
+	}
 	function PagerControl() {
 		if (props.paginate && totalPages > 1) {
 		const pagerReportTemplate = {
@@ -108,6 +121,7 @@ const TblarrendamientosListPage = (props) => {
 		return (
 			<div className="flex flex-wrap">
 				<MultiDelete />
+				<ExportData />
 			</div>
 		);
 	}
@@ -200,6 +214,7 @@ const TblarrendamientosListPage = (props) => {
                                     <Column  field="arrendamiento_funcion" header="Arrendamiento Funcion"   ></Column>
                                     <Column  field="arrendamiento_forma_pago" header="Arrendamiento Forma Pago"   ></Column>
                                     <Column  field="arrendamiento_estado" header="Arrendamiento Estado"   ></Column>
+                                    <Column  field="arrendamiento_fecha" header="Arrendamiento Fecha"   ></Column>
                                     <Column headerStyle={{width: '2rem'}} headerClass="text-center" body={ActionButton}></Column>
                                     {/*PageComponentEnd*/}
                                 </DataTable>
@@ -226,7 +241,7 @@ TblarrendamientosListPage.defaultProps = {
 	paginate: true,
 	isSubPage: false,
 	showBreadcrumbs: true,
-	exportData: false,
+	exportData: true,
 	importData: false,
 	keepRecords: false,
 	multiCheckbox: true,

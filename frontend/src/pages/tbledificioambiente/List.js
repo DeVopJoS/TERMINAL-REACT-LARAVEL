@@ -55,13 +55,34 @@ const TbledificioambienteListPage = (props) => {
 			);
 		}
 	}
+	function EdificioIdTemplate(data){
+		if(data){
+			return (
+				<>{ data.tbledificio_edificio_id }</>
+			);
+		}
+	}
+	function EdificioNombreTemplate(data){
+		if(data){
+			return (
+				<>{ data.tbledificio_edificio_nombre }</>
+			);
+		}
+	}
+	function EdificioDireccionTemplate(data){
+		if(data){
+			return (
+				<>{ data.tbledificio_edificio_direccion }</>
+			);
+		}
+	}
 	function PageLoading(){
 		if(loading){
 			return (
 				<>
 					<div className="flex align-items-center justify-content-center text-gray-500 p-3">
 						<div><ProgressSpinner style={{width:'30px', height:'30px'}} /> </div>
-						<div  className="font-bold text-lg">Cargando...</div>
+						<div  className="font-bold text-lg">Loading...</div>
 					</div>
 				</>
 			);
@@ -71,7 +92,7 @@ const TbledificioambienteListPage = (props) => {
 		if(pageReady && !records.length){
 			return (
 				<div className="text-lg mt-3 p-3 text-center text-400 font-bold">
-					ningún record fue encontrado
+					No record found
 				</div>
 			);
 		}
@@ -80,7 +101,7 @@ const TbledificioambienteListPage = (props) => {
 		if (selectedItems.length) {
 			return (
 				<div className="m-2 flex-grow-0">
-					<Button onClick={() => deleteItem(selectedItems)} icon="pi pi-trash" className="p-button-danger" title="Eliminar seleccionado"/>
+					<Button onClick={() => deleteItem(selectedItems)} icon="pi pi-trash" className="p-button-danger" title="Delete Selected"/>
 				</div>
 			)
 		}
@@ -92,7 +113,7 @@ const TbledificioambienteListPage = (props) => {
 			CurrentPageReport: (options) => {
 				return (
 					<>
-						<span className="text-sm text-gray-500 px-2">Archivos <b>{ recordsPosition } de { options.totalRecords }</b></span>
+						<span className="text-sm text-gray-500 px-2">Records <b>{ recordsPosition } of { options.totalRecords }</b></span>
 					</>
 				);
 			}
@@ -143,13 +164,13 @@ const TbledificioambienteListPage = (props) => {
                 </div>
                 <div className="col-fixed " >
                     <Link to={`/tbledificioambiente/add`}>
-                        <Button label="Agregar nuevo" icon="pi pi-plus" type="button" className="p-button w-full bg-primary "  />
+                        <Button label="Add New Tbl Edificio Ambiente" icon="pi pi-plus" type="button" className="p-button w-full bg-primary "  />
                         </Link>
                     </div>
                     <div className="col-12 md:col-3 " >
                         <span className="p-input-icon-left w-full">
                         <i className="pi pi-search" />
-                        <InputText placeholder="Buscar" className="w-full" value={filters.search.value}  onChange={(e) => setFilterValue('search', e.target.value)} />
+                        <InputText placeholder="Search" className="w-full" value={filters.search.value}  onChange={(e) => setFilterValue('search', e.target.value)} />
                         </span>
                     </div>
                 </div>
@@ -183,6 +204,8 @@ const TbledificioambienteListPage = (props) => {
                                     {/*PageComponentStart*/}
                                     <Column selectionMode="multiple" headerStyle={{width: '2rem'}}></Column>
                                     <Column  field="ambiente_id" header="Ambiente Id" body={AmbienteIdTemplate}  ></Column>
+                                    <Column  field="edificio_id" header="Edificio Id"   ></Column>
+                                    <Column  field="nivel_id" header="Nivel Id"   ></Column>
                                     <Column  field="seccion_id" header="Seccion Id"   ></Column>
                                     <Column  field="ambiente_nombre" header="Ambiente Nombre"   ></Column>
                                     <Column  field="ambiente_tamano" header="Ambiente Tamano"   ></Column>
@@ -191,6 +214,9 @@ const TbledificioambienteListPage = (props) => {
                                     <Column  field="ambiente_codigo_interno" header="Ambiente Codigo Interno"   ></Column>
                                     <Column  field="ambiente_superficie_m2" header="Ambiente Superficie M2"   ></Column>
                                     <Column  field="ambiente_estado" header="Ambiente Estado"   ></Column>
+                                    <Column  field="tbledificio_edificio_id" header="Tbledificio Edificio Id" body={EdificioIdTemplate}  ></Column>
+                                    <Column  field="tbledificio_edificio_nombre" header="Tbledificio Edificio Nombre" body={EdificioNombreTemplate}  ></Column>
+                                    <Column  field="tbledificio_edificio_direccion" header="Tbledificio Edificio Direccion" body={EdificioDireccionTemplate}  ></Column>
                                     <Column headerStyle={{width: '2rem'}} headerClass="text-center" body={ActionButton}></Column>
                                     {/*PageComponentEnd*/}
                                 </DataTable>
@@ -209,9 +235,9 @@ TbledificioambienteListPage.defaultProps = {
 	pageName: 'tbledificioambiente',
 	apiPath: 'tbledificioambiente/index',
 	routeName: 'tbledificioambientelist',
-	msgBeforeDelete: "¿Seguro que quieres borrar este registro?",
-	msgTitle: "Eliminar el registro",
-	msgAfterDelete: "Grabar eliminado con éxito",
+	msgBeforeDelete: "Are you sure you want to delete this record?",
+	msgTitle: "Delete record",
+	msgAfterDelete: "Record deleted successfully",
 	showHeader: true,
 	showFooter: true,
 	paginate: true,

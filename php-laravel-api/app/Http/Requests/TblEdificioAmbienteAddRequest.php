@@ -25,7 +25,9 @@ class TblEdificioAmbienteAddRequest extends FormRequest
 		
         return [
             
-				"seccion_id" => "nullable|numeric",
+				"edificio_id" => "required",
+				"nivel_id" => "required",
+				"seccion_id" => "required",
 				"ambiente_nombre" => "required",
 				"ambiente_tamano" => "nullable|numeric",
 				"ambiente_tipo_uso" => "nullable",

@@ -26,7 +26,7 @@ class TblEdificioNivel extends Model
      *
      * @var array
      */
-	protected $fillable = ["edificio_id","nivel_nombre","nivel_estado"];
+	protected $fillable = ["nivel_nombre","nivel_estado"];
 	
 
 	/**
@@ -57,7 +57,6 @@ class TblEdificioNivel extends Model
 	public static function listFields(){
 		return [ 
 			"nivel_id", 
-			"edificio_id", 
 			"nivel_nombre", 
 			"nivel_estado" 
 		];
@@ -72,7 +71,6 @@ class TblEdificioNivel extends Model
 	public static function exportListFields(){
 		return [ 
 			"nivel_id", 
-			"edificio_id", 
 			"nivel_nombre", 
 			"nivel_estado" 
 		];
@@ -87,7 +85,6 @@ class TblEdificioNivel extends Model
 	public static function viewFields(){
 		return [ 
 			"nivel_id", 
-			"edificio_id", 
 			"nivel_nombre", 
 			"nivel_estado" 
 		];
@@ -102,7 +99,6 @@ class TblEdificioNivel extends Model
 	public static function exportViewFields(){
 		return [ 
 			"nivel_id", 
-			"edificio_id", 
 			"nivel_nombre", 
 			"nivel_estado" 
 		];
@@ -117,7 +113,6 @@ class TblEdificioNivel extends Model
 	public static function editFields(){
 		return [ 
 			"nivel_id", 
-			"edificio_id", 
 			"nivel_nombre", 
 			"nivel_estado" 
 		];

@@ -183,7 +183,6 @@ const TbledificioseccionListPage = (props) => {
                                     {/*PageComponentStart*/}
                                     <Column selectionMode="multiple" headerStyle={{width: '2rem'}}></Column>
                                     <Column  field="seccion_id" header="Seccion Id" body={SeccionIdTemplate}  ></Column>
-                                    <Column  field="nivel_id" header="Nivel Id"   ></Column>
                                     <Column  field="seccion_nombre" header="Seccion Nombre"   ></Column>
                                     <Column  field="seccion_estado" header="Seccion Estado"   ></Column>
                                     <Column headerStyle={{width: '2rem'}} headerClass="text-center" body={ActionButton}></Column>

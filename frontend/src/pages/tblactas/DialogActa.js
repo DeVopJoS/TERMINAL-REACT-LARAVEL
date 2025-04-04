@@ -150,6 +150,14 @@ function DialogActa({visible, onHide, reloadData}) {
         return isValid;
     };
 
+    const handleInputChange = (field) => {
+        setErrores(prev => {
+            const newErrors = { ...prev };
+            delete newErrors[field];
+            return newErrors;
+        });
+    };
+
     const handleSaveActa = async () => {
         if (!validarFormulario()) return;
 
@@ -236,26 +244,56 @@ function DialogActa({visible, onHide, reloadData}) {
                 <div className="grid">
                     <div className="col-12 md:col-3">
                         <label htmlFor="">Punto de Recaudación</label>
-                        <Dropdown value={tipoPuntoSelec} onChange={(e) => setTipoPuntoSelec(e.value)} options={tiposPunto} optionLabel='label' optionValue='value' className="w-full" />
+                        <Dropdown value={tipoPuntoSelec} onChange={(e) => {
+                            setTipoPuntoSelec(e.value);
+                            handleInputChange('punto_recaudacion');
+                        }} options={tiposPunto} optionLabel='label' optionValue='value' className={`w-full ${errores.punto_recaudacion ? 'p-invalid' : ''}`} />
+                        {errores.punto_recaudacion && (
+                            <small className="p-error">{errores.punto_recaudacion}</small>
+                        )}
                     </div>
                     <div className="col-12 md:col-3">
                         <label htmlFor="fecha">Fecha</label>
-                        <Calendar id='fecha' className='w-full' showIcon dateFormat="dd/mm/yy" value={fecha} onChange={(e) => setFecha(e.value)} />
+                        <Calendar id='fecha' className='w-full' showIcon dateFormat="dd/mm/yy" value={fecha} onChange={(e) => {
+                            setFecha(e.value);
+                            handleInputChange('fecha');
+                        }} />
+                        {errores.fecha && (
+                            <small className="p-error">{errores.fecha}</small>
+                        )}
                     </div>
                     <div className="col-12 md:col-2">
                         <label htmlFor="grupo">Grupo</label>
-                        <InputText id='grupo' className="w-full" />
+                        <InputText id='grupo' className="w-full" value={document.getElementById("grupo")?.value} onChange={(e) => {
+                            document.getElementById("grupo").value = e.target.value;
+                            handleInputChange('grupo');
+                        }} />
+                        {errores.grupo && (
+                            <small className="p-error">{errores.grupo}</small>
+                        )}
                     </div>
                     <div className="col-12 md:col-3">
                         <label htmlFor="operador1erturno">Operador 1er Turno</label>
-                        <InputText id="operador1erturno" className="w-full"/>
+                        <InputText id="operador1erturno" className="w-full" value={document.getElementById("operador1erturno")?.value} onChange={(e) => {
+                            document.getElementById("operador1erturno").value = e.target.value;
+                            handleInputChange('operador_1er_turno');
+                        }} />
+                        {errores.operador_1er_turno && (
+                            <small className="p-error">{errores.operador_1er_turno}</small>
+                        )}
                     </div>
                 </div>
                 {/* SECOND ROW */}
                 <div className='grid'>
                     <div className="col-12 md:col-3">
                         <label htmlFor="operador2doturno">Operador 2do. Turno</label>
-                        <InputText id='operador2doturno' className="w-full"/>
+                        <InputText id='operador2doturno' className="w-full" value={document.getElementById("operador2doturno")?.value} onChange={(e) => {
+                            document.getElementById("operador2doturno").value = e.target.value;
+                            handleInputChange('operador_2do_turno');
+                        }} />
+                        {errores.operador_2do_turno && (
+                            <small className="p-error">{errores.operador_2do_turno}</small>
+                        )}
                     </div>
                     <div className="col-12 md:col-2">
                         <label htmlFor="cambio">Cambio <span className='text-bluegray-400'>Bs.</span></label>

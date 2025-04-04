@@ -26,7 +26,7 @@ class TblArrendamientos extends Model
      *
      * @var array
      */
-	protected $fillable = ["ambiente_id","num_contrato","operador_nombre","arrendatario_nombre","arrendatario_apellido_paterno","arrendatario_apellido_materno","arrendatario_ci","arrendatario_nombre_comercial","arrendatario_telefono","arrendatario_celular","ambiente_codigo","arrendamiento_fecha_inicio","arrendamiento_fecha_fin","arrendamiento_canon","arrendamiento_funcion","arrendamiento_forma_pago","arrendamiento_estado"];
+	protected $fillable = ["ambiente_id","num_contrato","operador_nombre","arrendatario_nombre","arrendatario_apellido_paterno","arrendatario_apellido_materno","arrendatario_ci","arrendatario_nombre_comercial","arrendatario_telefono","arrendatario_celular","ambiente_codigo","arrendamiento_fecha_inicio","arrendamiento_fecha_fin","arrendamiento_canon","arrendamiento_funcion","arrendamiento_forma_pago","arrendamiento_estado","arrendamiento_fecha"];
 	
 
 	/**
@@ -84,7 +84,8 @@ class TblArrendamientos extends Model
 			"arrendamiento_canon", 
 			"arrendamiento_funcion", 
 			"arrendamiento_forma_pago", 
-			"arrendamiento_estado" 
+			"arrendamiento_estado", 
+			"arrendamiento_fecha" 
 		];
 	}
 	
@@ -113,7 +114,8 @@ class TblArrendamientos extends Model
 			"arrendamiento_canon", 
 			"arrendamiento_funcion", 
 			"arrendamiento_forma_pago", 
-			"arrendamiento_estado" 
+			"arrendamiento_estado", 
+			"arrendamiento_fecha" 
 		];
 	}
 	
@@ -142,7 +144,8 @@ class TblArrendamientos extends Model
 			"arrendamiento_canon", 
 			"arrendamiento_funcion", 
 			"arrendamiento_forma_pago", 
-			"arrendamiento_estado" 
+			"arrendamiento_estado", 
+			"arrendamiento_fecha" 
 		];
 	}
 	
@@ -171,7 +174,8 @@ class TblArrendamientos extends Model
 			"arrendamiento_canon", 
 			"arrendamiento_funcion", 
 			"arrendamiento_forma_pago", 
-			"arrendamiento_estado" 
+			"arrendamiento_estado", 
+			"arrendamiento_fecha" 
 		];
 	}
 	
@@ -183,7 +187,6 @@ class TblArrendamientos extends Model
      */
 	public static function editFields(){
 		return [ 
-			"arrendamiento_id", 
 			"ambiente_id", 
 			"num_contrato", 
 			"operador_nombre", 
@@ -200,7 +203,9 @@ class TblArrendamientos extends Model
 			"arrendamiento_canon", 
 			"arrendamiento_funcion", 
 			"arrendamiento_forma_pago", 
-			"arrendamiento_estado" 
+			"arrendamiento_estado", 
+			"arrendamiento_fecha", 
+			"arrendamiento_id" 
 		];
 	}
 	

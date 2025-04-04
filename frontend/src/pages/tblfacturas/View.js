@@ -7,10 +7,11 @@ import TblfacturasEditPage from 'pages/tblfacturas/Edit';
 import useApp from 'hooks/useApp';
 
 import useViewPage from 'hooks/useViewPage';
+import MasterDetailPages from './MasterDetailPages';
 const TblfacturasViewPage = (props) => {
 		const app = useApp();
 	const pageController = useViewPage(props);
-	const { item, pageReady, loading, apiRequestError, deleteItem } = pageController;
+	const { item, currentRecord, pageReady, loading, apiRequestError, deleteItem } = pageController;
 	function ActionButton(data){
 		const items = [
 		{
@@ -74,74 +75,86 @@ const TblfacturasViewPage = (props) => {
             <div className="grid ">
                 <div className="col comp-grid" >
                     <div >
-                        {/*PageComponentStart*/}
-                        <div className="mb-3 grid ">
-                            <div className="col-12 md:col-4">
-                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
-                                    <div className="">
-                                        <div className="text-400 font-medium mb-1">Factura Id</div>
-                                        <div className="font-bold">{ item.factura_id }</div>
+                        <div className="grid ">
+                            <div className="col">
+                                {/*PageComponentStart*/}
+                                <div className="mb-3 grid ">
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Factura Id</div>
+                                                <div className="font-bold">{ item.factura_id }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Arrendatario Nombre</div>
+                                                <div className="font-bold">{ item.arrendatario_nombre }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Arrendatario Ci</div>
+                                                <div className="font-bold">{ item.arrendatario_ci }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Factura Numero</div>
+                                                <div className="font-bold">{ item.factura_numero }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Factura Fecha Emision</div>
+                                                <div className="font-bold">{ item.factura_fecha_emision }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Factura Total</div>
+                                                <div className="font-bold">{ item.factura_total }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Factura Fecha Pago</div>
+                                                <div className="font-bold">{ item.factura_fecha_pago }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Factura Estado</div>
+                                                <div className="font-bold">{ item.factura_estado }</div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
+                                {/*PageComponentEnd*/}
                             </div>
-                            <div className="col-12 md:col-4">
-                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
-                                    <div className="">
-                                        <div className="text-400 font-medium mb-1">Arrendatario Nombre</div>
-                                        <div className="font-bold">{ item.arrendatario_nombre }</div>
-                                    </div>
+                            {
+                            (currentRecord && !props.isSubPage) && 
+                            <div className="col-12">
+                                <div className="card my-3 p-1">
+                                    <MasterDetailPages masterRecord={currentRecord} scrollIntoView={false} />
                                 </div>
                             </div>
-                            <div className="col-12 md:col-4">
-                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
-                                    <div className="">
-                                        <div className="text-400 font-medium mb-1">Arrendatario Ci</div>
-                                        <div className="font-bold">{ item.arrendatario_ci }</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-12 md:col-4">
-                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
-                                    <div className="">
-                                        <div className="text-400 font-medium mb-1">Factura Numero</div>
-                                        <div className="font-bold">{ item.factura_numero }</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-12 md:col-4">
-                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
-                                    <div className="">
-                                        <div className="text-400 font-medium mb-1">Factura Fecha Emision</div>
-                                        <div className="font-bold">{ item.factura_fecha_emision }</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-12 md:col-4">
-                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
-                                    <div className="">
-                                        <div className="text-400 font-medium mb-1">Factura Total</div>
-                                        <div className="font-bold">{ item.factura_total }</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-12 md:col-4">
-                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
-                                    <div className="">
-                                        <div className="text-400 font-medium mb-1">Factura Fecha Pago</div>
-                                        <div className="font-bold">{ item.factura_fecha_pago }</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-12 md:col-4">
-                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
-                                    <div className="">
-                                        <div className="text-400 font-medium mb-1">Factura Estado</div>
-                                        <div className="font-bold">{ item.factura_estado }</div>
-                                    </div>
-                                </div>
-                            </div>
+                            }
                         </div>
-                        {/*PageComponentEnd*/}
                     </div>
                 </div>
             </div>

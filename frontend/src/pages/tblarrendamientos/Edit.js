@@ -1,7 +1,8 @@
 import { Formik, Form, ErrorMessage } from 'formik';
 import * as yup from 'yup';
 import { Button } from 'primereact/button';
-import { Calendar } from 'primereact/calendar';
+import { DataSource } from 'components/DataSource';
+import { Dropdown } from 'primereact/dropdown';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { PageRequestError } from 'components/PageRequestError';
@@ -10,47 +11,33 @@ import { Title } from 'components/Title';
 import useApp from 'hooks/useApp';
 
 import useEditPage from 'hooks/useEditPage';
-const TblarrendamientosEditPage = (props) => {
-		const app = useApp();
+const TbledificioambienteEditPage = (props) => {
+	const app = useApp();
 	// form validation schema
 	const validationSchema = yup.object().shape({
-		ambiente_id: yup.number().nullable().label("Ambiente Id"),
-		num_contrato: yup.string().required().label("Num Contrato"),
-		operador_nombre: yup.string().required().label("Operador Nombre"),
-		arrendatario_nombre: yup.string().required().label("Arrendatario Nombre"),
-		arrendatario_apellido_paterno: yup.string().nullable().label("Arrendatario Apellido Paterno"),
-		arrendatario_apellido_materno: yup.string().nullable().label("Arrendatario Apellido Materno"),
-		arrendatario_ci: yup.string().nullable().label("Arrendatario Ci"),
-		arrendatario_nombre_comercial: yup.string().required().label("Arrendatario Nombre Comercial"),
-		arrendatario_telefono: yup.string().nullable().label("Arrendatario Telefono"),
-		arrendatario_celular: yup.string().nullable().label("Arrendatario Celular"),
-		ambiente_codigo: yup.string().required().label("Ambiente Codigo"),
-		arrendamiento_fecha_inicio: yup.string().required().label("Arrendamiento Fecha Inicio"),
-		arrendamiento_fecha_fin: yup.string().required().label("Arrendamiento Fecha Fin"),
-		arrendamiento_canon: yup.number().required().label("Arrendamiento Canon"),
-		arrendamiento_funcion: yup.string().nullable().label("Arrendamiento Funcion"),
-		arrendamiento_forma_pago: yup.string().nullable().label("Arrendamiento Forma Pago"),
-		arrendamiento_estado: yup.string().nullable().label("Arrendamiento Estado")
+		edificio_id: yup.string().required().label("Edificio Id"),
+		nivel_id: yup.string().required().label("Nivel Id"),
+		seccion_id: yup.string().required().label("Seccion Id"),
+		ambiente_nombre: yup.string().required().label("Ambiente Nombre"),
+		ambiente_tamano: yup.number().nullable().label("Ambiente Tamano"),
+		ambiente_tipo_uso: yup.string().nullable().label("Ambiente Tipo Uso"),
+		ambiente_precio_alquiler: yup.number().nullable().label("Ambiente Precio Alquiler"),
+		ambiente_codigo_interno: yup.string().nullable().label("Ambiente Codigo Interno"),
+		ambiente_superficie_m2: yup.number().nullable().label("Ambiente Superficie M2"),
+		ambiente_estado: yup.string().required().label("Ambiente Estado")
 	});
 	// form default values
 	const formDefaultValues = {
-		ambiente_id: '', 
-		num_contrato: '', 
-		operador_nombre: '', 
-		arrendatario_nombre: '', 
-		arrendatario_apellido_paterno: '', 
-		arrendatario_apellido_materno: '', 
-		arrendatario_ci: '', 
-		arrendatario_nombre_comercial: '', 
-		arrendatario_telefono: '', 
-		arrendatario_celular: '', 
-		ambiente_codigo: '', 
-		arrendamiento_fecha_inicio: new Date(), 
-		arrendamiento_fecha_fin: new Date(), 
-		arrendamiento_canon: '', 
-		arrendamiento_funcion: '', 
-		arrendamiento_forma_pago: '', 
-		arrendamiento_estado: '', 
+		edificio_id: '', 
+		nivel_id: '', 
+		seccion_id: '', 
+		ambiente_nombre: '', 
+		ambiente_tamano: '', 
+		ambiente_tipo_uso: '', 
+		ambiente_precio_alquiler: '', 
+		ambiente_codigo_interno: '', 
+		ambiente_superficie_m2: '', 
+		ambiente_estado: '', 
 	}
 	//where page logics resides
 	const pageController = useEditPage({ props, formDefaultValues, afterSubmit });
@@ -63,7 +50,7 @@ const TblarrendamientosEditPage = (props) => {
 			app.closeDialogs(); // if page is open as dialog, close dialog
 		}
 		else if(props.redirect) {
-			app.navigate(`/tblarrendamientos`);
+			app.navigate(`/tbledificioambiente`);
 		}
 	}
 	// loading form data from api
@@ -83,7 +70,7 @@ const TblarrendamientosEditPage = (props) => {
 	//page is ready when formdata loaded successfully
 	if(pageReady){
 		return (
-<main id="TblarrendamientosEditPage" className="main-page">
+<main id="TbledificioambienteEditPage" className="main-page">
     { (props.showHeader) && 
     <section className="page-section mb-3" >
         <div className="container">
@@ -94,253 +81,280 @@ const TblarrendamientosEditPage = (props) => {
                 </div>
                 }
                 <div className="col " >
-                    <Title title="Editar"   titleClass="text-2xl text-primary font-bold" subTitleClass="text-500"      separator={false} />
+                    <Title title="Edit Tbl Edificio Ambiente"   titleClass="text-2xl text-primary font-bold" subTitleClass="text-500"      separator={false} />
                 </div>
             </div>
         </div>
     </section>
     }
-    <section className="page-section " >
-        <div className="container">
-            <div className="grid ">
-                <div className="md:col-9 sm:col-12 comp-grid" >
-                    <div >
-                        <Formik
-                            initialValues={formData}
-                            validationSchema={validationSchema} 
-                            onSubmit={(values, actions) => {
-                            submitForm(values);
-                            }
-                            }
-                            >
-                            { (formik) => {
-                            return (
-                            <Form className={`${!props.isSubPage ? 'card  ' : ''}`}>
-                                <div className="grid">
-                                    <div className="col-12">
-                                        <div className="formgrid grid">
-                                            <div className="col-12 md:col-3">
-                                                Ambiente Id 
-                                            </div>
-                                            <div className="col-12 md:col-9">
-                                                <InputText name="ambiente_id"  onChange={formik.handleChange}  value={formik.values.ambiente_id}   label="Ambiente Id" type="number" placeholder="Escribir Ambiente Id"  min={0}  step="any"    className={inputClassName(formik?.errors?.ambiente_id)} />
-                                                <ErrorMessage name="ambiente_id" component="span" className="p-error" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="col-12">
-                                        <div className="formgrid grid">
-                                            <div className="col-12 md:col-3">
-                                                Num Contrato *
-                                            </div>
-                                            <div className="col-12 md:col-9">
-                                                <InputText name="num_contrato"  onChange={formik.handleChange}  value={formik.values.num_contrato}   label="Num Contrato" type="text" placeholder="Escribir Num Contrato"        className={inputClassName(formik?.errors?.num_contrato)} />
-                                                <ErrorMessage name="num_contrato" component="span" className="p-error" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="col-12">
-                                        <div className="formgrid grid">
-                                            <div className="col-12 md:col-3">
-                                                Operador Nombre *
-                                            </div>
-                                            <div className="col-12 md:col-9">
-                                                <InputText name="operador_nombre"  onChange={formik.handleChange}  value={formik.values.operador_nombre}   label="Operador Nombre" type="text" placeholder="Escribir Operador Nombre"        className={inputClassName(formik?.errors?.operador_nombre)} />
-                                                <ErrorMessage name="operador_nombre" component="span" className="p-error" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="col-12">
-                                        <div className="formgrid grid">
-                                            <div className="col-12 md:col-3">
-                                                Arrendatario Nombre *
-                                            </div>
-                                            <div className="col-12 md:col-9">
-                                                <InputTextarea name="arrendatario_nombre"  className={inputClassName(formik?.errors?.arrendatario_nombre)}   value={formik.values.arrendatario_nombre} placeholder="Escribir Arrendatario Nombre" onChange={formik.handleChange}   >
-                                                </InputTextarea>
-                                                <ErrorMessage name="arrendatario_nombre" component="span" className="p-error" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="col-12">
-                                        <div className="formgrid grid">
-                                            <div className="col-12 md:col-3">
-                                                Arrendatario Apellido Paterno 
-                                            </div>
-                                            <div className="col-12 md:col-9">
-                                                <InputText name="arrendatario_apellido_paterno"  onChange={formik.handleChange}  value={formik.values.arrendatario_apellido_paterno}   label="Arrendatario Apellido Paterno" type="text" placeholder="Escribir Arrendatario Apellido Paterno"        className={inputClassName(formik?.errors?.arrendatario_apellido_paterno)} />
-                                                <ErrorMessage name="arrendatario_apellido_paterno" component="span" className="p-error" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="col-12">
-                                        <div className="formgrid grid">
-                                            <div className="col-12 md:col-3">
-                                                Arrendatario Apellido Materno 
-                                            </div>
-                                            <div className="col-12 md:col-9">
-                                                <InputText name="arrendatario_apellido_materno"  onChange={formik.handleChange}  value={formik.values.arrendatario_apellido_materno}   label="Arrendatario Apellido Materno" type="text" placeholder="Escribir Arrendatario Apellido Materno"        className={inputClassName(formik?.errors?.arrendatario_apellido_materno)} />
-                                                <ErrorMessage name="arrendatario_apellido_materno" component="span" className="p-error" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="col-12">
-                                        <div className="formgrid grid">
-                                            <div className="col-12 md:col-3">
-                                                Arrendatario Ci 
-                                            </div>
-                                            <div className="col-12 md:col-9">
-                                                <InputText name="arrendatario_ci"  onChange={formik.handleChange}  value={formik.values.arrendatario_ci}   label="Arrendatario Ci" type="text" placeholder="Escribir Arrendatario Ci"        className={inputClassName(formik?.errors?.arrendatario_ci)} />
-                                                <ErrorMessage name="arrendatario_ci" component="span" className="p-error" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="col-12">
-                                        <div className="formgrid grid">
-                                            <div className="col-12 md:col-3">
-                                                Arrendatario Nombre Comercial *
-                                            </div>
-                                            <div className="col-12 md:col-9">
-                                                <InputTextarea name="arrendatario_nombre_comercial"  className={inputClassName(formik?.errors?.arrendatario_nombre_comercial)}   value={formik.values.arrendatario_nombre_comercial} placeholder="Escribir Arrendatario Nombre Comercial" onChange={formik.handleChange}   >
-                                                </InputTextarea>
-                                                <ErrorMessage name="arrendatario_nombre_comercial" component="span" className="p-error" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="col-12">
-                                        <div className="formgrid grid">
-                                            <div className="col-12 md:col-3">
-                                                Arrendatario Telefono 
-                                            </div>
-                                            <div className="col-12 md:col-9">
-                                                <InputText name="arrendatario_telefono"  onChange={formik.handleChange}  value={formik.values.arrendatario_telefono}   label="Arrendatario Telefono" type="text" placeholder="Escribir Arrendatario Telefono"        className={inputClassName(formik?.errors?.arrendatario_telefono)} />
-                                                <ErrorMessage name="arrendatario_telefono" component="span" className="p-error" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="col-12">
-                                        <div className="formgrid grid">
-                                            <div className="col-12 md:col-3">
-                                                Arrendatario Celular 
-                                            </div>
-                                            <div className="col-12 md:col-9">
-                                                <InputText name="arrendatario_celular"  onChange={formik.handleChange}  value={formik.values.arrendatario_celular}   label="Arrendatario Celular" type="text" placeholder="Escribir Arrendatario Celular"        className={inputClassName(formik?.errors?.arrendatario_celular)} />
-                                                <ErrorMessage name="arrendatario_celular" component="span" className="p-error" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="col-12">
-                                        <div className="formgrid grid">
-                                            <div className="col-12 md:col-3">
-                                                Ambiente Codigo *
-                                            </div>
-                                            <div className="col-12 md:col-9">
-                                                <InputText name="ambiente_codigo"  onChange={formik.handleChange}  value={formik.values.ambiente_codigo}   label="Ambiente Codigo" type="text" placeholder="Escribir Ambiente Codigo"        className={inputClassName(formik?.errors?.ambiente_codigo)} />
-                                                <ErrorMessage name="ambiente_codigo" component="span" className="p-error" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="col-12">
-                                        <div className="formgrid grid">
-                                            <div className="col-12 md:col-3">
-                                                Arrendamiento Fecha Inicio *
-                                            </div>
-                                            <div className="col-12 md:col-9">
-                                                <Calendar name="arrendamiento_fecha_inicio" value={formik.values.arrendamiento_fecha_inicio} onChange={formik.handleChange} showButtonBar showTime dateFormat="yy-mm-dd" hourFormat="24"showIcon className={inputClassName(formik?.errors?.arrendamiento_fecha_inicio)}        />
-                                                <ErrorMessage name="arrendamiento_fecha_inicio" component="span" className="p-error" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="col-12">
-                                        <div className="formgrid grid">
-                                            <div className="col-12 md:col-3">
-                                                Arrendamiento Fecha Fin *
-                                            </div>
-                                            <div className="col-12 md:col-9">
-                                                <Calendar name="arrendamiento_fecha_fin" value={formik.values.arrendamiento_fecha_fin} onChange={formik.handleChange} showButtonBar showTime dateFormat="yy-mm-dd" hourFormat="24"showIcon className={inputClassName(formik?.errors?.arrendamiento_fecha_fin)}        />
-                                                <ErrorMessage name="arrendamiento_fecha_fin" component="span" className="p-error" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="col-12">
-                                        <div className="formgrid grid">
-                                            <div className="col-12 md:col-3">
-                                                Arrendamiento Canon *
-                                            </div>
-                                            <div className="col-12 md:col-9">
-                                                <InputText name="arrendamiento_canon"  onChange={formik.handleChange}  value={formik.values.arrendamiento_canon}   label="Arrendamiento Canon" type="number" placeholder="Escribir Arrendamiento Canon"  min={0}  step={0.1}    className={inputClassName(formik?.errors?.arrendamiento_canon)} />
-                                                <ErrorMessage name="arrendamiento_canon" component="span" className="p-error" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="col-12">
-                                        <div className="formgrid grid">
-                                            <div className="col-12 md:col-3">
-                                                Arrendamiento Funcion 
-                                            </div>
-                                            <div className="col-12 md:col-9">
-                                                <InputTextarea name="arrendamiento_funcion"  className={inputClassName(formik?.errors?.arrendamiento_funcion)}   value={formik.values.arrendamiento_funcion} placeholder="Escribir Arrendamiento Funcion" onChange={formik.handleChange}   >
-                                                </InputTextarea>
-                                                <ErrorMessage name="arrendamiento_funcion" component="span" className="p-error" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="col-12">
-                                        <div className="formgrid grid">
-                                            <div className="col-12 md:col-3">
-                                                Arrendamiento Forma Pago 
-                                            </div>
-                                            <div className="col-12 md:col-9">
-                                                <InputText name="arrendamiento_forma_pago"  onChange={formik.handleChange}  value={formik.values.arrendamiento_forma_pago}   label="Arrendamiento Forma Pago" type="text" placeholder="Escribir Arrendamiento Forma Pago"        className={inputClassName(formik?.errors?.arrendamiento_forma_pago)} />
-                                                <ErrorMessage name="arrendamiento_forma_pago" component="span" className="p-error" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="col-12">
-                                        <div className="formgrid grid">
-                                            <div className="col-12 md:col-3">
-                                                Arrendamiento Estado 
-                                            </div>
-                                            <div className="col-12 md:col-9">
-                                                <InputText name="arrendamiento_estado"  onChange={formik.handleChange}  value={formik.values.arrendamiento_estado}   label="Arrendamiento Estado" type="text" placeholder="Escribir Arrendamiento Estado"        className={inputClassName(formik?.errors?.arrendamiento_estado)} />
-                                                <ErrorMessage name="arrendamiento_estado" component="span" className="p-error" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                { props.showFooter && 
-                                <div className="text-center my-3">
-                                    <Button onClick={(e) => handleSubmit(e, formik)}  type="submit" label="Actualizar" icon="pi pi-send" loading={saving} />
-                                </div>
-                                }
-                            </Form>
-                            );
-                            }
-                            }
-                            </Formik>
-                        </div>
+<section className="page-section">
+  <div className="container">
+    <div className="grid">
+      <div className="md:col-10 md:col-offset-1 sm:col-12 comp-grid">
+        <div>
+          <Formik
+            initialValues={formData}
+            validationSchema={validationSchema} 
+            onSubmit={(values, actions) => {
+              submitForm(values);
+            }}
+          >
+            {(formik) => (
+              <Form className={`${!props.isSubPage ? 'card p-4 shadow-md' : ''}`}>
+                <h3 className="text-xl font-medium mb-4 text-center">Editar Información del Ambiente</h3>
+                
+                {/* Sección de ubicación */}
+                <div className="mb-4 pb-3 border-bottom-1 border-300">
+                  <h4 className="text-lg font-medium mb-3">Ubicación</h4>
+                  <div className="grid">
+                    <div className="col-12 md:col-4 mb-3">
+                      <label htmlFor="edificio_id" className="block font-medium mb-2">Edificio *</label>
+                      <DataSource apiPath="components_data/edificio_id_option_list">
+                        {({ response }) => (
+                          <>
+                            <Dropdown
+                              id="edificio_id"
+                              name="edificio_id"
+                              optionLabel="label"
+                              optionValue="value"
+                              value={formik.values.edificio_id}
+                              onChange={formik.handleChange}
+                              options={response}
+                              placeholder="Seleccione un edificio..."
+                              className={`w-full ${inputClassName(formik?.errors?.edificio_id)}`}
+                            />
+                            <ErrorMessage name="edificio_id" component="span" className="p-error" />
+                          </>
+                        )}
+                      </DataSource>
                     </div>
+                    <div className="col-12 md:col-4 mb-3">
+                      <label htmlFor="nivel_id" className="block font-medium mb-2">Nivel *</label>
+                      <DataSource apiPath="components_data/nivel_id_option_list">
+                        {({ response }) => (
+                          <>
+                            <Dropdown
+                              id="nivel_id"
+                              name="nivel_id"
+                              optionLabel="label"
+                              optionValue="value"
+                              value={formik.values.nivel_id}
+                              onChange={formik.handleChange}
+                              options={response}
+                              placeholder="Seleccione un nivel..."
+                              className={`w-full ${inputClassName(formik?.errors?.nivel_id)}`}
+                            />
+                            <ErrorMessage name="nivel_id" component="span" className="p-error" />
+                          </>
+                        )}
+                      </DataSource>
+                    </div>
+                    <div className="col-12 md:col-4 mb-3">
+                      <label htmlFor="seccion_id" className="block font-medium mb-2">Sección *</label>
+                      <DataSource apiPath="components_data/seccion_id_option_list">
+                        {({ response }) => (
+                          <>
+                            <Dropdown
+                              id="seccion_id"
+                              name="seccion_id"
+                              optionLabel="label"
+                              optionValue="value"
+                              value={formik.values.seccion_id}
+                              onChange={formik.handleChange}
+                              options={response}
+                              placeholder="Seleccione una sección..."
+                              className={`w-full ${inputClassName(formik?.errors?.seccion_id)}`}
+                            />
+                            <ErrorMessage name="seccion_id" component="span" className="p-error" />
+                          </>
+                        )}
+                      </DataSource>
+                    </div>
+                  </div>
                 </div>
-            </div>
-        </section>
+                
+                {/* Sección de información básica */}
+                <div className="mb-4 pb-3 border-bottom-1 border-300">
+                  <h4 className="text-lg font-medium mb-3">Información Básica</h4>
+                  <div className="grid">
+                    <div className="col-12 mb-3">
+                      <label htmlFor="ambiente_nombre" className="block font-medium mb-2">Nombre del Ambiente *</label>
+                      <InputTextarea
+                        id="ambiente_nombre"
+                        name="ambiente_nombre"
+                        className={`w-full ${inputClassName(formik?.errors?.ambiente_nombre)}`}
+                        value={formik.values.ambiente_nombre}
+                        placeholder="Ingrese el nombre del ambiente"
+                        onChange={formik.handleChange}
+                        rows={2}
+                      />
+                      <ErrorMessage name="ambiente_nombre" component="span" className="p-error" />
+                    </div>
+                    <div className="col-12 md:col-6 mb-3">
+                      <label htmlFor="ambiente_codigo_interno" className="block font-medium mb-2">Código Interno</label>
+                      <InputText
+                        id="ambiente_codigo_interno"
+                        name="ambiente_codigo_interno"
+                        className={`w-full ${inputClassName(formik?.errors?.ambiente_codigo_interno)}`}
+                        value={formik.values.ambiente_codigo_interno}
+                        placeholder="Ingrese el código interno"
+                        onChange={formik.handleChange}
+                      />
+                      <ErrorMessage name="ambiente_codigo_interno" component="span" className="p-error" />
+                    </div>
+                    <div className="col-12 md:col-6 mb-3">
+                      <label htmlFor="ambiente_estado" className="block font-medium mb-2">Estado *</label>
+                      <Dropdown
+                        id="ambiente_estado"
+                        name="ambiente_estado"
+                        value={formik.values.ambiente_estado}
+                        onChange={formik.handleChange}
+                        options={[
+                          { label: 'Activo', value: 'A' },
+                          { label: 'Inactivo', value: 'I' },
+                          { label: 'Mantenimiento', value: 'M' }
+                        ]}
+                        placeholder="Seleccione un estado"
+                        className={`w-full ${inputClassName(formik?.errors?.ambiente_estado)}`}
+                      />
+                      <ErrorMessage name="ambiente_estado" component="span" className="p-error" />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Sección de características */}
+                <div className="mb-4 pb-3 border-bottom-1 border-300">
+                  <h4 className="text-lg font-medium mb-3">Características</h4>
+                  <div className="grid">
+                    <div className="col-12 md:col-6 lg:col-4 mb-3">
+                      <label htmlFor="ambiente_tamano" className="block font-medium mb-2">Tamaño</label>
+                      <div className="p-inputgroup">
+                        <InputText
+                          id="ambiente_tamano"
+                          name="ambiente_tamano"
+                          onChange={formik.handleChange}
+                          value={formik.values.ambiente_tamano}
+                          type="number"
+                          placeholder="Tamaño"
+                          min={0}
+                          step={0.1}
+                          className={`w-full ${inputClassName(formik?.errors?.ambiente_tamano)}`}
+                        />
+                        <span className="p-inputgroup-addon">m</span>
+                      </div>
+                      <ErrorMessage name="ambiente_tamano" component="span" className="p-error" />
+                    </div>
+                    <div className="col-12 md:col-6 lg:col-4 mb-3">
+                      <label htmlFor="ambiente_superficie_m2" className="block font-medium mb-2">Superficie</label>
+                      <div className="p-inputgroup">
+                        <InputText
+                          id="ambiente_superficie_m2"
+                          name="ambiente_superficie_m2"
+                          onChange={formik.handleChange}
+                          value={formik.values.ambiente_superficie_m2}
+                          type="number"
+                          placeholder="Superficie"
+                          min={0}
+                          step={0.1}
+                          className={`w-full ${inputClassName(formik?.errors?.ambiente_superficie_m2)}`}
+                        />
+                        <span className="p-inputgroup-addon">m²</span>
+                      </div>
+                      <ErrorMessage name="ambiente_superficie_m2" component="span" className="p-error" />
+                    </div>
+                    <div className="col-12 md:col-12 lg:col-4 mb-3">
+                      <label htmlFor="ambiente_tipo_uso" className="block font-medium mb-2">Tipo de Uso</label>
+                      <Dropdown
+                        id="ambiente_tipo_uso"
+                        name="ambiente_tipo_uso"
+                        value={formik.values.ambiente_tipo_uso}
+                        onChange={formik.handleChange}
+                        options={[
+                          { label: 'Oficina', value: 'Oficina' },
+                          { label: 'Comercial', value: 'Comercial' },
+                          { label: 'Residencial', value: 'Residencial' },
+                          { label: 'Educativo', value: 'Educativo' },
+                          { label: 'Almacén', value: 'Almacén' },
+                          { label: 'Otro', value: 'Otro' }
+                        ]}
+                        placeholder="Seleccione un tipo de uso"
+                        className={`w-full ${inputClassName(formik?.errors?.ambiente_tipo_uso)}`}
+                      />
+                      <ErrorMessage name="ambiente_tipo_uso" component="span" className="p-error" />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Sección financiera */}
+                <div className="mb-4">
+                  <h4 className="text-lg font-medium mb-3">Información Financiera</h4>
+                  <div className="grid">
+                    <div className="col-12 md:col-6">
+                      <label htmlFor="ambiente_precio_alquiler" className="block font-medium mb-2">Precio de Alquiler</label>
+                      <div className="p-inputgroup">
+                        <span className="p-inputgroup-addon">$</span>
+                        <InputText
+                          id="ambiente_precio_alquiler"
+                          name="ambiente_precio_alquiler"
+                          onChange={formik.handleChange}
+                          value={formik.values.ambiente_precio_alquiler}
+                          type="number"
+                          placeholder="Precio de alquiler"
+                          min={0}
+                          step={0.1}
+                          className={`w-full ${inputClassName(formik?.errors?.ambiente_precio_alquiler)}`}
+                        />
+                      </div>
+                      <ErrorMessage name="ambiente_precio_alquiler" component="span" className="p-error" />
+                    </div>
+                  </div>
+                </div>
+                
+                {props.showFooter && (
+                  <div className="flex justify-content-center gap-2 mt-4">
+                    <Button 
+                      type="button" 
+                      label="Cancelar" 
+                      icon="pi pi-times" 
+                      className="p-button-secondary" 
+                      onClick={() => formik.resetForm()}
+                    />
+                    <Button 
+                      onClick={(e) => handleSubmit(e, formik)} 
+                      className="p-button-primary" 
+                      type="submit" 
+                      label="Actualizar" 
+                      icon="pi pi-check" 
+                      loading={saving} 
+                    />
+                  </div>
+                )}
+              </Form>
+            )}
+          </Formik>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
     </main>
 		);
 	}
 }
-TblarrendamientosEditPage.defaultProps = {
-	primaryKey: 'arrendamiento_id',
-	pageName: 'tblarrendamientos',
-	apiPath: 'tblarrendamientos/edit',
-	routeName: 'tblarrendamientosedit',
-	submitButtonLabel: "Actualizar",
-	formValidationError: "El formulario no es válido",
-	formValidationMsg: "Por favor complete el formulario",
-	msgTitle: "Actualizar registro",
-	msgAfterSave: "Registro actualizado con éxito",
+TbledificioambienteEditPage.defaultProps = {
+	primaryKey: 'ambiente_id',
+	pageName: 'tbledificioambiente',
+	apiPath: 'tbledificioambiente/edit',
+	routeName: 'tbledificioambienteedit',
+	submitButtonLabel: "Update",
+	formValidationError: "Form is invalid",
+	formValidationMsg: "Please complete the form",
+	msgTitle: "Update Record",
+	msgAfterSave: "Record updated successfully",
 	msgBeforeSave: "",
 	showHeader: true,
 	showFooter: true,
 	redirect: true,
 	isSubPage: false
 }
-export default TblarrendamientosEditPage;
+export default TbledificioambienteEditPage;
