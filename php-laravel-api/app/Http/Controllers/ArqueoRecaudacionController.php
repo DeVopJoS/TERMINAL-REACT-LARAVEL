@@ -135,6 +135,8 @@ class ArqueoRecaudacionController extends Controller
                 'arqueohorainicio' => 'required',
                 'arqueohorafin' => 'required',
                 'arqueosupervisor' => 'required|string',
+                'arqueorealizadopor' => 'required|string', 
+                'arqueorevisadopor' => 'required|string', 
                 'cortes' => 'required|array',
                 'arqueorecaudaciontotal' => 'required|numeric',
                 'arqueodiferencia' => 'required|numeric',
@@ -162,12 +164,12 @@ class ArqueoRecaudacionController extends Controller
             $arqueoCab->arqueoturno = $request->arqueoturno ?? 'M'; // Por defecto turno mañana
             $arqueoCab->arqueohorainicio = $request->arqueohorainicio;
             $arqueoCab->arqueohorafin = $request->arqueohorafin;
-            $arqueoCab->arqueosupervisor = $request->arqueosupervisor; // Ahora guarda el nombre directamente
-            $arqueoCab->arqueorealizadopor = auth()->id() ?? 1;
-            $arqueoCab->arqueorevisadopor = $request->arqueosupervisor; // También usar el nombre aquí
+            $arqueoCab->arqueosupervisor = $request->arqueosupervisor;
+            $arqueoCab->arqueorealizadopor = $request->arqueorealizadopor;
+            $arqueoCab->arqueorevisadopor = $request->arqueorevisadopor;
             $arqueoCab->arqueorecaudaciontotal = $request->arqueorecaudaciontotal;
             $arqueoCab->arqueodiferencia = $request->arqueodiferencia;
-            $arqueoCab->arqueodiferenciatipo = $arqueodiferenciatipo; // Actualizado aquí
+            $arqueoCab->arqueodiferenciatipo = $arqueodiferenciatipo;
             $arqueoCab->arqueoobservacion = $request->arqueoobservacion;
             $arqueoCab->arqueoestado = 'R'; // estado cambiado de 'A' a 'R'
             $arqueoCab->arqueofecharegistro = now();
