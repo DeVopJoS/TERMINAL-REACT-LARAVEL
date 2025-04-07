@@ -7,10 +7,11 @@ import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { Calendar } from 'primereact/calendar';
 import { Toast } from 'primereact/toast';
-import { ToggleButton } from 'primereact/togglebutton';
 import { Dropdown } from 'primereact/dropdown';
 import { InputNumber } from 'primereact/inputnumber';
+import { Dialog } from 'primereact/dialog';
 import { formatDate } from '../../utils/utils';
+import ArqueoPrintPreview from './ArqueoPrintPreview';
 
 const CORTES_DENOMINACION = [
     { campo: 'arqueocorte200_00', valor: 200, label: '200.00' },
@@ -41,11 +42,13 @@ export default function ArqueoRecaudacionPage() {
     const [loading, setLoading] = useState(false);
     const [arqueos, setArqueos] = useState([]);
     const [selectedArqueos, setSelectedArqueos] = useState([]);
+    const [selectedArqueosImprimir, setSelectedArqueosImprimir] = useState([]);
     const [filters, setFilters] = useState({
         search: '',
         fecha: new Date()  // Inicializar con fecha actual
     });
     const [showArqueoFinal, setShowArqueoFinal] = useState(false);
+    const [showPrintPreview, setShowPrintPreview] = useState(false);
 
     // Estados para el arqueo final
     const [formData, setFormData] = useState({
@@ -425,6 +428,102 @@ export default function ArqueoRecaudacionPage() {
         setSelectedArqueos(selection);
     };
 
+    // Selección para impresión con un segundo checkbox
+    const imprimirSelectionTemplate = (rowData) => {
+        const isRecaudado = rowData.ae_estado === 'R';
+        const isSelected = selectedArqueosImprimir.some(item => item.ae_actaid === rowData.ae_actaid);
+        
+        // Mostrar checkbox solo para los recaudados
+        if (!isRecaudado) {
+            return <span></span>;
+        }
+
+        return (
+            <div className="flex justify-content-center">
+                <div 
+                    className={`custom-checkbox ${isSelected ? 'checked' : ''}`}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        toggleImprimirSelection(rowData);
+                    }}
+                >
+                    {isSelected && <i className="pi pi-check"></i>}
+                </div>
+            </div>
+        );
+    };
+
+    // Header para selección de impresión
+    const imprimirHeaderTemplate = () => {
+        // Determinar si todos los recaudados están seleccionados
+        const recaudados = arqueos.filter(item => item.ae_estado === 'R');
+        const allSelected = recaudados.length > 0 && 
+            recaudados.every(item => 
+                selectedArqueosImprimir.some(selected => selected.ae_actaid === item.ae_actaid)
+            );
+        
+        if (recaudados.length === 0) {
+            return <span><i className="pi pi-print" style={{ marginRight: '5px' }}></i>Imprimir</span>;
+        }
+        
+        return (
+            <div className="flex align-items-center justify-content-center">
+                <div className="flex align-items-center">
+                    <div 
+                        className={`custom-checkbox ${allSelected ? 'checked' : ''}`}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            if (allSelected) {
+                                setSelectedArqueosImprimir([]);
+                            } else {
+                                setSelectedArqueosImprimir([...recaudados]);
+                            }
+                        }}
+                    >
+                        {allSelected && <i className="pi pi-check"></i>}
+                    </div>
+                    <i className="pi pi-print ml-2" style={{ fontSize: '0.9rem' }}></i>
+                </div>
+            </div>
+        );
+    };
+
+    // Función para marcar/desmarcar un arqueo para imprimir
+    const toggleImprimirSelection = (rowData) => {
+        if (rowData.ae_estado !== 'R') {
+            toast.current.show({
+                severity: 'warn',
+                summary: 'Selección incorrecta',
+                detail: 'Solo se pueden seleccionar arqueos en estado Recaudado para imprimir'
+            });
+            return;
+        }
+        
+        const isSelected = selectedArqueosImprimir.some(item => item.ae_actaid === rowData.ae_actaid);
+        
+        if (isSelected) {
+            setSelectedArqueosImprimir(prev => 
+                prev.filter(item => item.ae_actaid !== rowData.ae_actaid)
+            );
+        } else {
+            setSelectedArqueosImprimir(prev => [...prev, rowData]);
+        }
+    };
+
+    // Función para abrir la vista previa de impresión
+    const handleShowPrintPreview = () => {
+        if (selectedArqueosImprimir.length === 0) {
+            toast.current.show({
+                severity: 'warn',
+                summary: 'Sin selección',
+                detail: 'Debe seleccionar al menos un arqueo recaudado para imprimir'
+            });
+            return;
+        }
+        
+        setShowPrintPreview(true);
+    };
+
     // Modificar rowClassName para resaltar visualmente los registros no seleccionables
     const rowClassName = (data) => {
         return {
@@ -439,6 +538,16 @@ export default function ArqueoRecaudacionPage() {
             <Toast ref={toast} />
             <div className="flex justify-content-between align-items-center mb-3">
                 <h5>Arqueos de Recaudación</h5>
+                <div className="flex gap-2">
+                    {selectedArqueosImprimir.length > 0 && (
+                        <Button 
+                            label="Imprimir Seleccionados" 
+                            icon="pi pi-print" 
+                            className="p-button-success"
+                            onClick={handleShowPrintPreview}
+                        />
+                    )}
+                </div>
             </div>
 
             <div className="grid mb-3">
@@ -470,6 +579,12 @@ export default function ArqueoRecaudacionPage() {
                         loading={loading}
                     />
                 </div>
+            </div>
+
+            <div className="flex justify-content-end mb-2">
+                <span className="p-tag p-tag-success">
+                    {selectedArqueosImprimir.length} arqueos seleccionados para imprimir
+                </span>
             </div>
 
             <DataTable
@@ -534,15 +649,27 @@ export default function ArqueoRecaudacionPage() {
                     body={accionesTemplate}
                     className="text-xs py-1 px-2"
                 />
+                <Column 
+                    header={imprimirHeaderTemplate()}
+                    body={imprimirSelectionTemplate} 
+                    headerStyle={{width: '5em'}}
+                    style={{textAlign: 'center'}}
+                    exportable={false}
+                />
             </DataTable>
             
             <div className="mt-2 flex justify-content-between align-items-center text-sm">
                 <span>
                     Mostrando registros del 1 al {arqueos.length < 10 ? arqueos.length : 10} de un total de {arqueos.length} registros.
                 </span>
-                <span className="font-bold">
-                    {selectedArqueos.length > 0 ? `${selectedArqueos.length} actas seleccionadas` : ''}
-                </span>
+                <div className="flex gap-2">
+                    <span className="font-bold text-primary">
+                        {selectedArqueos.length > 0 ? `${selectedArqueos.length} actas seleccionadas para arquear` : ''}
+                    </span>
+                    <span className="font-bold text-success">
+                        {selectedArqueosImprimir.length > 0 ? `${selectedArqueosImprimir.length} actas seleccionadas para imprimir` : ''}
+                    </span>
+                </div>
             </div>
             
             {/* Sección de cierre de arqueo (se muestra cuando hay actas seleccionadas) */}
@@ -776,6 +903,24 @@ export default function ArqueoRecaudacionPage() {
                 </div>
             )}
             
+            {/* Modal para la vista previa de impresión */}
+            <Dialog
+                visible={showPrintPreview}
+                style={{ width: '90vw', height: '90vh' }}
+                header="Vista Previa de Impresión"
+                maximizable
+                modal
+                onHide={() => setShowPrintPreview(false)}
+                footer={
+                    <div>
+                        <Button label="Imprimir" icon="pi pi-print" onClick={() => window.print()} />
+                        <Button label="Cerrar" icon="pi pi-times" className="p-button-secondary" onClick={() => setShowPrintPreview(false)} />
+                    </div>
+                }
+            >
+                <ArqueoPrintPreview arqueos={selectedArqueosImprimir} />
+            </Dialog>
+            
             <style>
                 {`
                     .excel-style-container {
@@ -844,6 +989,85 @@ export default function ArqueoRecaudacionPage() {
 
                     .p-datatable .p-datatable-tbody > tr.row-arqueado:hover {
                         background-color: #e8f5e9 !important;
+                    }
+                    
+                    @media print {
+                        body * {
+                            visibility: hidden;
+                        }
+                        .p-dialog-content, .p-dialog-content * {
+                            visibility: visible;
+                        }
+                        .p-dialog-header, .p-dialog-footer {
+                            display: none !important;
+                        }
+                        .p-dialog {
+                            position: absolute;
+                            left: 0;
+                            top: 0;
+                            width: 100%;
+                            height: 100%;
+                            overflow: visible;
+                        }
+                    }
+
+                    .print-checkbox .p-checkbox-box.p-highlight {
+                        border-color: #22c55e;
+                        background: #22c55e;
+                    }
+                    
+                    .print-checkbox .p-checkbox-box:hover {
+                        border-color: #22c55e;
+                    }
+                    
+                    .print-checkbox .p-checkbox-icon {
+                        color: white;
+                    }
+
+                    /* Estilo para el checkbox personalizado */
+                    .custom-checkbox {
+                        width: 20px;
+                        height: 20px;
+                        border: 1px solid #ced4da;
+                        border-radius: 4px;
+                        background-color: #ffffff;
+                        cursor: pointer;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
+                    }
+
+                    .custom-checkbox:hover {
+                        border-color: #2196F3;
+                    }
+
+                    .custom-checkbox.checked {
+                        background-color: #2196F3;
+                        border-color: #2196F3;
+                        color: #ffffff;
+                    }
+                    
+                    /* Estilo para la columna de impresión - visible siempre */
+                    .p-datatable .p-datatable-tbody > tr.row-disabled .custom-checkbox {
+                        opacity: 0.5;
+                        pointer-events: none;
+                    }
+                    
+                    .p-datatable .p-datatable-tbody > tr.row-arqueado .custom-checkbox {
+                        opacity: 1;
+                        pointer-events: auto;
+                    }
+                    
+                    /* Mantener el checkbox visible incluso en estado arqueado */
+                    .row-arqueado .custom-checkbox {
+                        display: flex !important;
+                        visibility: visible !important;
+                    }
+                    
+                    /* Ocultar el primer checkbox en filas no elegibles */
+                    .row-disabled .p-checkbox:first-child {
+                        display: none !important;
                     }
                 `}
             </style>
