@@ -26,10 +26,6 @@ class ArqueoRecaudacionController extends Controller
                 }
             ]);
             
-            if (!$request->has('showClosed') || $request->showClosed === 'false') {
-                $query->where('ae_estado', 'P');
-            }
-            
             if($request->search) {
                 $search = trim($request->search);
                 $query->where(function($query) use ($search) {
@@ -39,16 +35,17 @@ class ArqueoRecaudacionController extends Controller
                 });
             }
             
-            if($request->fecha_desde && $request->fecha_hasta) {
-                $fechaDesde = date('Y-m-d', strtotime($request->fecha_desde));
-                $fechaHasta = date('Y-m-d', strtotime($request->fecha_hasta));
-                $query->whereBetween(DB::raw("CAST(ae_fecha AS DATE)"), [$fechaDesde, $fechaHasta]);
-            } else if($request->fecha) {
+            if($request->fecha) {
                 $fecha = date('Y-m-d', strtotime($request->fecha));
-                $query->where(DB::raw("CAST(ae_fecha AS DATE)"), '=', $fecha);
+                $query->whereDate('ae_fecha', $fecha);
+            } else {
+                // Si no se especifica fecha, mostrar registros del día actual
+                $query->whereDate('ae_fecha', date('Y-m-d'));
             }
 
-            $records = $query->orderBy('ae_fecha', 'desc')
+            // Ordenar por estado (pendientes primero) y luego por fecha y correlativo
+            $records = $query->orderByRaw("CASE WHEN ae_estado = 'P' THEN 1 ELSE 2 END")
+                           ->orderBy('ae_fecha', 'desc')
                            ->orderBy('ae_correlativo', 'desc')
                            ->get();
             
@@ -245,7 +242,6 @@ class ArqueoRecaudacionController extends Controller
             try {
                 $fecha = date('Y-m-d', strtotime($fecha));
             } catch (\Exception $e) {
-                // Si hay error en la conversión, intentamos otro formato
                 $fecha = $request->fecha;
             }
             

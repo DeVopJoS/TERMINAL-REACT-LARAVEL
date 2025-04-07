@@ -43,11 +43,10 @@ export default function ArqueoRecaudacionPage() {
     const [selectedArqueos, setSelectedArqueos] = useState([]);
     const [filters, setFilters] = useState({
         search: '',
-        fecha: null
+        fecha: new Date()  // Inicializar con fecha actual
     });
-    const [showClosed, setShowClosed] = useState(false);
     const [showArqueoFinal, setShowArqueoFinal] = useState(false);
-    
+
     // Estados para el arqueo final
     const [formData, setFormData] = useState({
         arqueonumero: '',
@@ -77,7 +76,7 @@ export default function ArqueoRecaudacionPage() {
 
     useEffect(() => {
         loadArqueos();
-    }, [showClosed]);
+    }, []);
 
     useEffect(() => {
         calcularTotalCortes();
@@ -125,8 +124,6 @@ export default function ArqueoRecaudacionPage() {
                 const fechaStr = formatDate(filters.fecha, 'yyyy-MM-dd');
                 params.push(`fecha=${fechaStr}`);
             }
-
-            params.push(`showClosed=${showClosed}`);
             
             if (params.length > 0) {
                 url += '?' + params.join('&');
@@ -351,7 +348,7 @@ export default function ArqueoRecaudacionPage() {
         
         if (estado === 'R') {  // modificado estado A a R
             severity = 'success';
-            label = 'Recaudado';  // cambio etiqueta a Recaudado
+            label = 'Recaudado';  
         } else if (estado === 'P') {
             severity = 'warning';
             label = 'Pendiente';
@@ -401,11 +398,20 @@ export default function ArqueoRecaudacionPage() {
         });
     };
 
-    // Validar la selección de arqueos
+    // Validar la selección de arqueos - solo permitir seleccionar pendientes
     const onSelectionChange = (e) => {
+        // Si es selección de todos (checkbox en header)
+        if (e.originalEvent && e.originalEvent.target.classList.contains('p-checkbox-box')) {
+            // Filtrar solo los pendientes de todos los arqueos
+            const pendientes = arqueos.filter(item => item.ae_estado === 'P');
+            setSelectedArqueos(pendientes);
+            return;
+        }
+
+        // Para selección individual
         const selection = e.value;
         
-        // Verificar que todos los seleccionados estén pendientes (estado P)
+        // Verificar que la nueva selección solo incluya pendientes
         const todosPendientes = selection.every(item => item.ae_estado === 'P');
         if (!todosPendientes) {
             toast.current.show({
@@ -416,17 +422,16 @@ export default function ArqueoRecaudacionPage() {
             return;
         }
         
-        // Verificar que todos los seleccionados sean de la misma fecha
-        if (!tienenMismaFecha(selection)) {
-            toast.current.show({
-                severity: 'warn',
-                summary: 'Selección incorrecta',
-                detail: 'Solo se pueden seleccionar arqueos de la misma fecha'
-            });
-            return;
-        }
-        
         setSelectedArqueos(selection);
+    };
+
+    // Modificar rowClassName para resaltar visualmente los registros no seleccionables
+    const rowClassName = (data) => {
+        return {
+            'row-disabled': data.ae_estado !== 'P',
+            'row-pendiente': data.ae_estado === 'P',
+            'row-arqueado': data.ae_estado === 'R'
+        }
     };
 
     return (
@@ -437,7 +442,7 @@ export default function ArqueoRecaudacionPage() {
             </div>
 
             <div className="grid mb-3">
-                <div className="col-12 md:col-3">
+                <div className="col-12 md:col-4">
                     <InputText
                         placeholder="Buscar..."
                         value={filters.search}
@@ -445,7 +450,7 @@ export default function ArqueoRecaudacionPage() {
                         className="w-full"
                     />
                 </div>
-                <div className="col-12 md:col-3">
+                <div className="col-12 md:col-4">
                     <Calendar
                         placeholder="Fecha"
                         value={filters.fecha}
@@ -456,20 +461,7 @@ export default function ArqueoRecaudacionPage() {
                         showButtonBar
                     />
                 </div>
-                <div className="col-12 md:col-3">
-                    <div className="flex align-items-center">
-                        <span className="text-sm mr-2">¿Mostrar actas cerradas?</span>
-                        <ToggleButton
-                            checked={showClosed}
-                            onChange={(e) => setShowClosed(e.value)}
-                            onLabel="Si"
-                            offLabel="No"
-                            className="p-button-sm"
-                            style={{ width: '4rem' }}
-                        />
-                    </div>
-                </div>
-                <div className="col-12 md:col-3">
+                <div className="col-12 md:col-4">
                     <Button
                         label="Buscar"
                         icon="pi pi-search"
@@ -486,12 +478,14 @@ export default function ArqueoRecaudacionPage() {
                 rows={10}
                 rowsPerPageOptions={[10, 25, 50]}
                 loading={loading}
-                emptyMessage="No se encontraron actas de entrega pendientes"
+                emptyMessage="No se encontraron actas"
                 className="p-datatable-sm text-xs"
                 showGridlines
                 selection={selectedArqueos}
                 onSelectionChange={onSelectionChange}
                 selectionMode="checkbox"
+                rowClassName={rowClassName}
+                dataKey="ae_actaid"
             >
                 <Column selectionMode="multiple" headerStyle={{width: '3em'}} />
                 <Column field="ae_actaid" header="ACTA ID" sortable className="text-xs py-1 px-2" />
@@ -821,6 +815,35 @@ export default function ArqueoRecaudacionPage() {
                     }
                     .h-2rem {
                         height: 2rem !important;
+                    }
+                    .row-disabled {
+                        background-color: #f8f9fa;
+                        opacity: 0.7;
+                    }
+
+                    .row-disabled .p-checkbox {
+                        display: none !important;
+                    }
+
+                    .row-pendiente {
+                        background-color: #ffffff;
+                    }
+
+                    .row-arqueado {
+                        background-color: #e8f5e9 !important;  /* Verde claro para arqueados */
+                        opacity: 0.8;
+                    }
+
+                    .p-datatable .p-datatable-tbody > tr.row-disabled {
+                        cursor: default !important;
+                    }
+
+                    .p-datatable .p-datatable-tbody > tr.row-disabled:hover {
+                        background-color: #f8f9fa !important;
+                    }
+
+                    .p-datatable .p-datatable-tbody > tr.row-arqueado:hover {
+                        background-color: #e8f5e9 !important;
                     }
                 `}
             </style>
