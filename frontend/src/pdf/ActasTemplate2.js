@@ -68,28 +68,28 @@ const styles = StyleSheet.create({
       borderWidth: 1,
       borderTop: 0,
       borderColor: '#000000',
-      minHeight: 7,
+      minHeight: 5, // Reducido de 7 a 5
     },
     operatorLabel: {
       width: '30%',
-      padding: 2,
-      fontSize: 7,
+      padding: 1, // Reducido de 2 a 1
+      fontSize: 6, // Reducido de 7 a 6 
       borderRight: 1,
       borderColor: '#000000',
     },
     operatorValue: {
       flex: 1,
-      padding: 2,
+      padding: 1, // Reducido de 2 a 1
       borderRight: 1,
       borderColor: '#000000',
-      fontSize: 7,
+      fontSize: 6, // Reducido de 7 a 6
     },
     operatorRight: {
       width: '30%',
-      padding: 2,
+      padding: 1, // Reducido de 2 a 1
       textAlign: 'center',
       fontWeight: 'bold',
-      fontSize: 7,
+      fontSize: 6, // Reducido de 7 a 6
     },
     amountRow: {
       flexDirection: 'row',
@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
       borderWidth: 1,
       borderTop: 0,
       borderColor: '#000000',
-      minHeight: 7,
+      minHeight: 5, // Reducido de 7 a 5
     },
     indexCell: {
       width: '10%',
@@ -205,15 +205,15 @@ const styles = StyleSheet.create({
       borderRight: 1,
       textAlign: 'center',
       borderColor: '#000000',
-      minHeight: 7,
+      minHeight: 5, // Reducido de 7 a 5
     },
     typeCell: {
       width: '10%',
       paddingVertical: 1,
       borderRight: 1,
       textAlign: 'center',
-      borderColor: '#000000',
-      minHeight: 7,
+      borderColor: '#000000', 
+      minHeight: 5, // Reducido de 7 a 5
     },
     dataCell: {
       width: '18%',
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
       borderRight: 1,
       textAlign: 'center',
       borderColor: '#000000',
-      minHeight: 7,
+      minHeight: 5, // Reducido de 7 a 5
     },
     lastDataCell: {
       width: '18%',
@@ -299,19 +299,19 @@ const styles = StyleSheet.create({
       borderColor: '#000000',
     },
     bodySignature: {
-      height: '100px',
+      height: '80px', // Reducido de 100px a 80px
       flexDirection: 'row',
       alignItems: 'flex-end'
     },  
     signature: {
       width: '50%',
-      fontSize: 8,
+      fontSize: 7, // Reducido de 8 a 7
       textAlign: 'center',
-      margin: 10,
+      margin: 8, // Reducido de 10 a 8
       borderTopWidth: 1,
       borderTopStyle: 'dashed', 
       borderTopColor: '#000', 
-      paddingTop: 5,
+      paddingTop: 4, // Reducido de 5 a 4
     },
     redText: {
       color: '#cc0000',
@@ -326,12 +326,12 @@ const styles = StyleSheet.create({
       textAlign: 'center',
     },
     textSmall: {
-      fontSize: 13,
+      fontSize: 11, // Reducido de 13 a 11
       marginVertical: 0, 
       paddingVertical: 0,
     },
     textSmallT: {
-      fontSize: 9,
+      fontSize: 8, // Reducido de 9 a 8
       marginVertical: 0, 
       paddingVertical: 0,
     },
