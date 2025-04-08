@@ -11,8 +11,6 @@ use Illuminate\Support\Facades\DB;
 
 class ActaentregacabController extends Controller
 {
-	
-
 	/**
      * List table records
 	 * @param  \Illuminate\Http\Request
@@ -41,14 +39,33 @@ class ActaentregacabController extends Controller
 
 		if($request->search){
 			$search = trim($request->search);
-			Actaentregacab::search($query, $search);
+            $query->where(function($q) use ($search) {
+                if (is_numeric($search)) {
+                    $q->orWhere('ae_actaid', $search)
+                      ->orWhere('ae_correlativo', $search)
+                      ->orWhere('ae_recaudaciontotalbs', $search);
+                }
+
+                $possibleDate = date('Y-m-d', strtotime($search));
+                if (strtotime($search) !== false) {
+                    $q->orWhere('ae_fecha', 'like', "%$possibleDate%");
+                }
+
+                $q->orWhere('ae_grupo', 'like', "%$search%")
+                  ->orWhere('ae_operador1erturno', 'like', "%$search%")
+                  ->orWhere('ae_operador2doturno', 'like', "%$search%")
+                  ->orWhere('ae_observacion', 'like', "%$search%");
+
+                $q->orWhereHas('puntoRecaudacion', function($query) use ($search) {
+                    $query->where('puntorecaud_nombre', 'like', "%$search%");
+                });
+            });
 		}
+
 		$orderby = $request->orderby ?? "actaentregacab.ae_actaid";
 		$ordertype = $request->ordertype ?? "desc";
 		$query->orderBy($orderby, $ordertype);
-		// if($fieldname){
-		// 	$query->where($fieldname , $fieldvalue); //filter by a single field name
-		// }
+
 		$records = $query->select(Actaentregacab::listFields())->get();
 		return $this->respond($records);
 	}

@@ -18,8 +18,7 @@ import TemplateActa from '../../pdf/ActasTemplate2'
 const TblActasList = () => {
   const [ actas, setActas ] = useState([]);
   const [ selectedIds, setSelectedIds ] = useState([]);
-  const [ correlativo, setCorrelativo ] = useState("");
-  const [ fecha, setFecha ] = useState(null);
+  const [ searchTerm, setSearchTerm ] = useState("");
   const [ modalVisible, setModalVisible ] = useState(false);
   const [ loading, setLoading ] = useState(false);
 
@@ -55,13 +54,31 @@ const TblActasList = () => {
 
   const searchActa = async () => {
     try {
-      const formattedDate = fecha ? fecha.toISOString().split('T')[0] : '';
-
-      const { data } = await axios.get(`/actas/index?ae_estado=P&ae_fecha=${formattedDate}`);
-
+      setLoading(true);
+      
+      if (!searchTerm.trim()) {
+        fetchData();
+        return;
+      }
+      
+      const { data } = await axios.get(`/actas/index?search=${searchTerm}`);
       setActas(data);
     } catch (error) {
-        console.error("Error al buscar datos:", error);
+      console.error("Error al buscar datos:", error);
+      toast.current.show({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Error al buscar actas',
+        life: 3000
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      searchActa();
     }
   };
 
@@ -118,23 +135,25 @@ const TblActasList = () => {
       <div className="card">
         <h5 className="text-black">Creación de Acta Entrega</h5>
         <div className="grid mb-3">
-          
-          <div className="col-12 md:col-3">
-            <InputText
-              value={correlativo}
-              placeholder="Correlativo"
-              onChange={(e) => setCorrelativo(e.target.value)}
-              className="w-full"
-            />           
-          </div>
-
-          <div className="col-12 md:col-3">
-              <Calendar placeholder="Fecha" value={fecha} onChange={(e) => setFecha(e.value)} showIcon className="w-full"
+          <div className="col-12 md:col-8">
+            <span className="p-input-icon-left w-full">
+              <i className="pi pi-search" />
+              <InputText 
+                placeholder="Buscar por Acta ID, Correlativo, Fecha, Grupo, Operador, Recaudación..." 
+                className="w-full"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={handleKeyDown}
               />
+            </span>
           </div>
-
-          <div className="col-12 md:col-6 flex justify-content-end">
-            <Button label="BUSCAR DATOS DE ACTA ENTREGA" icon="pi pi-search" className="px-8" onClick={searchActa}/>
+          <div className="col-12 md:col-4 flex justify-content-end">
+            <Button 
+              label="BUSCAR" 
+              icon="pi pi-search" 
+              className="px-8"
+              onClick={searchActa}
+            />
           </div>
         </div>
         { selectedIds.length != 0 && <Button label="Imprimir" onClick={printSelectedActas}/>}
