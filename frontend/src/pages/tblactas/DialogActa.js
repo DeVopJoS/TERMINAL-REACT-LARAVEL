@@ -13,7 +13,7 @@ import DialogActaDet from './DialogActaDet';
 import axios from 'axios';
 
 
-function DialogActa({visible, onHide, reloadData}) {
+function DialogActa({visible, onHide, reloadData, editData = null}) {
     const toast = useRef(null);
     const [ dialogActaDet, setDialogActaDet ] = useState(false);
     const [ registros, setRegistros ] = useState([]);
@@ -25,6 +25,100 @@ function DialogActa({visible, onHide, reloadData}) {
     const [errores, setErrores] = useState({});
     const [fecha, setFecha] = useState(null);
     const [observacion, setObservacion] = useState(""); 
+    const [editMode, setEditMode] = useState(false);
+    const [actaId, setActaId] = useState(null);
+
+    useEffect(() => {
+        if (editData) {
+            setEditMode(true);
+            setActaId(editData.ae_actaid);
+            loadActaData(editData);
+        } else {
+            setEditMode(false);
+            setActaId(null);
+            resetForm();
+        }
+    }, [editData]);
+
+    const loadActaData = (acta) => {
+        // Cargamos los datos del acta en el formulario
+        setObservacion(acta.ae_observacion || "");
+        setTipoPuntoSelec(acta.punto_recaud_id);
+        setFecha(acta.ae_fecha ? new Date(acta.ae_fecha) : null);
+        
+        // Establecemos los valores de los campos de texto
+        setTimeout(() => {
+            if (document.getElementById("grupo")) {
+                document.getElementById("grupo").value = acta.ae_grupo || "";
+            }
+            if (document.getElementById("operador1erturno")) {
+                document.getElementById("operador1erturno").value = acta.ae_operador1erturno || "";
+            }
+            if (document.getElementById("operador2doturno")) {
+                document.getElementById("operador2doturno").value = acta.ae_operador2doturno || "";
+            }
+            if (document.getElementById("cambio")) {
+                document.getElementById("cambio").value = acta.ae_cambiobs || "0";
+            }
+            if (document.getElementById("cajachica")) {
+                document.getElementById("cajachica").value = acta.ae_cajachicabs || "0";
+            }
+            if (document.getElementById("llaves")) {
+                document.getElementById("llaves").value = acta.ae_llaves || "0";
+            }
+            if (document.getElementById("fechero")) {
+                document.getElementById("fechero").value = acta.ae_fechero || "0";
+            }
+            if (document.getElementById("tampo")) {
+                document.getElementById("tampo").value = acta.ae_tampo || "0";
+            }
+            if (document.getElementById("candados")) {
+                document.getElementById("candados").value = acta.ae_candados || "0";
+            }
+        }, 100);
+
+        // Cargar los detalles del acta
+        fetchActaDetalles(acta.ae_actaid);
+    };
+
+    const resetForm = () => {
+        setObservacion("");
+        setTipoPuntoSelec(null);
+        setFecha(null);
+        setRegistros([]);
+        setTotalImporte(0);
+        setCurrentData(null);
+        setErrores({});
+    };
+
+    const fetchActaDetalles = async (actaId) => {
+        try {
+            const { data } = await axios.get(`/actas/cabecera/${actaId}`);
+            
+            if (data && data.detalles) {
+                const formattedRegistros = data.detalles.map(detalle => ({
+                    id: detalle.aed_actaid,
+                    tipo_servicio: detalle.servicio_id,
+                    descripcion: detalle.servicio_descripcion,
+                    desde_numero: detalle.aed_desdenumero,
+                    hasta_numero: detalle.aed_hastanumero,
+                    cantidad_boletos: detalle.aed_cantidad,
+                    precio_unitario: detalle.aed_preciounitario,
+                    precio_total: detalle.aed_importebs
+                }));
+                
+                setRegistros(formattedRegistros);
+            }
+        } catch (error) {
+            console.error("Error fetching acta details:", error);
+            toast.current.show({
+                severity: "error",
+                summary: "Error",
+                detail: "No se pudieron cargar los detalles del acta",
+                life: 3000,
+            });
+        }
+    };
 
     useEffect(() => {
         const total = registros.reduce((acc, record) => acc + Number(record.precio_total || 0), 0);
@@ -170,32 +264,45 @@ function DialogActa({visible, onHide, reloadData}) {
                 candados: document.getElementById("candados")?.value || "0",
                 ae_estado: "P",
                 registros: registros.map(r => ({
-                  id: r.id,
-                  tipo_servicio: r.tipo_servicio,
-                  descripcion: r.descripcion,
-                  desde_numero: r.desde_numero,
-                  hasta_numero: r.hasta_numero,
-                  cantidad_boletos: r.cantidad_boletos,
-                  precio_unitario: r.precio_unitario,
-                  importe_total: (r.cantidad_boletos * r.precio_unitario)
+                    id: r.id,
+                    tipo_servicio: r.tipo_servicio,
+                    descripcion: r.descripcion,
+                    desde_numero: r.desde_numero,
+                    hasta_numero: r.hasta_numero,
+                    cantidad_boletos: r.cantidad_boletos || (parseInt(r.hasta_numero) - parseInt(r.desde_numero) + 1),
+                    precio_unitario: r.precio_unitario,
+                    importe_total: r.precio_total || (r.cantidad_boletos * r.precio_unitario)
                 })),
-              };
+            };
           
-          await axios.post("/actas", acta);
+            if (editMode && actaId) {
+                try {
+                    await axios.post(`/actaentregacab/edit/${actaId}`, acta);
+                    toast.current.show({
+                        severity: "success",
+                        summary: "Éxito",
+                        detail: "Acta actualizada exitosamente.",
+                        life: 3000,
+                    });
+                } catch (error) {
+                    console.error("Error al actualizar acta:", error);
+                    throw error;
+                }
+            } else {
+                await axios.post("/actas", acta);
+                toast.current.show({
+                    severity: "success",
+                    summary: "Éxito",
+                    detail: "Acta registrada exitosamente.",
+                    life: 3000,
+                });
+            }
           
-          if(toast.current){
-            toast.current.show({
-            severity: "success",
-            summary: "Éxito",
-            detail: "Acta registrada exitosamente.",
-            life: 3000,
-            });
             setTimeout(() => {
                 setIsSaving(false);
                 onHide();
                 reloadData();
             }, 1000);
-          }
 
         } catch (error) {
           console.error("Error saving acta:", error);
@@ -229,7 +336,7 @@ function DialogActa({visible, onHide, reloadData}) {
   return (
     <>
         <Toast ref={toast} />
-        <Dialog toast={toast} visible={visible} onHide={onHide} header="Nuevo Acta de Entrega"  style={{ width: "75vw" }} >
+        <Dialog toast={toast} visible={visible} onHide={onHide} header={editMode ? "Editar Acta de Entrega" : "Nueva Acta de Entrega"}  style={{ width: "75vw" }} >
             <Card style={{ backgroundColor: "#f8f9fa" }}>
                 {/* FIRST ROW */}
                 <div className="grid">
@@ -340,7 +447,7 @@ function DialogActa({visible, onHide, reloadData}) {
 
                 <div className="flex justify-content-between mt-3">
                     <div className="flex">
-                        <Button label="GUARDAR" icon="pi pi-save" className="p-button-success mr-2" onClick={handleSaveActa} disabled={isSaving} />
+                        <Button label={editMode ? "ACTUALIZAR" : "GUARDAR"} icon="pi pi-save" className="p-button-success mr-2" onClick={handleSaveActa} disabled={isSaving} />
                     </div>
                     <div>
                         <Button icon="pi pi-bars" className="p-button-rounded p-button-info" style={{ width: "3.5rem", height: "3.5rem" }} onClick={openDialogActa}/>

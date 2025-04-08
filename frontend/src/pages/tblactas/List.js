@@ -21,6 +21,7 @@ const TblActasList = () => {
   const [ searchTerm, setSearchTerm ] = useState("");
   const [ modalVisible, setModalVisible ] = useState(false);
   const [ loading, setLoading ] = useState(false);
+  const [ actaToEdit, setActaToEdit ] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -43,6 +44,11 @@ const TblActasList = () => {
   const actionTemplate = (rowData) => {
     return (
       <div className="flex gap-2">
+        <Button
+          icon="pi pi-pencil"
+          className="p-button-rounded p-button-success p-button-sm"
+          onClick={() => handleEditActa(rowData)}
+        />
         <Button
           icon="pi pi-download"
           className="p-button-rounded p-button-info p-button-sm"
@@ -129,6 +135,11 @@ const TblActasList = () => {
       }
   };
 
+  const handleEditActa = (acta) => {
+    setActaToEdit(acta);
+    setModalVisible(true);
+  };
+
   return (
     <>
       <Toast ref={toast} />
@@ -200,15 +211,22 @@ const TblActasList = () => {
           icon="pi pi-plus"
           className="p-button-rounded p-button-info shadow-8"
           style={{ width: "3rem", height: "3rem", fontSize: "1.5rem" }} 
-          onClick={() => setModalVisible(true) } 
+          onClick={() => {
+            setActaToEdit(null);
+            setModalVisible(true);
+          }} 
         />
       </div>
       <div>
         {modalVisible && (
           <DialogActa
             visible={modalVisible}
-            onHide={() => setModalVisible(false)} 
+            onHide={() => {
+              setModalVisible(false);
+              setActaToEdit(null);
+            }} 
             reloadData={fetchData}
+            editData={actaToEdit}
           />
         )}
       </div>      

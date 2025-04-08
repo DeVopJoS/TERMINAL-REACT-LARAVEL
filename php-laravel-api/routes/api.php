@@ -282,6 +282,8 @@ Route::middleware(['auth:api'])->group(function () {
 	Route::get('/actas/cabecera/{rec_id}', 'ActaentregacabController@showActaWithDet');
 	Route::post('/actas/cabecera', 'ActaentregacabController@showMultipleActas');
 	Route::post('/actas', [ActaentregacabController::class, 'store']);
+	Route::put('actas/{rec_id}', 'ActaentregacabController@update');
+	Route::any('actas/edit/{rec_id}', 'ActaentregacabController@update');
 
 // Routes for ActaentregadetController
 	Route::get('/tblactaentregadet/index', 'ActaentregadetController@index');

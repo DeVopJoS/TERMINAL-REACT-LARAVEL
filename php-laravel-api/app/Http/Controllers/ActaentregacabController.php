@@ -102,15 +102,56 @@ class ActaentregacabController extends Controller
 	 * @param string $rec_id //select record by table primary key
      * @return \Illuminate\View\View;
      */
-	function edit(ActaentregacabEditRequest $request, $rec_id = null){
-		$query = Actaentregacab::query();
-		$record = $query->findOrFail($rec_id, Actaentregacab::editFields());
-		if ($request->isMethod('post')) {
-			$modeldata = $request->validated();
-			$record->update($modeldata);
-		}
-		return $this->respond($record);
-	}
+	function edit(Request $request, $rec_id = null){
+    try {
+        DB::beginTransaction();
+        
+        // Encontrar el registro existente
+        $acta = Actaentregacab::findOrFail($rec_id);
+        
+        // Actualizar los campos de la cabecera
+        $acta->update([
+            'ae_observacion' => $request->input('observacion'),
+            'ae_recaudaciontotalbs' => $request->input('recaudacion_total'),
+            'punto_recaud_id' => $request->input('punto_recaudacion'),
+            'ae_fecha' => $request->input('fecha'),
+            'ae_grupo' => $request->input('grupo'),
+            'ae_operador1erturno' => $request->input('operador_1er_turno'),
+            'ae_operador2doturno' => $request->input('operador_2do_turno'),
+            'ae_cambiobs' => $request->input('cambio_bs'),
+            'ae_cajachicabs' => $request->input('caja_chica_bs'),
+            'ae_llaves' => $request->input('llaves'),
+            'ae_fechero' => $request->input('fechero'),
+            'ae_tampo' => $request->input('tampo'),
+            'ae_candados' => $request->input('candados'),
+        ]);
+
+        Actaentregadet::where('ae_actaid', $rec_id)->delete();
+        
+        if ($request->has('registros')) {
+            foreach ($request->input('registros') as $registro) {
+                Actaentregadet::create([
+                    'ae_actaid' => $rec_id,
+                    'servicio_id' => $registro['tipo_servicio'],
+                    'aed_desdenumero' => $registro['desde_numero'],
+                    'aed_hastanumero' => $registro['hasta_numero'],
+                    'aed_vendidohasta' => $registro['desde_numero'], // Inicial
+                    'aed_cantidad' => $registro['cantidad_boletos'],
+                    'aed_preciounitario' => $registro['precio_unitario'],
+                    'aed_importebs' => $registro['importe_total'],
+                    'aed_estado' => "P",
+                ]);
+            }
+        }
+        
+        DB::commit();
+        return response()->json(['success' => true, 'message' => 'Acta actualizada correctamente', 'data' => $acta]);
+        
+    } catch (\Exception $e) {
+        DB::rollback();
+        return response()->json(['success' => false, 'message' => 'Error al actualizar acta: ' . $e->getMessage()], 500);
+    }
+}
 	
 
 	/**
