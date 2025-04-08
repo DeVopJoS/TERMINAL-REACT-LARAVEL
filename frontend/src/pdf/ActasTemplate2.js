@@ -347,8 +347,36 @@ const styles = StyleSheet.create({
   });
 
   const TemplateActa = ({ actas }) => {
+    // Función para detectar si el acta incluye "Servicios Higienicos"
+    const hasServiciosHigienicos = (detalles) => {
+      if (!Array.isArray(detalles) || detalles.length === 0) {
+        return false;
+      }
+      
+      const result = detalles.some(detalle => {
+        if (!detalle) return false;
+        
+        const descripcion = detalle.servicio_descripcion ? 
+                           detalle.servicio_descripcion.toLowerCase() : '';
+        const abreviatura = detalle.servicio_abreviatura ? 
+                           detalle.servicio_abreviatura.toLowerCase() : '';
+        
+        return descripcion.includes('higienico') || 
+               descripcion.includes('higiénico') ||
+               descripcion.includes('baño') || 
+               descripcion.includes('sanitario') ||
+               descripcion.includes('servicio hig') ||
+               descripcion.includes('s.h.') ||
+               abreviatura === 'sh' || 
+               abreviatura === 's.h.' ||
+               abreviatura.includes('higien') ||
+               abreviatura.includes('baño');
+      });
+      
+      return result;
+    };
+
     if (!actas || !Array.isArray(actas)) {
-      console.error('Error: actas debe ser un array', actas);
       return (
         <Document>
           <Page size="A3">
@@ -364,19 +392,19 @@ const styles = StyleSheet.create({
       <Document>
         {actas.map((acta, index) => {
           if (!acta || !acta.cabecera || !acta.detalles) {
-            console.error('Error: Estructura de acta inválida', acta);
             return null;
           }
 
           const { cabecera, detalles } = acta;
           
+          // Verificar si este acta específica tiene servicios higiénicos
+          const hasSH = hasServiciosHigienicos(detalles);
+          
           if (!Array.isArray(cabecera) || cabecera.length === 0) {
-            console.error('Error: cabecera debe ser un array no vacío', cabecera);
             return null;
           }
 
           if (!Array.isArray(detalles)) {
-            console.error('Error: detalles debe ser un array', detalles);
             return null;
           }
 
@@ -391,7 +419,6 @@ const styles = StyleSheet.create({
 
           const missingFields = requiredFields.filter(field => !cabecera[0][field]);
           if (missingFields.length > 0) {
-            console.error('Error: Faltan campos requeridos en cabecera:', missingFields);
             return null;
           }
 
@@ -640,25 +667,83 @@ const styles = StyleSheet.create({
                       ))}
                       
                       {/* INFRACCIONES */}
-                      <View style={styles.tableRow}>
-                      <View style={[styles.tableRow,styles.CellInformatioIndex]}>
-                          <View style={styles.infractionCell}>
-                          <Text>Infracciones</Text>
+                      {hasSH ? (
+                        <View>
+                          <View style={styles.tableRow}>
+                            <View style={[styles.sectionHeader, { width: '100%', textAlign: 'center' }]}>
+                              <Text>ENTREGA DE PHS DE CAJERO A OPERADOR 1ER TURNO</Text>
+                            </View>
                           </View>
-                          <View>
-                          <Text></Text>
+                          
+                          <View style={styles.tableRow}>
+                            <View style={[styles.columnHeader, { width: '20%' }]}>
+                              <Text>PAQUETE</Text>
+                            </View>
+                            <View style={[styles.dataCell, { width: '13%', minHeight: '20px' }]}>
+                              {/* Campo vacío para PAQUETE */}
+                            </View>
+                            <View style={[styles.columnHeader, { width: '20%' }]}>
+                              <Text>UNIDADES DE PHS</Text>
+                            </View>
+                            <View style={[styles.dataCell, { width: '13%', minHeight: '20px' }]}>
+                              {/* Campo vacío para UNIDADES */}
+                            </View>
+                            <View style={[styles.columnHeader, { width: '20%' }]}>
+                              <Text>TOTAL PHS</Text>
+                            </View>
+                            <View style={[styles.dataCell, { width: '14%', minHeight: '20px' }]}>
+                              {/* Campo vacío para TOTAL */}
+                            </View>
                           </View>
-                      </View>
-                      <View style={styles.dataInformationCell}>
-                          <Text></Text>
-                      </View>
-                      <View style={styles.dataInformationCell}>
-                          <Text></Text>
-                      </View>
-                      <View style={styles.headerCellInfoLast}>
-                          <Text></Text>
-                      </View>
-                      </View>
+                          
+                          <View style={styles.tableRow}>
+                            <View style={[styles.sectionHeader, { width: '100%', textAlign: 'center' }]}>
+                              <Text>ENTREGA DE PHS SOBRANTE D 1ER TURNO A 2DO TURNO</Text>
+                            </View>
+                          </View>
+                          
+                          <View style={styles.tableRow}>
+                            <View style={[styles.columnHeader, { width: '20%' }]}>
+                              <Text>PAQUETE</Text>
+                            </View>
+                            <View style={[styles.dataCell, { width: '13%', minHeight: '20px' }]}>
+                              {/* Campo vacío para PAQUETE */}
+                            </View>
+                            <View style={[styles.columnHeader, { width: '20%' }]}>
+                              <Text>UNIDADES DE PHS</Text>
+                            </View>
+                            <View style={[styles.dataCell, { width: '13%', minHeight: '20px' }]}>
+                              {/* Campo vacío para UNIDADES */}
+                            </View>
+                            <View style={[styles.columnHeader, { width: '20%' }]}>
+                              <Text>TOTAL PHS</Text>
+                            </View>
+                            <View style={[styles.dataCell, { width: '14%', minHeight: '20px' }]}>
+                              {/* Campo vacío para TOTAL */}
+                            </View>
+                          </View>
+                        </View>
+                      ) : (
+                        <View style={styles.tableRow}>
+                          <View style={[styles.tableRow,styles.CellInformatioIndex]}>
+                            <View style={styles.infractionCell}>
+                              <Text>Infracciones</Text>
+                            </View>
+                            <View>
+                              <Text></Text>
+                            </View>
+                          </View>
+                          <View style={styles.dataInformationCell}>
+                            <Text></Text>
+                          </View>
+                          <View style={styles.dataInformationCell}>
+                            <Text></Text>
+                          </View>
+                          <View style={styles.headerCellInfoLast}>
+                            <Text></Text>
+                          </View>
+                        </View>
+                      )}
               
                       {/* RECAUDACIÓN TOTAL */}
                       <View style={styles.tableRow}>
@@ -776,25 +861,83 @@ const styles = StyleSheet.create({
                       ))}
                       
                       {/* INFRACCIONES */}
-                      <View style={styles.tableRow}>
-                      <View style={[styles.tableRow,styles.CellInformatioIndex]}>
-                          <View style={styles.infractionCell}>
-                          <Text>Infracciones</Text>
+                      {hasSH ? (
+                        <View>
+                          <View style={styles.tableRow}>
+                            <View style={[styles.sectionHeader, { width: '100%', textAlign: 'center' }]}>
+                              <Text>ENTREGA DE PHS DE CAJERO A OPERADOR 2DO TURNO</Text>
+                            </View>
                           </View>
-                          <View>
-                          <Text></Text>
+                          
+                          <View style={styles.tableRow}>
+                            <View style={[styles.columnHeader, { width: '20%' }]}>
+                              <Text>PAQUETE</Text>
+                            </View>
+                            <View style={[styles.dataCell, { width: '13%', minHeight: '20px' }]}>
+                              {/* Campo vacío para PAQUETE */}
+                            </View>
+                            <View style={[styles.columnHeader, { width: '20%' }]}>
+                              <Text>UNIDADES DE PHS</Text>
+                            </View>
+                            <View style={[styles.dataCell, { width: '13%', minHeight: '20px' }]}>
+                              {/* Campo vacío para UNIDADES */}
+                            </View>
+                            <View style={[styles.columnHeader, { width: '20%' }]}>
+                              <Text>TOTAL PHS</Text>
+                            </View>
+                            <View style={[styles.dataCell, { width: '14%', minHeight: '20px' }]}>
+                              {/* Campo vacío para TOTAL */}
+                            </View>
                           </View>
-                      </View>
-                      <View style={styles.dataInformationCell}>
-                          <Text></Text>
-                      </View>
-                      <View style={styles.dataInformationCell}>
-                          <Text></Text>
-                      </View>
-                      <View style={styles.dataInformationCell}>
-                          <Text></Text>
-                      </View>
-                      </View>
+                          
+                          <View style={styles.tableRow}>
+                            <View style={[styles.sectionHeader, { width: '100%', textAlign: 'center' }]}>
+                              <Text>DEVOLUCION DE PHS SOBRANTES A CAJA</Text>
+                            </View>
+                          </View>
+                          
+                          <View style={styles.tableRow}>
+                            <View style={[styles.columnHeader, { width: '20%' }]}>
+                              <Text>PAQUETE</Text>
+                            </View>
+                            <View style={[styles.dataCell, { width: '13%', minHeight: '20px' }]}>
+                              {/* Campo vacío para PAQUETE */}
+                            </View>
+                            <View style={[styles.columnHeader, { width: '20%' }]}>
+                              <Text>UNIDADES DE PHS</Text>
+                            </View>
+                            <View style={[styles.dataCell, { width: '13%', minHeight: '20px' }]}>
+                              {/* Campo vacío para UNIDADES */}
+                            </View>
+                            <View style={[styles.columnHeader, { width: '20%' }]}>
+                              <Text>TOTAL PHS</Text>
+                            </View>
+                            <View style={[styles.dataCell, { width: '14%', minHeight: '20px' }]}>
+                              {/* Campo vacío para TOTAL */}
+                            </View>
+                          </View>
+                        </View>
+                      ) : (
+                        <View style={styles.tableRow}>
+                          <View style={[styles.tableRow,styles.CellInformatioIndex]}>
+                            <View style={styles.infractionCell}>
+                              <Text>Infracciones</Text>
+                            </View>
+                            <View>
+                              <Text></Text>
+                            </View>
+                          </View>
+                          <View style={styles.dataInformationCell}>
+                            <Text></Text>
+                          </View>
+                          <View style={styles.dataInformationCell}>
+                            <Text></Text>
+                          </View>
+                          <View style={styles.dataInformationCell}>
+                            <Text></Text>
+                          </View>
+                        </View>
+                      )}
               
                       {/* RECAUDACIÓN TOTAL */}
                       <View style={styles.tableRow}>

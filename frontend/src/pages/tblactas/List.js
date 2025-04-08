@@ -93,11 +93,9 @@ const TblActasList = () => {
       const { data } = await axios.get(`/actas/cabecera/${ae_actaid}`);
 
       if (!data || data.length === 0) {
-        console.error("No se encontraron datos en la cabecera");
         return;
       }
-      console.log(data.cabecera[0])
-      console.log(data.detalles)
+      
       const blob = await pdf(<MyPDF cabecera={data.cabecera[0]} detalles={data.detalles} />).toBlob();
       saveAs(blob, "acta.pdf");
     } catch (error) {
@@ -114,25 +112,23 @@ const TblActasList = () => {
   };
 
   const printSelectedActas = async () => {
-      try {
-          if (selectedIds.length === 0) {
-              toast.warning('Selecciona al menos un acta para imprimir');
-              return;
-          }
-
-          const { data } = await axios.post('/actas/cabecera', { 
-              rec_ids: selectedIds 
-          });
-
-          console.log(data)
-          
-          const blob = await pdf(<TemplateActa actas={data} />).toBlob();
-          saveAs(blob, "actas_seleccionadas.pdf");
-
-          setSelectedIds([]);
-      } catch (error) {
-          console.error("Error imprimiendo actas:", error);
+    try {
+      if (selectedIds.length === 0) {
+        toast.warning('Selecciona al menos un acta para imprimir');
+        return;
       }
+
+      const { data } = await axios.post('/actas/cabecera', { 
+        rec_ids: selectedIds 
+      });
+      
+      const blob = await pdf(<TemplateActa actas={data} />).toBlob();
+      saveAs(blob, "actas_seleccionadas.pdf");
+
+      setSelectedIds([]);
+    } catch (error) {
+      console.error("Error imprimiendo actas:", error);
+    }
   };
 
   const handleEditActa = (acta) => {

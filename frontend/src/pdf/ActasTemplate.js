@@ -325,6 +325,38 @@ const styles = StyleSheet.create({
   });
 
 const MyPDF = ({ cabecera = {}, detalles = [] }) => {
+  
+  // Función para detectar si el acta incluye "Servicios Higienicos"
+  const hasServiciosHigienicos = () => {
+    if (!Array.isArray(detalles) || detalles.length === 0) {
+      return false;
+    }
+
+    const result = detalles.some(detalle => {
+      if (!detalle) return false;
+      
+      const descripcion = detalle.servicio_descripcion ? 
+                         detalle.servicio_descripcion.toLowerCase() : '';
+      const abreviatura = detalle.servicio_abreviatura ? 
+                         detalle.servicio_abreviatura.toLowerCase() : '';
+      
+      return descripcion.includes('higienico') || 
+             descripcion.includes('higiénico') ||
+             descripcion.includes('baño') || 
+             descripcion.includes('sanitario') ||
+             descripcion.includes('servicio hig') ||
+             descripcion.includes('s.h.') ||
+             abreviatura === 'sh' || 
+             abreviatura === 's.h.' ||
+             abreviatura.includes('higien') ||
+             abreviatura.includes('baño');
+    });
+    
+    return result;
+  };
+  
+  const hasSH = hasServiciosHigienicos();
+  
   const totalFilasFirstOperator = 35;
   const filasCompletasFirstOperator = Array.from({ length: totalFilasFirstOperator }).map((_, index) => {
     const rowNumber = index + 1;
@@ -345,7 +377,6 @@ const MyPDF = ({ cabecera = {}, detalles = [] }) => {
 
   return  (<Document>
       <Page size="A3" style={styles.page}>
-          {/* Cabecera */}
           <View style={styles.headerContainer}>
             <View style={styles.headerLeft}>
               <Image src="/path/to/logo.png" style={{ width: '100%', height: 'auto' }} />
@@ -561,28 +592,86 @@ const MyPDF = ({ cabecera = {}, detalles = [] }) => {
               </View>
             ))}
             
-            {/* INFRACCIONES */}
-            <View style={styles.tableRow}>
-              <View style={[styles.tableRow,styles.CellInformatioIndex]}>
-                <View style={styles.infractionCell}>
-                  <Text>Infracciones</Text>
+            {hasSH ? (
+              <View>
+                <View style={styles.tableRow}>
+                  <View style={[styles.sectionHeader, { width: '100%', textAlign: 'center' }]}>
+                    <Text>ENTREGA DE PHS DE CAJERO A OPERADOR 1ER TURNO</Text>
+                  </View>
                 </View>
-                <View>
-                  <Text></Text>
-                </View>
-              </View>
-              <View style={styles.dataInformationCell}>
-                <Text></Text>
-              </View>
-              <View style={styles.dataInformationCell}>
-                <Text></Text>
-              </View>
-              <View style={styles.headerCellInfoLast}>
-                <Text></Text>
-              </View>
-            </View>
+                
+                <View style={styles.tableRow}>
+                  <View style={[styles.columnHeader, { width: '20%' }]}>
+                    <Text>PAQUETE</Text>
+                  </View>
+                  <View style={[styles.dataCell, { width: '13%', minHeight: '20px' }]}>
 
-            {/* RECAUDACIÓN TOTAL */}
+                  </View>
+                  <View style={[styles.columnHeader, { width: '20%' }]}>
+                    <Text>UNIDADES DE PHS</Text>
+                  </View>
+                  <View style={[styles.dataCell, { width: '13%', minHeight: '20px' }]}>
+
+                  </View>
+                  <View style={[styles.columnHeader, { width: '20%' }]}>
+                    <Text>TOTAL PHS</Text>
+                  </View>
+                  <View style={[styles.dataCell, { width: '14%', minHeight: '20px' }]}>
+
+                  </View>
+                </View>
+                
+                <View style={styles.tableRow}>
+                  <View style={[styles.sectionHeader, { width: '100%', textAlign: 'center' }]}>
+                    <Text>ENTREGA DE PHS SOBRANTE D 1ER TURNO A 2DO TURNO</Text>
+                  </View>
+                </View>
+                
+                <View style={styles.tableRow}>
+                  <View style={[styles.columnHeader, { width: '20%' }]}>
+                    <Text>PAQUETE</Text>
+                  </View>
+                  <View style={[styles.dataCell, { width: '13%', minHeight: '20px' }]}>
+
+                  </View>
+                  <View style={[styles.columnHeader, { width: '20%' }]}>
+                    <Text>UNIDADES DE PHS</Text>
+                  </View>
+                  <View style={[styles.dataCell, { width: '13%', minHeight: '20px' }]}>
+
+                  </View>
+                  <View style={[styles.columnHeader, { width: '20%' }]}>
+                    <Text>TOTAL PHS</Text>
+                  </View>
+                  <View style={[styles.dataCell, { width: '14%', minHeight: '20px' }]}>
+
+                  </View>
+                </View>
+              </View>
+            ) : (
+              <View>
+                <View style={styles.tableRow}>
+                  <View style={[styles.tableRow,styles.CellInformatioIndex]}>
+                    <View style={styles.infractionCell}>
+                      <Text>Infracciones</Text>
+                    </View>
+                    <View>
+                      <Text></Text>
+                    </View>
+                  </View>
+                  <View style={styles.dataInformationCell}>
+                    <Text></Text>
+                  </View>
+                  <View style={styles.dataInformationCell}>
+                    <Text></Text>
+                  </View>
+                  <View style={styles.headerCellInfoLast}>
+                    <Text></Text>
+                  </View>
+                </View>
+              </View>
+            )}
+
             <View style={styles.tableRow}>
               <View style={[styles.totalRecaudation, styles.boldText, styles.centerText]}>
                 <Text>1er TURNO - RECAUDACIÓN TOTAL Bs:</Text>
@@ -659,7 +748,7 @@ const MyPDF = ({ cabecera = {}, detalles = [] }) => {
               </View>
             ))}
 
-            {/* TIPO DE PRE VALORADA SECTION */}
+            {/* TIPO DE PRE VALORADA*/}
             <View style={styles.tableRow}>
               <View style={styles.CellInformatioIndex}>
                 <Text>TIPO DE PREVALORADA:</Text>
@@ -697,28 +786,84 @@ const MyPDF = ({ cabecera = {}, detalles = [] }) => {
               </View>
             ))}
             
-            {/* INFRACCIONES */}
-            <View style={styles.tableRow}>
-              <View style={[styles.tableRow,styles.CellInformatioIndex]}>
-                <View style={styles.infractionCell}>
-                  <Text>Infracciones</Text>
+            {hasSH ? (
+              <View>
+                <View style={styles.tableRow}>
+                  <View style={[styles.sectionHeader, { width: '100%', textAlign: 'center' }]}>
+                    <Text>ENTREGA DE PHS DE CAJERO A OPERADOR 2DO TURNO</Text>
+                  </View>
                 </View>
-                <View>
+                
+                <View style={styles.tableRow}>
+                  <View style={[styles.columnHeader, { width: '20%' }]}>
+                    <Text>PAQUETE</Text>
+                  </View>
+                  <View style={[styles.dataCell, { width: '13%', minHeight: '20px' }]}>
+
+                  </View>
+                  <View style={[styles.columnHeader, { width: '20%' }]}>
+                    <Text>UNIDADES DE PHS</Text>
+                  </View>
+                  <View style={[styles.dataCell, { width: '13%', minHeight: '20px' }]}>
+
+                  </View>
+                  <View style={[styles.columnHeader, { width: '20%' }]}>
+                    <Text>TOTAL PHS</Text>
+                  </View>
+                  <View style={[styles.dataCell, { width: '14%', minHeight: '20px' }]}>
+
+                  </View>
+                </View>
+                
+                <View style={styles.tableRow}>
+                  <View style={[styles.sectionHeader, { width: '100%', textAlign: 'center' }]}>
+                    <Text>DEVOLUCION DE PHS SOBRANTES A CAJA</Text>
+                  </View>
+                </View>
+                
+                <View style={styles.tableRow}>
+                  <View style={[styles.columnHeader, { width: '20%' }]}>
+                    <Text>PAQUETE</Text>
+                  </View>
+                  <View style={[styles.dataCell, { width: '13%', minHeight: '20px' }]}>
+
+                  </View>
+                  <View style={[styles.columnHeader, { width: '20%' }]}>
+                    <Text>UNIDADES DE PHS</Text>
+                  </View>
+                  <View style={[styles.dataCell, { width: '13%', minHeight: '20px' }]}>
+
+                  </View>
+                  <View style={[styles.columnHeader, { width: '20%' }]}>
+                    <Text>TOTAL PHS</Text>
+                  </View>
+                  <View style={[styles.dataCell, { width: '14%', minHeight: '20px' }]}>
+
+                  </View>
+                </View>
+              </View>
+            ) : (
+              <View style={styles.tableRow}>
+                <View style={[styles.tableRow,styles.CellInformatioIndex]}>
+                  <View style={styles.infractionCell}>
+                    <Text>Infracciones</Text>
+                  </View>
+                  <View>
+                    <Text></Text>
+                  </View>
+                </View>
+                <View style={styles.dataInformationCell}>
+                  <Text></Text>
+                </View>
+                <View style={styles.dataInformationCell}>
+                  <Text></Text>
+                </View>
+                <View style={styles.dataInformationCell}>
                   <Text></Text>
                 </View>
               </View>
-              <View style={styles.dataInformationCell}>
-                <Text></Text>
-              </View>
-              <View style={styles.dataInformationCell}>
-                <Text></Text>
-              </View>
-              <View style={styles.dataInformationCell}>
-                <Text></Text>
-              </View>
-            </View>
+            )}
 
-            {/* RECAUDACIÓN TOTAL */}
             <View style={styles.tableRow}>
               <View style={[styles.totalRecaudation, styles.boldText, styles.centerText]}>
                 <Text>2do TURNO - RECAUDACIÓN TOTAL Bs:</Text>
