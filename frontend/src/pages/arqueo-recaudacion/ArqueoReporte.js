@@ -3,7 +3,6 @@ import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import * as XLSX from 'xlsx';
 import { formatDate } from '../../utils/utils';
 
 // Componente para la ventana emergente de reporte
@@ -24,43 +23,204 @@ export const ArqueoReporte = ({ visible, onHide, data, resumenServicios, detalle
         });
     };
     
-    // Función para exportar a Excel
-    const exportExcel = () => {
-        const worksheet = XLSX.utils.json_to_sheet([
-            { A: 'ARQUEO DE RECAUDACIÓN', B: '' },
-            { A: 'Nº DE ARQUEO:', B: data.arqueonumero },
-            { A: 'FECHA:', B: data.arqueofecha instanceof Date ? formatDate(data.arqueofecha) : data.arqueofecha },
-            { A: 'TURNO:', B: data.arqueoturno === 'M' ? 'Mañana' : 'Tarde' },
-            { A: 'HORA INICIO:', B: data.arqueohorainicio instanceof Date ? 
-                `${String(data.arqueohorainicio.getHours()).padStart(2, '0')}:${String(data.arqueohorainicio.getMinutes()).padStart(2, '0')}` : 
-                data.arqueohorainicio },
-            { A: 'HORA FIN:', B: data.arqueohorafin instanceof Date ? 
-                `${String(data.arqueohorafin.getHours()).padStart(2, '0')}:${String(data.arqueohorafin.getMinutes()).padStart(2, '0')}` : 
-                data.arqueohorafin },
-            { A: 'SUPERVISOR:', B: data.arqueosupervisor },
-            { A: '', B: '' }
-        ]);
+    // Función para exportar a Excel con mismo diseño que la previsualización
+    const exportExcel = async () => {
+        const ExcelJS = await import('exceljs');
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Arqueo');
+        worksheet.properties.defaultRowHeight = 20;
+
+        // Estilos
+        const headerStyle = {
+            font: { bold: true, color: { argb: 'FFFFFF' } },
+            fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: '334457' } }, // azul oscuro
+            border: {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' }
+            },
+            alignment: { vertical: 'middle', horizontal: 'center' }
+        };
+
+        const subHeaderStyle = {
+            font: { bold: true },
+            fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: '9DE2E2' } }, // Celda resaltada teal claro
+            border: {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' }
+            },
+            alignment: { vertical: 'middle' }
+        };
+
+        const labelStyle = {
+            font: { bold: true },
+            fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'B5E8E0' } }, // Celda label teal más claro
+            border: {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' }
+            },
+            alignment: { vertical: 'middle', horizontal: 'left', wrapText: true }
+        };
+
+        const normalCellStyle = {
+            border: {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' }
+            }
+        };
+
+        const totalRowStyle = {
+            font: { bold: true },
+            fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'F0F0F0' } }, // gris claro
+            border: {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' }
+            }
+        };
+
+        // Título del reporte
+        worksheet.mergeCells('A1:G1');
+        const titleCell = worksheet.getCell('A1');
+        titleCell.value = 'ARQUEO DE RECAUDACIÓN - SERVICIOS';
+        titleCell.font = { size: 16, bold: true };
+        titleCell.alignment = { horizontal: 'center' };
+
+        worksheet.mergeCells('A2:G2');
+        const subtitleCell = worksheet.getCell('A2');
+        subtitleCell.value = 'Reporte de Arqueo Final';
+        subtitleCell.font = { size: 12 };
+        subtitleCell.alignment = { horizontal: 'center' };
+
+        // Espaciado
+        const infoStartRow = 4;
+
+        // Información general - Formato unificado de tabla
+        // Primera fila
+        let currentRow = infoStartRow;
+        worksheet.mergeCells(`A${currentRow}:B${currentRow}`);
+        worksheet.mergeCells(`D${currentRow}:E${currentRow}`);
+        worksheet.getCell(`A${currentRow}`).value = 'Nº DE ARQUEO:';
+        worksheet.getCell(`A${currentRow}`).style = labelStyle;
+        worksheet.getCell(`C${currentRow}`).value = data.arqueonumero;
+        worksheet.getCell(`C${currentRow}`).style = subHeaderStyle;
+        worksheet.getCell(`D${currentRow}`).value = 'HORA DE INICIO:';
+        worksheet.getCell(`D${currentRow}`).style = labelStyle;
+        worksheet.getCell(`F${currentRow}`).value = data.arqueohorainicio instanceof Date ? 
+            `${String(data.arqueohorainicio.getHours()).padStart(2, '0')}:${String(data.arqueohorainicio.getMinutes()).padStart(2, '0')}` : 
+            data.arqueohorainicio;
+        worksheet.getCell(`F${currentRow}`).style = normalCellStyle;
+        worksheet.mergeCells(`F${currentRow}:G${currentRow}`);
+
+        // Segunda fila
+        currentRow++;
+        worksheet.mergeCells(`A${currentRow}:B${currentRow}`);
+        worksheet.mergeCells(`D${currentRow}:E${currentRow}`);
+        worksheet.getCell(`A${currentRow}`).value = 'FECHA:';
+        worksheet.getCell(`A${currentRow}`).style = labelStyle;
+        worksheet.getCell(`C${currentRow}`).value = data.arqueofecha instanceof Date ? 
+            formatDate(data.arqueofecha) : data.arqueofecha;
+        worksheet.getCell(`C${currentRow}`).style = normalCellStyle;
+        worksheet.getCell(`D${currentRow}`).value = 'HORA FINALIZADO:';
+        worksheet.getCell(`D${currentRow}`).style = labelStyle;
+        worksheet.getCell(`F${currentRow}`).value = data.arqueohorafin instanceof Date ? 
+            `${String(data.arqueohorafin.getHours()).padStart(2, '0')}:${String(data.arqueohorafin.getMinutes()).padStart(2, '0')}` : 
+            data.arqueohorafin;
+        worksheet.getCell(`F${currentRow}`).style = normalCellStyle;
+        worksheet.mergeCells(`F${currentRow}:G${currentRow}`);
+
+        // Tercera fila
+        currentRow++;
+        worksheet.mergeCells(`A${currentRow}:B${currentRow}`);
+        worksheet.mergeCells(`D${currentRow}:E${currentRow}`);
+        worksheet.getCell(`A${currentRow}`).value = 'TURNO:';
+        worksheet.getCell(`A${currentRow}`).style = labelStyle;
+        worksheet.getCell(`C${currentRow}`).value = data.arqueoturno === 'M' ? 'Mañana' : 'Tarde';
+        worksheet.getCell(`C${currentRow}`).style = normalCellStyle;
+        worksheet.getCell(`D${currentRow}`).value = 'SUPERVISOR:';
+        worksheet.getCell(`D${currentRow}`).style = labelStyle;
+        worksheet.getCell(`F${currentRow}`).value = data.arqueosupervisor;
+        worksheet.getCell(`F${currentRow}`).style = normalCellStyle;
+        worksheet.mergeCells(`F${currentRow}:G${currentRow}`);
+
+        // Espaciado
+        currentRow += 2;
+        const tablaServiciosStartRow = currentRow;
+
+        // Crear una tabla unificada con la sección de servicios (izquierda)
+        // Header
+        worksheet.mergeCells(`A${currentRow}:C${currentRow}`);
+        worksheet.getCell(`A${currentRow}`).value = 'FACTURAS PRE VALORADAS';
+        worksheet.getCell(`A${currentRow}`).style = headerStyle;
+        worksheet.mergeCells(`D${currentRow}:E${currentRow}`);
+        worksheet.getCell(`D${currentRow}`).value = 'IMPORTE BS';
+        worksheet.getCell(`D${currentRow}`).style = headerStyle;
         
-        // Añadir servicios al Excel
-        XLSX.utils.sheet_add_json(worksheet, [{ A: 'FACTURAS PRE VALORADAS', B: '', C: 'IMPORTE BS' }], { origin: -1 });
-        
+        // Datos de servicios
+        currentRow++;
         resumenServicios.forEach(servicio => {
-            XLSX.utils.sheet_add_json(worksheet, [{ 
-                A: servicio.nombre, 
-                B: '', 
-                C: parseFloat(servicio.importe_total).toFixed(2) 
-            }], { origin: -1 });
+            worksheet.mergeCells(`A${currentRow}:C${currentRow}`);
+            worksheet.getCell(`A${currentRow}`).value = servicio.nombre;
+            worksheet.getCell(`A${currentRow}`).style = normalCellStyle;
+            worksheet.getCell(`D${currentRow}`).value = 'Bs';
+            worksheet.getCell(`D${currentRow}`).style = normalCellStyle;
+            worksheet.getCell(`D${currentRow}`).alignment = { horizontal: 'center' };
+            worksheet.getCell(`E${currentRow}`).value = parseFloat(servicio.importe_total).toFixed(2);
+            worksheet.getCell(`E${currentRow}`).style = normalCellStyle;
+            worksheet.getCell(`E${currentRow}`).alignment = { horizontal: 'right' };
+            currentRow++;
         });
         
-        XLSX.utils.sheet_add_json(worksheet, [
-            { A: 'TOTAL DE PREVALORACIONES:', B: '', C: totalRecaudacion.toFixed(2) },
-            { A: 'INFRACCIONES:', B: '', C: '0.00' },
-            { A: 'TOTAL:', B: '', C: totalRecaudacion.toFixed(2) },
-            { A: '', B: '', C: '' }
-        ], { origin: -1 });
+        // Totales de servicios
+        worksheet.mergeCells(`A${currentRow}:C${currentRow}`);
+        worksheet.getCell(`A${currentRow}`).value = 'TOTAL DE PREVALORACIONES:';
+        worksheet.getCell(`A${currentRow}`).style = totalRowStyle;
+        worksheet.getCell(`D${currentRow}`).value = 'Bs';
+        worksheet.getCell(`D${currentRow}`).style = totalRowStyle;
+        worksheet.getCell(`D${currentRow}`).alignment = { horizontal: 'center' };
+        worksheet.getCell(`E${currentRow}`).value = totalRecaudacion.toFixed(2);
+        worksheet.getCell(`E${currentRow}`).style = totalRowStyle;
+        worksheet.getCell(`E${currentRow}`).alignment = { horizontal: 'right' };
         
-        // Añadir cortes al Excel
-        XLSX.utils.sheet_add_json(worksheet, [{ A: 'CORTE', B: 'PIEZAS', C: 'MONTO' }], { origin: -1 });
+        currentRow++;
+        worksheet.mergeCells(`A${currentRow}:C${currentRow}`);
+        worksheet.getCell(`A${currentRow}`).value = 'INFRACCIONES:';
+        worksheet.getCell(`A${currentRow}`).style = normalCellStyle;
+        worksheet.getCell(`D${currentRow}`).value = 'Bs';
+        worksheet.getCell(`D${currentRow}`).style = normalCellStyle;
+        worksheet.getCell(`D${currentRow}`).alignment = { horizontal: 'center' };
+        worksheet.getCell(`E${currentRow}`).value = '0.00';
+        worksheet.getCell(`E${currentRow}`).style = normalCellStyle;
+        worksheet.getCell(`E${currentRow}`).alignment = { horizontal: 'right' };
+        
+        currentRow++;
+        worksheet.mergeCells(`A${currentRow}:C${currentRow}`);
+        worksheet.getCell(`A${currentRow}`).value = 'TOTAL:';
+        worksheet.getCell(`A${currentRow}`).style = totalRowStyle;
+        worksheet.getCell(`D${currentRow}`).value = 'Bs';
+        worksheet.getCell(`D${currentRow}`).style = totalRowStyle;
+        worksheet.getCell(`D${currentRow}`).alignment = { horizontal: 'center' };
+        worksheet.getCell(`E${currentRow}`).value = totalRecaudacion.toFixed(2);
+        worksheet.getCell(`E${currentRow}`).style = totalRowStyle;
+        worksheet.getCell(`E${currentRow}`).alignment = { horizontal: 'right' };
+
+        // Tabla de cortes (lado derecho)
+        let cortesRow = tablaServiciosStartRow;
+        
+        worksheet.getCell(`F${cortesRow}`).value = 'CORTE';
+        worksheet.getCell(`F${cortesRow}`).style = headerStyle;
+        worksheet.getCell(`G${cortesRow}`).value = 'PIEZAS';
+        worksheet.getCell(`G${cortesRow}`).style = headerStyle;
+        worksheet.getCell(`H${cortesRow}`).value = 'MONTO';
+        worksheet.getCell(`H${cortesRow}`).style = headerStyle;
         
         const CORTES_DENOMINACION = [
             { campo: 'arqueocorte200_00', valor: 200, label: '200' },
@@ -75,27 +235,106 @@ export const ArqueoReporte = ({ visible, onHide, data, resumenServicios, detalle
             { campo: 'arqueocorte000_20', valor: 0.2, label: '0.20' },
             { campo: 'arqueocorte000_10', valor: 0.1, label: '0.10' }
         ];
-        
+
+        cortesRow++;
         CORTES_DENOMINACION.forEach(corte => {
-            XLSX.utils.sheet_add_json(worksheet, [{ 
-                A: `Bs ${corte.label}`, 
-                B: data.cortes[corte.campo] || 0, 
-                C: ((data.cortes[corte.campo] || 0) * corte.valor).toFixed(2) 
-            }], { origin: -1 });
+            worksheet.getCell(`F${cortesRow}`).value = `Bs ${corte.label}`;
+            worksheet.getCell(`F${cortesRow}`).style = normalCellStyle;
+            worksheet.getCell(`G${cortesRow}`).value = data.cortes[corte.campo] || 0;
+            worksheet.getCell(`G${cortesRow}`).style = normalCellStyle;
+            worksheet.getCell(`G${cortesRow}`).alignment = { horizontal: 'center' };
+            worksheet.getCell(`H${cortesRow}`).value = ((data.cortes[corte.campo] || 0) * corte.valor).toFixed(2);
+            worksheet.getCell(`H${cortesRow}`).style = normalCellStyle;
+            worksheet.getCell(`H${cortesRow}`).alignment = { horizontal: 'right' };
+            cortesRow++;
         });
         
-        XLSX.utils.sheet_add_json(worksheet, [
-            { A: 'TOTAL CORTES:', B: '', C: totalCortes.toFixed(2) },
-            { A: '', B: '', C: '' },
-            { A: 'DIFERENCIA:', B: getDiferenciaEstado(), C: formatearDiferencia() },
-            { A: '', B: '', C: '' },
-            { A: 'OBSERVACIONES:', B: data.arqueoobservacion, C: '' }
-        ], { origin: -1 });
+        // Total de cortes
+        worksheet.getCell(`F${cortesRow}`).value = 'TOTAL:';
+        worksheet.getCell(`F${cortesRow}`).style = totalRowStyle;
+        worksheet.getCell(`G${cortesRow}`).style = totalRowStyle;
+        worksheet.getCell(`H${cortesRow}`).value = totalCortes.toFixed(2);
+        worksheet.getCell(`H${cortesRow}`).style = totalRowStyle;
+        worksheet.getCell(`H${cortesRow}`).alignment = { horizontal: 'right' };
+
+        // Tomar el máximo entre las filas de servicios y cortes
+        currentRow = Math.max(currentRow, cortesRow) + 2;
+
+        // Sección de diferencia como tabla unificada
+        worksheet.mergeCells(`A${currentRow}:E${currentRow}`);
+        worksheet.getCell(`A${currentRow}`).value = 'DIFERENCIA ENTRE RECAUDACIÓN Y EFECTIVO';
+        worksheet.getCell(`A${currentRow}`).style = headerStyle;
+        worksheet.getCell(`F${currentRow}`).value = getDiferenciaEstado();
+        worksheet.getCell(`G${currentRow}:H${currentRow}`).value = formatearDiferencia();
         
-        // Crear libro y descargar
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'Arqueo');
-        XLSX.writeFile(workbook, `Arqueo_${data.arqueonumero}.xlsx`);
+        // Definir el estilo según la diferencia
+        let diferenciaStyle = {
+            font: { bold: true },
+            border: {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' }
+            }
+        };
+
+        if (totalCortes - totalRecaudacion === 0) {
+            diferenciaStyle.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'C6E7C6' } }; // verde claro
+        } else if (totalCortes - totalRecaudacion > 0) {
+            diferenciaStyle.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'CCE5FF' } }; // azul claro
+        } else {
+            diferenciaStyle.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFCCCC' } }; // rojo claro
+        }
+
+        worksheet.getCell(`F${currentRow}`).style = diferenciaStyle;
+        worksheet.mergeCells(`G${currentRow}:H${currentRow}`);
+        worksheet.getCell(`G${currentRow}`).style = diferenciaStyle;
+        worksheet.getCell(`G${currentRow}`).alignment = { horizontal: 'right' };
+
+        currentRow += 2;
+
+        // Observaciones
+        worksheet.getCell(`A${currentRow}`).value = 'Observaciones:';
+        worksheet.getCell(`A${currentRow}`).font = { bold: true };
+        
+        currentRow++;
+        worksheet.mergeCells(`A${currentRow}:H${currentRow}`);
+        worksheet.getCell(`A${currentRow}`).value = data.arqueoobservacion || '';
+        worksheet.getCell(`A${currentRow}`).style = {
+            border: {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' }
+            },
+            alignment: { vertical: 'top', wrapText: true }
+        };
+        worksheet.getRow(currentRow).height = 40;
+
+        currentRow += 3;
+
+        // Sección de firmas
+        worksheet.mergeCells(`A${currentRow}:B${currentRow}`);
+        worksheet.mergeCells(`D${currentRow}:E${currentRow}`);
+        worksheet.mergeCells(`G${currentRow}:H${currentRow}`);
+        
+        worksheet.getCell(`A${currentRow}`).value = 'Elaborado por';
+        worksheet.getCell(`A${currentRow}`).alignment = { horizontal: 'center' };
+        worksheet.getCell(`D${currentRow}`).value = 'Supervisor';
+        worksheet.getCell(`D${currentRow}`).alignment = { horizontal: 'center' };
+        worksheet.getCell(`G${currentRow}`).value = 'Autorizado por';
+        worksheet.getCell(`G${currentRow}`).alignment = { horizontal: 'center' };
+        
+        // Generar el archivo y descargarlo
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Arqueo_${data.arqueonumero}.xlsx`;
+        a.click();
+        URL.revokeObjectURL(url);
     };
     
     // Obtener el estado de la diferencia
