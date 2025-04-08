@@ -160,7 +160,17 @@ const TblActasList = () => {
         {" "}
         
         {/* DataTable */}
-        <DataTable value={actas} responsiveLayout="scroll" className="p-datatable-sm text-xs" paginator rows={10} loading={loading} rowsPerPageOptions={[10, 25, 50]} emptyMessage="No se encontraron actas">
+        <DataTable 
+          value={actas} 
+          responsiveLayout="scroll" 
+          className="p-datatable-sm text-xs" 
+          paginator 
+          rows={10} 
+          loading={loading} 
+          rowsPerPageOptions={[10, 25, 50]} 
+          emptyMessage="No se encontraron actas"
+          rowStyle={{ height: '2rem', padding: '0' }}
+        >
           <Column 
               body={(rowData) => (
                   <InputSwitch 
@@ -169,20 +179,19 @@ const TblActasList = () => {
                   />
               )}
               headerStyle={{ width: '4rem' }}
-              className="text-xs py-1 px-2"
+              bodyStyle={{ padding: '0' }}
+              className="text-xs"
           />
-          <Column field="ae_actaid" header="ACTA ID" className="text-xs py-1 px-2" sortable/>
-          <Column field="ae_correlativo" header="CORRELATIVO" className="text-xs py-1 px-2" sortable/>
-          <Column field="punto_recaudacion.puntorecaud_nombre" header="PUNTO RECAUDACIÓN" className="text-xs py-1 px-2" sortable/>
-          <Column field="ae_fecha" header="FECHA" className="text-xs py-1 px-2" sortable/>
-          <Column field="ae_grupo" header="GRUPO" className="text-xs py-1 px-2" sortable/>
-          <Column field="ae_operador1erturno" header="OPERADOR 1ER TURNO" className="text-xs py-1 px-2" sortable/>
-          <Column field="ae_operador2doturno" header="OPERADOR 2DO TURNO" className="text-xs py-1 px-2" sortable/>
-          <Column field="ae_observacion" header="OBSERVACIÓN" className="text-xs py-1 px-2" sortable/>
-          <Column field="ae_recaudaciontotalbs" header="RECAUDACIÓN TOTAL BS" className="text-xs py-1 px-2"
-            // body={(rowData) => rowData.ae_recaudaciontotalbs.toFixed(2)} 
-            sortable/>
-          <Column body={actionTemplate} header="" className="text-xs py-1 px-2"/>
+          <Column field="ae_actaid" header="ACTA ID" className="text-xs" bodyStyle={{ padding: '0 0.1rem' }} sortable/>
+          <Column field="ae_correlativo" header="CORRELATIVO" className="text-xs" bodyStyle={{ padding: '0 0.1rem' }} sortable/>
+          <Column field="punto_recaudacion.puntorecaud_nombre" header="PUNTO RECAUDACIÓN" className="text-xs" bodyStyle={{ padding: '0 0.1rem' }} sortable/>
+          <Column field="ae_fecha" header="FECHA" className="text-xs" bodyStyle={{ padding: '0 0.1rem' }} sortable/>
+          <Column field="ae_grupo" header="GRUPO" className="text-xs" bodyStyle={{ padding: '0 0.1rem' }} sortable/>
+          <Column field="ae_operador1erturno" header="OPERADOR 1ER TURNO" className="text-xs" bodyStyle={{ padding: '0 0.1rem' }} sortable/>
+          <Column field="ae_operador2doturno" header="OPERADOR 2DO TURNO" className="text-xs" bodyStyle={{ padding: '0 0.1rem' }} sortable/>
+          <Column field="ae_observacion" header="OBSERVACIÓN" className="text-xs" bodyStyle={{ padding: '0 0.1rem' }} sortable/>
+          <Column field="ae_recaudaciontotalbs" header="RECAUDACIÓN TOTAL BS" className="text-xs" bodyStyle={{ padding: '0 0.1rem' }} sortable/>
+          <Column body={actionTemplate} header="" className="text-xs" bodyStyle={{ padding: '0 0.1rem' }}/>
         </DataTable>
         
       </div>
