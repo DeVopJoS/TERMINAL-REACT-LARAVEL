@@ -23,308 +23,336 @@ export const ArqueoReporte = ({ visible, onHide, data, resumenServicios, detalle
         });
     };
     
-    // Función para exportar a Excel con mismo diseño que la previsualización
+    // Función para exportar a Excel con diseño unificado
     const exportExcel = async () => {
         const ExcelJS = await import('exceljs');
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('Arqueo');
-        worksheet.properties.defaultRowHeight = 20;
+        
+        // Configurar ancho de columnas para mejor visualización
+        worksheet.columns = [
+            { width: 20 }, // A
+            { width: 15 }, // B
+            { width: 15 }, // C
+            { width: 15 }, // D
+            { width: 15 }, // E
+            { width: 15 }, // F
+            { width: 10 }, // G
+            { width: 15 }  // H
+        ];
 
         // Estilos
         const headerStyle = {
             font: { bold: true, color: { argb: 'FFFFFF' } },
-            fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: '334457' } }, // azul oscuro
-            border: {
-                top: { style: 'thin' },
-                left: { style: 'thin' },
-                bottom: { style: 'thin' },
-                right: { style: 'thin' }
-            },
+            fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: '616161' } }, // Gris oscuro como en la imagen
+            border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } },
             alignment: { vertical: 'middle', horizontal: 'center' }
         };
 
-        const subHeaderStyle = {
+        const infoHeaderStyle = {
             font: { bold: true },
-            fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: '9DE2E2' } }, // Celda resaltada teal claro
-            border: {
-                top: { style: 'thin' },
-                left: { style: 'thin' },
-                bottom: { style: 'thin' },
-                right: { style: 'thin' }
-            },
+            fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'CCECE4' } }, // Verde claro para encabezados
+            border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } },
+            alignment: { vertical: 'middle', horizontal: 'left' }
+        };
+
+        const infoValueStyle = {
+            border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } },
+            alignment: { vertical: 'middle', horizontal: 'left' }
+        };
+
+        const cellStyle = {
+            border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } },
             alignment: { vertical: 'middle' }
         };
 
-        const labelStyle = {
+        const totalStyle = {
             font: { bold: true },
-            fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'B5E8E0' } }, // Celda label teal más claro
-            border: {
-                top: { style: 'thin' },
-                left: { style: 'thin' },
-                bottom: { style: 'thin' },
-                right: { style: 'thin' }
-            },
-            alignment: { vertical: 'middle', horizontal: 'left', wrapText: true }
+            fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'E6E6E6' } }, // Gris claro
+            border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } },
+            alignment: { vertical: 'middle' }
         };
 
-        const normalCellStyle = {
-            border: {
-                top: { style: 'thin' },
-                left: { style: 'thin' },
-                bottom: { style: 'thin' },
-                right: { style: 'thin' }
-            }
-        };
-
-        const totalRowStyle = {
-            font: { bold: true },
-            fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'F0F0F0' } }, // gris claro
-            border: {
-                top: { style: 'thin' },
-                left: { style: 'thin' },
-                bottom: { style: 'thin' },
-                right: { style: 'thin' }
-            }
-        };
-
-        // Título del reporte
-        worksheet.mergeCells('A1:G1');
+        // Título principal
+        worksheet.mergeCells('A1:H1');
         const titleCell = worksheet.getCell('A1');
         titleCell.value = 'ARQUEO DE RECAUDACIÓN - SERVICIOS';
-        titleCell.font = { size: 16, bold: true };
-        titleCell.alignment = { horizontal: 'center' };
+        titleCell.font = { bold: true, size: 14 };
+        titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
 
-        worksheet.mergeCells('A2:G2');
+        // Subtítulo
+        worksheet.mergeCells('A2:H2');
         const subtitleCell = worksheet.getCell('A2');
         subtitleCell.value = 'Reporte de Arqueo Final';
         subtitleCell.font = { size: 12 };
-        subtitleCell.alignment = { horizontal: 'center' };
+        subtitleCell.alignment = { horizontal: 'center', vertical: 'middle' };
 
-        // Espaciado
-        const infoStartRow = 4;
+        // Ajustar altura de las filas del título
+        worksheet.getRow(1).height = 25;
+        worksheet.getRow(2).height = 20;
 
-        // Información general - Formato unificado de tabla
-        // Primera fila
-        let currentRow = infoStartRow;
-        worksheet.mergeCells(`A${currentRow}:B${currentRow}`);
-        worksheet.mergeCells(`D${currentRow}:E${currentRow}`);
-        worksheet.getCell(`A${currentRow}`).value = 'Nº DE ARQUEO:';
-        worksheet.getCell(`A${currentRow}`).style = labelStyle;
-        worksheet.getCell(`C${currentRow}`).value = data.arqueonumero;
-        worksheet.getCell(`C${currentRow}`).style = subHeaderStyle;
-        worksheet.getCell(`D${currentRow}`).value = 'HORA DE INICIO:';
-        worksheet.getCell(`D${currentRow}`).style = labelStyle;
-        worksheet.getCell(`F${currentRow}`).value = data.arqueohorainicio instanceof Date ? 
+        // Espacio
+        worksheet.getRow(3).height = 10;
+
+        // SECCIÓN DE INFORMACIÓN GENERAL
+        // Fila 1: Nº de Arqueo y Hora de Inicio
+        worksheet.getCell('A4').value = 'Nº DE ARQUEO:';
+        worksheet.getCell('A4').style = infoHeaderStyle;
+        worksheet.mergeCells('A4:B4');
+        
+        worksheet.getCell('C4').value = data.arqueonumero;
+        worksheet.getCell('C4').style = infoValueStyle;
+        
+        worksheet.getCell('D4').value = 'HORA DE INICIO:';
+        worksheet.getCell('D4').style = infoHeaderStyle;
+        
+        worksheet.getCell('E4').value = data.arqueohorainicio instanceof Date ? 
             `${String(data.arqueohorainicio.getHours()).padStart(2, '0')}:${String(data.arqueohorainicio.getMinutes()).padStart(2, '0')}` : 
             data.arqueohorainicio;
-        worksheet.getCell(`F${currentRow}`).style = normalCellStyle;
-        worksheet.mergeCells(`F${currentRow}:G${currentRow}`);
+        worksheet.getCell('E4').style = infoValueStyle;
+        worksheet.mergeCells('E4:H4');
 
-        // Segunda fila
-        currentRow++;
-        worksheet.mergeCells(`A${currentRow}:B${currentRow}`);
-        worksheet.mergeCells(`D${currentRow}:E${currentRow}`);
-        worksheet.getCell(`A${currentRow}`).value = 'FECHA:';
-        worksheet.getCell(`A${currentRow}`).style = labelStyle;
-        worksheet.getCell(`C${currentRow}`).value = data.arqueofecha instanceof Date ? 
-            formatDate(data.arqueofecha) : data.arqueofecha;
-        worksheet.getCell(`C${currentRow}`).style = normalCellStyle;
-        worksheet.getCell(`D${currentRow}`).value = 'HORA FINALIZADO:';
-        worksheet.getCell(`D${currentRow}`).style = labelStyle;
-        worksheet.getCell(`F${currentRow}`).value = data.arqueohorafin instanceof Date ? 
+        // Fila 2: Fecha y Hora Finalizado
+        worksheet.getCell('A5').value = 'FECHA:';
+        worksheet.getCell('A5').style = infoHeaderStyle;
+        worksheet.mergeCells('A5:B5');
+        
+        worksheet.getCell('C5').value = data.arqueofecha instanceof Date ? 
+            formatDate(data.arqueofecha) : 
+            data.arqueofecha;
+        worksheet.getCell('C5').style = infoValueStyle;
+        
+        worksheet.getCell('D5').value = 'HORA FINALIZADO:';
+        worksheet.getCell('D5').style = infoHeaderStyle;
+        
+        worksheet.getCell('E5').value = data.arqueohorafin instanceof Date ? 
             `${String(data.arqueohorafin.getHours()).padStart(2, '0')}:${String(data.arqueohorafin.getMinutes()).padStart(2, '0')}` : 
             data.arqueohorafin;
-        worksheet.getCell(`F${currentRow}`).style = normalCellStyle;
-        worksheet.mergeCells(`F${currentRow}:G${currentRow}`);
+        worksheet.getCell('E5').style = infoValueStyle;
+        worksheet.mergeCells('E5:H5');
 
-        // Tercera fila
-        currentRow++;
-        worksheet.mergeCells(`A${currentRow}:B${currentRow}`);
-        worksheet.mergeCells(`D${currentRow}:E${currentRow}`);
-        worksheet.getCell(`A${currentRow}`).value = 'TURNO:';
-        worksheet.getCell(`A${currentRow}`).style = labelStyle;
-        worksheet.getCell(`C${currentRow}`).value = data.arqueoturno === 'M' ? 'Mañana' : 'Tarde';
-        worksheet.getCell(`C${currentRow}`).style = normalCellStyle;
-        worksheet.getCell(`D${currentRow}`).value = 'SUPERVISOR:';
-        worksheet.getCell(`D${currentRow}`).style = labelStyle;
-        worksheet.getCell(`F${currentRow}`).value = data.arqueosupervisor;
-        worksheet.getCell(`F${currentRow}`).style = normalCellStyle;
-        worksheet.mergeCells(`F${currentRow}:G${currentRow}`);
+        // Fila 3: Turno y Supervisor
+        worksheet.getCell('A6').value = 'TURNO:';
+        worksheet.getCell('A6').style = infoHeaderStyle;
+        worksheet.mergeCells('A6:B6');
+        
+        worksheet.getCell('C6').value = data.arqueoturno === 'M' ? 'Mañana' : 'Tarde';
+        worksheet.getCell('C6').style = infoValueStyle;
+        
+        worksheet.getCell('D6').value = 'SUPERVISOR:';
+        worksheet.getCell('D6').style = infoHeaderStyle;
+        
+        worksheet.getCell('E6').value = data.arqueosupervisor;
+        worksheet.getCell('E6').style = infoValueStyle;
+        worksheet.mergeCells('E6:H6');
 
-        // Espaciado
-        currentRow += 2;
-        const tablaServiciosStartRow = currentRow;
+        worksheet.getRow(7).height = 10;
 
-        // Crear una tabla unificada con la sección de servicios (izquierda)
-        // Header
-        worksheet.mergeCells(`A${currentRow}:C${currentRow}`);
-        worksheet.getCell(`A${currentRow}`).value = 'FACTURAS PRE VALORADAS';
-        worksheet.getCell(`A${currentRow}`).style = headerStyle;
-        worksheet.mergeCells(`D${currentRow}:E${currentRow}`);
-        worksheet.getCell(`D${currentRow}`).value = 'IMPORTE BS';
-        worksheet.getCell(`D${currentRow}`).style = headerStyle;
+        // TABLA PRINCIPAL
+        // Headers
+        worksheet.getCell('A8').value = 'FACTURAS PRE VALORADAS';
+        worksheet.getCell('A8').style = headerStyle;
+        worksheet.mergeCells('A8:B8');
         
-        // Datos de servicios
-        currentRow++;
-        resumenServicios.forEach(servicio => {
-            worksheet.mergeCells(`A${currentRow}:C${currentRow}`);
-            worksheet.getCell(`A${currentRow}`).value = servicio.nombre;
-            worksheet.getCell(`A${currentRow}`).style = normalCellStyle;
-            worksheet.getCell(`D${currentRow}`).value = 'Bs';
-            worksheet.getCell(`D${currentRow}`).style = normalCellStyle;
-            worksheet.getCell(`D${currentRow}`).alignment = { horizontal: 'center' };
-            worksheet.getCell(`E${currentRow}`).value = parseFloat(servicio.importe_total).toFixed(2);
-            worksheet.getCell(`E${currentRow}`).style = normalCellStyle;
-            worksheet.getCell(`E${currentRow}`).alignment = { horizontal: 'right' };
-            currentRow++;
-        });
+        worksheet.getCell('C8').value = 'IMPORTE BS';
+        worksheet.getCell('C8').style = headerStyle;
         
-        // Totales de servicios
-        worksheet.mergeCells(`A${currentRow}:C${currentRow}`);
-        worksheet.getCell(`A${currentRow}`).value = 'TOTAL DE PREVALORACIONES:';
-        worksheet.getCell(`A${currentRow}`).style = totalRowStyle;
-        worksheet.getCell(`D${currentRow}`).value = 'Bs';
-        worksheet.getCell(`D${currentRow}`).style = totalRowStyle;
-        worksheet.getCell(`D${currentRow}`).alignment = { horizontal: 'center' };
-        worksheet.getCell(`E${currentRow}`).value = totalRecaudacion.toFixed(2);
-        worksheet.getCell(`E${currentRow}`).style = totalRowStyle;
-        worksheet.getCell(`E${currentRow}`).alignment = { horizontal: 'right' };
+        worksheet.getCell('D8').value = 'CORTE';
+        worksheet.getCell('D8').style = headerStyle;
         
-        currentRow++;
-        worksheet.mergeCells(`A${currentRow}:C${currentRow}`);
-        worksheet.getCell(`A${currentRow}`).value = 'INFRACCIONES:';
-        worksheet.getCell(`A${currentRow}`).style = normalCellStyle;
-        worksheet.getCell(`D${currentRow}`).value = 'Bs';
-        worksheet.getCell(`D${currentRow}`).style = normalCellStyle;
-        worksheet.getCell(`D${currentRow}`).alignment = { horizontal: 'center' };
-        worksheet.getCell(`E${currentRow}`).value = '0.00';
-        worksheet.getCell(`E${currentRow}`).style = normalCellStyle;
-        worksheet.getCell(`E${currentRow}`).alignment = { horizontal: 'right' };
+        worksheet.getCell('E8').value = 'PIEZAS';
+        worksheet.getCell('E8').style = headerStyle;
         
-        currentRow++;
-        worksheet.mergeCells(`A${currentRow}:C${currentRow}`);
-        worksheet.getCell(`A${currentRow}`).value = 'TOTAL:';
-        worksheet.getCell(`A${currentRow}`).style = totalRowStyle;
-        worksheet.getCell(`D${currentRow}`).value = 'Bs';
-        worksheet.getCell(`D${currentRow}`).style = totalRowStyle;
-        worksheet.getCell(`D${currentRow}`).alignment = { horizontal: 'center' };
-        worksheet.getCell(`E${currentRow}`).value = totalRecaudacion.toFixed(2);
-        worksheet.getCell(`E${currentRow}`).style = totalRowStyle;
-        worksheet.getCell(`E${currentRow}`).alignment = { horizontal: 'right' };
+        worksheet.getCell('F8').value = 'MONTO';
+        worksheet.getCell('F8').style = headerStyle;
+        worksheet.mergeCells('F8:H8');
 
-        // Tabla de cortes (lado derecho)
-        let cortesRow = tablaServiciosStartRow;
-        
-        worksheet.getCell(`F${cortesRow}`).value = 'CORTE';
-        worksheet.getCell(`F${cortesRow}`).style = headerStyle;
-        worksheet.getCell(`G${cortesRow}`).value = 'PIEZAS';
-        worksheet.getCell(`G${cortesRow}`).style = headerStyle;
-        worksheet.getCell(`H${cortesRow}`).value = 'MONTO';
-        worksheet.getCell(`H${cortesRow}`).style = headerStyle;
-        
+        // Obtener los datos de cortes para iterar
         const CORTES_DENOMINACION = [
-            { campo: 'arqueocorte200_00', valor: 200, label: '200' },
-            { campo: 'arqueocorte100_00', valor: 100, label: '100' },
-            { campo: 'arqueocorte050_00', valor: 50, label: '50' },
-            { campo: 'arqueocorte020_00', valor: 20, label: '20' },
-            { campo: 'arqueocorte010_00', valor: 10, label: '10' },
-            { campo: 'arqueocorte005_00', valor: 5, label: '5' },
-            { campo: 'arqueocorte002_00', valor: 2, label: '2' },
-            { campo: 'arqueocorte001_00', valor: 1, label: '1' },
-            { campo: 'arqueocorte000_50', valor: 0.5, label: '0.50' },
-            { campo: 'arqueocorte000_20', valor: 0.2, label: '0.20' },
-            { campo: 'arqueocorte000_10', valor: 0.1, label: '0.10' }
+            { campo: 'arqueocorte200_00', valor: 200, label: 'Bs 200' },
+            { campo: 'arqueocorte100_00', valor: 100, label: 'Bs 100' },
+            { campo: 'arqueocorte050_00', valor: 50, label: 'Bs 50' },
+            { campo: 'arqueocorte020_00', valor: 20, label: 'Bs 20' },
+            { campo: 'arqueocorte010_00', valor: 10, label: 'Bs 10' },
+            { campo: 'arqueocorte005_00', valor: 5, label: 'Bs 5' },
+            { campo: 'arqueocorte002_00', valor: 2, label: 'Bs 2' },
+            { campo: 'arqueocorte001_00', valor: 1, label: 'Bs 1' },
+            { campo: 'arqueocorte000_50', valor: 0.5, label: 'Bs 0.50' },
+            { campo: 'arqueocorte000_20', valor: 0.2, label: 'Bs 0.20' },
+            { campo: 'arqueocorte000_10', valor: 0.1, label: 'Bs 0.10' }
         ];
 
-        cortesRow++;
-        CORTES_DENOMINACION.forEach(corte => {
-            worksheet.getCell(`F${cortesRow}`).value = `Bs ${corte.label}`;
-            worksheet.getCell(`F${cortesRow}`).style = normalCellStyle;
-            worksheet.getCell(`G${cortesRow}`).value = data.cortes[corte.campo] || 0;
-            worksheet.getCell(`G${cortesRow}`).style = normalCellStyle;
-            worksheet.getCell(`G${cortesRow}`).alignment = { horizontal: 'center' };
-            worksheet.getCell(`H${cortesRow}`).value = ((data.cortes[corte.campo] || 0) * corte.valor).toFixed(2);
-            worksheet.getCell(`H${cortesRow}`).style = normalCellStyle;
-            worksheet.getCell(`H${cortesRow}`).alignment = { horizontal: 'right' };
-            cortesRow++;
-        });
-        
-        // Total de cortes
-        worksheet.getCell(`F${cortesRow}`).value = 'TOTAL:';
-        worksheet.getCell(`F${cortesRow}`).style = totalRowStyle;
-        worksheet.getCell(`G${cortesRow}`).style = totalRowStyle;
-        worksheet.getCell(`H${cortesRow}`).value = totalCortes.toFixed(2);
-        worksheet.getCell(`H${cortesRow}`).style = totalRowStyle;
-        worksheet.getCell(`H${cortesRow}`).alignment = { horizontal: 'right' };
+        // Determinar qué tiene más líneas, servicios o cortes
+        const maxRows = Math.max(resumenServicios.length + 3, CORTES_DENOMINACION.length + 1);
 
-        // Tomar el máximo entre las filas de servicios y cortes
-        currentRow = Math.max(currentRow, cortesRow) + 2;
-
-        // Sección de diferencia como tabla unificada
-        worksheet.mergeCells(`A${currentRow}:E${currentRow}`);
-        worksheet.getCell(`A${currentRow}`).value = 'DIFERENCIA ENTRE RECAUDACIÓN Y EFECTIVO';
-        worksheet.getCell(`A${currentRow}`).style = headerStyle;
-        worksheet.getCell(`F${currentRow}`).value = getDiferenciaEstado();
-        worksheet.getCell(`G${currentRow}:H${currentRow}`).value = formatearDiferencia();
-        
-        // Definir el estilo según la diferencia
-        let diferenciaStyle = {
-            font: { bold: true },
-            border: {
-                top: { style: 'thin' },
-                left: { style: 'thin' },
-                bottom: { style: 'thin' },
-                right: { style: 'thin' }
+        // Llenar los datos de servicios y cortes
+        for (let i = 0; i < maxRows; i++) {
+            const rowIndex = 9 + i;
+            
+            // Columnas de Servicios (parte izquierda)
+            if (i < resumenServicios.length) {
+                // Servicios regulares
+                worksheet.getCell(`A${rowIndex}`).value = resumenServicios[i].nombre;
+                worksheet.getCell(`A${rowIndex}`).style = cellStyle;
+                worksheet.mergeCells(`A${rowIndex}:B${rowIndex}`);
+                
+                worksheet.getCell(`C${rowIndex}`).value = parseFloat(resumenServicios[i].importe_total).toFixed(2);
+                worksheet.getCell(`C${rowIndex}`).style = cellStyle;
+                worksheet.getCell(`C${rowIndex}`).alignment = { horizontal: 'right', vertical: 'middle' };
+            } 
+            else if (i === resumenServicios.length) {
+                // Total de prevaloraciones
+                worksheet.getCell(`A${rowIndex}`).value = 'TOTAL DE PREVALORACIONES:';
+                worksheet.getCell(`A${rowIndex}`).style = totalStyle;
+                worksheet.mergeCells(`A${rowIndex}:B${rowIndex}`);
+                
+                worksheet.getCell(`C${rowIndex}`).value = totalRecaudacion.toFixed(2);
+                worksheet.getCell(`C${rowIndex}`).style = totalStyle;
+                worksheet.getCell(`C${rowIndex}`).alignment = { horizontal: 'right', vertical: 'middle' };
             }
-        };
-
-        if (totalCortes - totalRecaudacion === 0) {
-            diferenciaStyle.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'C6E7C6' } }; // verde claro
-        } else if (totalCortes - totalRecaudacion > 0) {
-            diferenciaStyle.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'CCE5FF' } }; // azul claro
-        } else {
-            diferenciaStyle.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFCCCC' } }; // rojo claro
+            else if (i === resumenServicios.length + 1) {
+                // Infracciones
+                worksheet.getCell(`A${rowIndex}`).value = 'INFRACCIONES:';
+                worksheet.getCell(`A${rowIndex}`).style = cellStyle;
+                worksheet.mergeCells(`A${rowIndex}:B${rowIndex}`);
+                
+                worksheet.getCell(`C${rowIndex}`).value = '0.00';
+                worksheet.getCell(`C${rowIndex}`).style = cellStyle;
+                worksheet.getCell(`C${rowIndex}`).alignment = { horizontal: 'right', vertical: 'middle' };
+            }
+            else if (i === resumenServicios.length + 2) {
+                // Total final
+                worksheet.getCell(`A${rowIndex}`).value = 'TOTAL:';
+                worksheet.getCell(`A${rowIndex}`).style = totalStyle;
+                worksheet.mergeCells(`A${rowIndex}:B${rowIndex}`);
+                
+                worksheet.getCell(`C${rowIndex}`).value = totalRecaudacion.toFixed(2);
+                worksheet.getCell(`C${rowIndex}`).style = totalStyle;
+                worksheet.getCell(`C${rowIndex}`).alignment = { horizontal: 'right', vertical: 'middle' };
+            }
+            
+            // Columnas de Cortes (parte derecha)
+            if (i < CORTES_DENOMINACION.length) {
+                // Cortes regulares
+                worksheet.getCell(`D${rowIndex}`).value = CORTES_DENOMINACION[i].label;
+                worksheet.getCell(`D${rowIndex}`).style = cellStyle;
+                
+                worksheet.getCell(`E${rowIndex}`).value = data.cortes[CORTES_DENOMINACION[i].campo] || 0;
+                worksheet.getCell(`E${rowIndex}`).style = cellStyle;
+                worksheet.getCell(`E${rowIndex}`).alignment = { horizontal: 'center', vertical: 'middle' };
+                
+                const montoCorte = ((data.cortes[CORTES_DENOMINACION[i].campo] || 0) * CORTES_DENOMINACION[i].valor).toFixed(2);
+                worksheet.getCell(`F${rowIndex}`).value = montoCorte;
+                worksheet.getCell(`F${rowIndex}`).style = cellStyle;
+                worksheet.getCell(`F${rowIndex}`).alignment = { horizontal: 'right', vertical: 'middle' };
+                worksheet.mergeCells(`F${rowIndex}:H${rowIndex}`);
+            } 
+            else if (i === CORTES_DENOMINACION.length) {
+                // Total de cortes
+                worksheet.getCell(`D${rowIndex}`).value = 'TOTAL:';
+                worksheet.getCell(`D${rowIndex}`).style = totalStyle;
+                
+                worksheet.getCell(`E${rowIndex}`).value = '';
+                worksheet.getCell(`E${rowIndex}`).style = totalStyle;
+                
+                worksheet.getCell(`F${rowIndex}`).value = totalCortes.toFixed(2);
+                worksheet.getCell(`F${rowIndex}`).style = totalStyle;
+                worksheet.getCell(`F${rowIndex}`).alignment = { horizontal: 'right', vertical: 'middle' };
+                worksheet.mergeCells(`F${rowIndex}:H${rowIndex}`);
+            }
+            else {
+                // Rellenar con celdas vacías pero con estilo
+                worksheet.getCell(`D${rowIndex}`).style = cellStyle;
+                worksheet.getCell(`E${rowIndex}`).style = cellStyle;
+                worksheet.getCell(`F${rowIndex}`).style = cellStyle;
+                worksheet.mergeCells(`F${rowIndex}:H${rowIndex}`);
+            }
         }
 
-        worksheet.getCell(`F${currentRow}`).style = diferenciaStyle;
-        worksheet.mergeCells(`G${currentRow}:H${currentRow}`);
-        worksheet.getCell(`G${currentRow}`).style = diferenciaStyle;
-        worksheet.getCell(`G${currentRow}`).alignment = { horizontal: 'right' };
+        // Calcular la siguiente fila después de la tabla principal
+        const nextRow = 9 + maxRows + 1;
 
-        currentRow += 2;
-
-        // Observaciones
-        worksheet.getCell(`A${currentRow}`).value = 'Observaciones:';
-        worksheet.getCell(`A${currentRow}`).font = { bold: true };
+        // SECCIÓN DE DIFERENCIA
+        worksheet.getCell(`A${nextRow}`).value = 'DIFERENCIA ENTRE RECAUDACIÓN Y EFECTIVO';
+        worksheet.getCell(`A${nextRow}`).style = headerStyle;
+        worksheet.mergeCells(`A${nextRow}:E${nextRow}`);
         
-        currentRow++;
-        worksheet.mergeCells(`A${currentRow}:H${currentRow}`);
-        worksheet.getCell(`A${currentRow}`).value = data.arqueoobservacion || '';
-        worksheet.getCell(`A${currentRow}`).style = {
-            border: {
-                top: { style: 'thin' },
-                left: { style: 'thin' },
-                bottom: { style: 'thin' },
-                right: { style: 'thin' }
+        // Estilo para la diferencia según el estado
+        const diferencia = totalCortes - totalRecaudacion;
+        let diferenciaFillColor = '';
+        
+        if (diferencia === 0) {
+            diferenciaFillColor = 'C6E7C6'; // Verde claro para "Ninguno"
+        } else if (diferencia > 0) {
+            diferenciaFillColor = 'CCE5FF'; // Azul claro para "Sobrante"
+        } else {
+            diferenciaFillColor = 'FFCCCC'; // Rojo claro para "Faltante"
+        }
+        
+        const diferenciaStyle = {
+            font: { bold: true },
+            fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: diferenciaFillColor } },
+            border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
+        };
+        
+        worksheet.getCell(`F${nextRow}`).value = getDiferenciaEstado();
+        worksheet.getCell(`F${nextRow}`).style = diferenciaStyle;
+        
+        worksheet.getCell(`G${nextRow}`).value = formatearDiferencia();
+        worksheet.getCell(`G${nextRow}`).style = diferenciaStyle;
+        worksheet.getCell(`G${nextRow}`).alignment = { horizontal: 'right', vertical: 'middle' };
+        worksheet.mergeCells(`G${nextRow}:H${nextRow}`);
+
+        // SECCIÓN DE OBSERVACIONES
+        const obsRow = nextRow + 2;
+        worksheet.getCell(`A${obsRow}`).value = 'Observaciones:';
+        worksheet.getCell(`A${obsRow}`).font = { bold: true };
+        
+        worksheet.mergeCells(`A${obsRow+1}:H${obsRow+1}`);
+        worksheet.getCell(`A${obsRow+1}`).value = data.arqueoobservacion || '';
+        worksheet.getCell(`A${obsRow+1}`).style = {
+            border: { 
+                top: { style: 'thin' }, 
+                left: { style: 'thin' }, 
+                bottom: { style: 'thin' }, 
+                right: { style: 'thin' } 
             },
             alignment: { vertical: 'top', wrapText: true }
         };
-        worksheet.getRow(currentRow).height = 40;
+        worksheet.getRow(obsRow+1).height = 50; // Altura para observaciones
 
-        currentRow += 3;
+        // SECCIÓN DE FIRMAS
+        const firmaRow = obsRow + 3;
+        worksheet.getRow(firmaRow-1).height = 40;
 
-        // Sección de firmas
-        worksheet.mergeCells(`A${currentRow}:B${currentRow}`);
-        worksheet.mergeCells(`D${currentRow}:E${currentRow}`);
-        worksheet.mergeCells(`G${currentRow}:H${currentRow}`);
-        
-        worksheet.getCell(`A${currentRow}`).value = 'Elaborado por';
-        worksheet.getCell(`A${currentRow}`).alignment = { horizontal: 'center' };
-        worksheet.getCell(`D${currentRow}`).value = 'Supervisor';
-        worksheet.getCell(`D${currentRow}`).alignment = { horizontal: 'center' };
-        worksheet.getCell(`G${currentRow}`).value = 'Autorizado por';
-        worksheet.getCell(`G${currentRow}`).alignment = { horizontal: 'center' };
-        
+        worksheet.mergeCells(`A${firmaRow}:B${firmaRow}`);
+        worksheet.getCell(`A${firmaRow}`).value = '_______________________';
+        worksheet.getCell(`A${firmaRow}`).alignment = { horizontal: 'center' };
+
+        worksheet.mergeCells(`D${firmaRow}:E${firmaRow}`);
+        worksheet.getCell(`D${firmaRow}`).value = '_______________________';
+        worksheet.getCell(`D${firmaRow}`).alignment = { horizontal: 'center' };
+
+        worksheet.mergeCells(`G${firmaRow}:H${firmaRow}`);
+        worksheet.getCell(`G${firmaRow}`).value = '_______________________';
+        worksheet.getCell(`G${firmaRow}`).alignment = { horizontal: 'center' };
+
+        // Textos de las firmas
+        const textoFirmaRow = firmaRow + 1;
+        worksheet.mergeCells(`A${textoFirmaRow}:B${textoFirmaRow}`);
+        worksheet.getCell(`A${textoFirmaRow}`).value = 'Elaborado por';
+        worksheet.getCell(`A${textoFirmaRow}`).alignment = { horizontal: 'center' };
+
+        worksheet.mergeCells(`D${textoFirmaRow}:E${textoFirmaRow}`);
+        worksheet.getCell(`D${textoFirmaRow}`).value = 'Supervisor';
+        worksheet.getCell(`D${textoFirmaRow}`).alignment = { horizontal: 'center' };
+
+        worksheet.mergeCells(`G${textoFirmaRow}:H${textoFirmaRow}`);
+        worksheet.getCell(`G${textoFirmaRow}`).value = 'Autorizado por';
+        worksheet.getCell(`G${textoFirmaRow}`).alignment = { horizontal: 'center' };
+
+        worksheet.getRow(textoFirmaRow + 1).height = 60;
+
         // Generar el archivo y descargarlo
         const buffer = await workbook.xlsx.writeBuffer();
         const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
@@ -517,9 +545,8 @@ export const ArqueoReporte = ({ visible, onHide, data, resumenServicios, detalle
                         </table>
                     </div>
                 </div>
-                
-                {/* Diferencia */}
-                <table className="w-full border-1 border-collapse mt-3">
+                    
+                <table className="w-full border-1 border-collapse mt-2">
                     <tbody>
                         <tr>
                             <td className="bg-bluegray-700 text-white border-1 p-2 font-bold" style={{ width: '40%' }}>
@@ -546,7 +573,12 @@ export const ArqueoReporte = ({ visible, onHide, data, resumenServicios, detalle
                 {/* Observaciones */}
                 <div className="mt-3">
                     <h3 className="font-bold mb-1">Observaciones:</h3>
-                    <div className="p-2 border-1 min-h-4rem">
+                    <div className="p-2" style={{ 
+                        border: '2px solid black',
+                        minHeight: '4rem',
+                        width: '100%',
+                        boxSizing: 'border-box'
+                    }}>
                         {data.arqueoobservacion}
                     </div>
                 </div>
@@ -554,27 +586,25 @@ export const ArqueoReporte = ({ visible, onHide, data, resumenServicios, detalle
                 {/* Firmas */}
                 <div className="grid mt-5">
                     <div className="col-4 text-center">
-                        <div className="border-t-1 border-black pt-2 mt-5 inline-block" style={{ minWidth: '150px' }}>
-                            Elaborado por
-                        </div>
+                        <div className="border-b-2 border-black mb-2" style={{ minWidth: '200px', margin: 'auto' }}>&nbsp;</div>
+                        <div className="text-sm">Elaborado por</div>
                     </div>
                     <div className="col-4 text-center">
-                        <div className="border-t-1 border-black pt-2 mt-5 inline-block" style={{ minWidth: '150px' }}>
-                            Supervisor
-                        </div>
+                        <div className="border-b-2 border-black mb-2" style={{ minWidth: '200px', margin: 'auto' }}>&nbsp;</div>
+                        <div className="text-sm">Supervisor</div>
                     </div>
                     <div className="col-4 text-center">
-                        <div className="border-t-1 border-black pt-2 mt-5 inline-block" style={{ minWidth: '150px' }}>
-                            Autorizado por
-                        </div>
+                        <div className="border-b-2 border-black mb-2" style={{ minWidth: '200px', margin: 'auto' }}>&nbsp;</div>
+                        <div className="text-sm">Autorizado por</div>
                     </div>
                 </div>
+
+                <div style={{ height: '100px' }}></div>
             </div>
         </Dialog>
     );
 };
 
-// Añadir estilos CSS para el reporte
 export const ReporteStyle = () => (
     <style>{`
         .border-1 {
@@ -613,5 +643,22 @@ export const ReporteStyle = () => (
                 width: 100%;
             }
         }
+        
+        .p-datatable .p-datatable-tbody > tr > td {
+            padding: 0.5rem !important;
+            font-size: 0.875rem !important;
+        }
+        
+        .text-xs {
+            font-size: 0.75rem !important;
+        }
+        
+        .compact-row {
+            padding: 0.25rem 0.5rem !important;
+            height: 2rem !important;
+            font-size: 0.875rem !important;
+        }
     `}</style>
 );
+
+export default ArqueoReporte;
