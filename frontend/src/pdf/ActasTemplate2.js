@@ -1,10 +1,11 @@
-import { Page, Text, View, Document, StyleSheet } from '@react-pdf/renderer';
+import { Page, Text, View, Document, StyleSheet, Image } from '@react-pdf/renderer';
 
 const styles = StyleSheet.create({
     page: {
       padding: 20,
       backgroundColor: '#ffffff',
-      fontSize: 12
+      fontSize: 12,
+      size: 'legal'
     },
     headerContainer: {
       flexDirection: 'row',
@@ -67,25 +68,28 @@ const styles = StyleSheet.create({
       borderWidth: 1,
       borderTop: 0,
       borderColor: '#000000',
+      minHeight: 7,
     },
     operatorLabel: {
       width: '30%',
-      padding: 5,
-      fontSize: 12,
+      padding: 2,
+      fontSize: 7,
       borderRight: 1,
       borderColor: '#000000',
     },
     operatorValue: {
       flex: 1,
-      padding: 5,
+      padding: 2,
       borderRight: 1,
       borderColor: '#000000',
+      fontSize: 7,
     },
     operatorRight: {
       width: '30%',
-      padding: 5,
+      padding: 2,
       textAlign: 'center',
       fontWeight: 'bold',
+      fontSize: 7,
     },
     amountRow: {
       flexDirection: 'row',
@@ -165,7 +169,7 @@ const styles = StyleSheet.create({
     },
     columnHeader: {
       width: '10%',
-      padding: 5,
+      padding: 2,
       borderRight: 1,
       textAlign: 'center',
       fontWeight: 'bold',
@@ -193,32 +197,37 @@ const styles = StyleSheet.create({
       borderWidth: 1,
       borderTop: 0,
       borderColor: '#000000',
+      minHeight: 7,
     },
     indexCell: {
       width: '10%',
-      paddingVertical: 0,
+      paddingVertical: 1,
       borderRight: 1,
       textAlign: 'center',
       borderColor: '#000000',
+      minHeight: 7,
     },
     typeCell: {
       width: '10%',
-      paddingVertical: 0,
+      paddingVertical: 1,
       borderRight: 1,
       textAlign: 'center',
       borderColor: '#000000',
+      minHeight: 7,
     },
     dataCell: {
       width: '18%',
-      paddingVertical: 0,
+      paddingVertical: 1,
       borderRight: 1,
       textAlign: 'center',
       borderColor: '#000000',
+      minHeight: 7,
     },
     lastDataCell: {
       width: '18%',
-      padding: 5,
+      padding: 1,
       textAlign: 'center',
+      minHeight: 7,
     },
     redCell: {
       backgroundColor: '#ffcccc',
@@ -317,466 +326,533 @@ const styles = StyleSheet.create({
       textAlign: 'center',
     },
     textSmall: {
-      fontSize: 8,
+      fontSize: 13,
       marginVertical: 0, 
       paddingVertical: 0,
-    }
+    },
+    textSmallT: {
+      fontSize: 9,
+      marginVertical: 0, 
+      paddingVertical: 0,
+    },
+    errorContainer: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 20,
+      backgroundColor: '#ffffff',
+      borderWidth: 1,
+      borderColor: '#000000',
+    },
   });
 
-  const TemplateActa = ({ actas }) => (
-    <Document>
-      {actas.map((acta, index) => {
-        const { cabecera, detalles } = acta;
-  
-        // Lógica para la primera tabla (First Operator)
-        const totalFilasFirstOperator = 35;
-        const filasCompletasFirstOperator = Array.from({ length: totalFilasFirstOperator }).map((_, i) => {
-          const rowNumber = i + 1;
-          return detalles[i] || { index: rowNumber };
-        });
-  
-        // Lógica para detalles únicos
-        const uniqueDetalles = detalles.reduce((acc, item) => {
-          if (!acc.some((el) => el.servicio_id === item.servicio_id)) {
-            acc.push(item);
+  const TemplateActa = ({ actas }) => {
+    if (!actas || !Array.isArray(actas)) {
+      console.error('Error: actas debe ser un array', actas);
+      return (
+        <Document>
+          <Page size="A3">
+            <View style={styles.errorContainer}>
+              <Text>Error: No hay datos para mostrar</Text>
+            </View>
+          </Page>
+        </Document>
+      );
+    }
+
+    return (
+      <Document>
+        {actas.map((acta, index) => {
+          if (!acta || !acta.cabecera || !acta.detalles) {
+            console.error('Error: Estructura de acta inválida', acta);
+            return null;
           }
-          return acc;
-        }, []);
+
+          const { cabecera, detalles } = acta;
+          
+          if (!Array.isArray(cabecera) || cabecera.length === 0) {
+            console.error('Error: cabecera debe ser un array no vacío', cabecera);
+            return null;
+          }
+
+          if (!Array.isArray(detalles)) {
+            console.error('Error: detalles debe ser un array', detalles);
+            return null;
+          }
+
+          // Validar campos requeridos en cabecera
+          const requiredFields = [
+            'puntorecaud_nombre',
+            'formatted_fecha',
+            'ae_grupo',
+            'ae_operador1erturno',
+            'ae_operador2doturno'
+          ];
+
+          const missingFields = requiredFields.filter(field => !cabecera[0][field]);
+          if (missingFields.length > 0) {
+            console.error('Error: Faltan campos requeridos en cabecera:', missingFields);
+            return null;
+          }
+
+          // Lógica para la primera tabla (First Operator)
+          const totalFilasFirstOperator = 28;
+          const filasCompletasFirstOperator = Array.from({ length: totalFilasFirstOperator }).map((_, i) => {
+            const rowNumber = i + 1;
+            return detalles[i] || { index: rowNumber };
+          });
   
-        // Lógica para la segunda tabla
-        const filasSecondTable = Array.from({ length: 52 }, (_, i) => i + 1);
+          // Lógica para detalles únicos
+          const uniqueDetalles = detalles.reduce((acc, item) => {
+            if (!acc.some((el) => el.servicio_id === item.servicio_id)) {
+              acc.push(item);
+            }
+            return acc;
+          }, []);
   
-        return (
-            <Page size="A3" style={styles.page} key={index}>
-                {/* Cabecera */}
-                <View style={styles.headerContainer}>
-                    <View style={styles.headerLeft}>
-                    <Text>LOGO</Text>
-                    </View>
-                    <View style={styles.headerRight}>
-                    <Text>ENTIDAD DESCENTRALIZADA TERMINAL METROPOLITANA EL ALTO - ACTA DE ENTREGA</Text>
-                    </View>
-                </View>
-        
-                <View style={styles.tablesRow}>
-                    {/* Tabla para operador 1er turno */}
-                    <View style={styles.tableContainer}>
-                    {/* Subcabecera */}
-                    <View style={styles.subHeader}>
-                    <View style={styles.subHeaderLeft}>
-                        <Text>PUNTO DE RECAUDACIÓN:</Text>
-                    </View>
-                    <View style={styles.subHeaderRight}>
-                        <Text style={[styles.centerText, styles.boldText]}>{cabecera[0]?.puntorecaud_nombre}</Text>
-                    </View>
-                    </View>
-                
-                    {/* Fila de fecha y grupo */}
-                    <View style={styles.dateRow}>
-                    <View style={styles.dateTitle}>
-                        <Text>Fecha:</Text>
-                    </View>
-                    <View style={styles.dateCell}>
-                        <Text>{cabecera[0]?.formatted_fecha}</Text>
-                    </View>
-                    <View style={styles.groupCell}>
-                        <Text>GRUPO: {cabecera[0]?.ae_grupo}</Text>
-                    </View>
-                    </View>
-                
-                    {/* Filas de operadores */}
-                    <View style={styles.operatorRow}>
+          // Lógica para la segunda tabla
+          const filasSecondTable = Array.from({ length: 45 }, (_, i) => i + 1);
+  
+          return (
+              <Page size="A3" style={styles.page} key={index}>
+                  {/* Cabecera */}
+                  <View style={styles.headerContainer}>
+                      <View style={styles.headerLeft}>
+                      <Image src="/images/logoplanilla.png" style={{ width: '100%', height: 'auto' }} />
+                      </View>
+                      <View style={styles.headerRight}>
+                      <Text>ENTIDAD DESCENTRALIZADA TERMINAL METROPOLITANA EL ALTO - ACTA DE ENTREGA</Text>
+                      </View>
+                  </View>
+          
+                  <View style={styles.tablesRow}>
+                      {/* Tabla para operador 1er turno */}
+                      <View style={styles.tableContainer}>
+                      {/* Subcabecera */}
+                      <View style={styles.subHeader}>
+                      <View style={styles.subHeaderLeft}>
+                          <Text>PUNTO DE RECAUDACIÓN:</Text>
+                      </View>
+                      <View style={styles.subHeaderRight}>
+                          <Text style={[styles.centerText, styles.boldText]}>{cabecera[0]?.puntorecaud_nombre}</Text>
+                      </View>
+                      </View>
+                  
+                      {/* Fila de fecha y grupo */}
+                      <View style={styles.dateRow}>
+                      <View style={styles.dateTitle}>
+                          <Text>Fecha:</Text>
+                      </View>
+                      <View style={styles.dateCell}>
+                          <Text>{cabecera[0]?.formatted_fecha}</Text>
+                      </View>
+                      <View style={styles.groupCell}>
+                          <Text>GRUPO: {cabecera[0]?.ae_grupo}</Text>
+                      </View>
+                      </View>
+                  
+                      {/* Filas de operadores */}
+                      <View style={styles.operatorRow}>
+                        <View style={styles.operatorLabel}>
+                            <Text>OPERADOR(A) TURNO 1:</Text>
+                        </View>
+                        <View style={styles.operatorValue}>
+                            <Text>{cabecera[0]?.ae_operador1erturno}</Text>
+                        </View>
+                        <View style={styles.operatorRight}>
+                        </View>
+                      </View>
+                  
+                      <View style={styles.operatorRow}>
                       <View style={styles.operatorLabel}>
-                          <Text>OPERADOR(A) TURNO 1:</Text>
+                          <Text>OPERADOR(A) TURNO 2:</Text>
                       </View>
                       <View style={styles.operatorValue}>
-                          <Text>{cabecera[0]?.ae_operador1erturno}</Text>
+                          <Text>{cabecera[0].ae_operador2doturno}</Text>
                       </View>
                       <View style={styles.operatorRight}>
+                         
+                      </View>
+                      </View>
+                  
+                      {/* Fila de montos */}
+                      <View style={styles.amountRow}>
+                      <View style={[styles.amountSection, styles.boldText]}>
+                          <Text>CAMBIO Bs:</Text>
+                      </View>
+                      <View style={styles.amountSection}>
+                          <Text>{cabecera[0]?.ae_cambiobs}</Text>
+                      </View>
+                      <View style={[styles.amountSection, styles.boldText]}>
+                          <Text>CAJA CHICA Bs:</Text>
+                      </View>
+                      <View style={styles.amountSection}>
+                          <Text>{cabecera[0]?.ae_cajachicabs}</Text>
+                      </View>
+                      <View style={[styles.amountSection, styles.boldText]}>
+                          <Text>LLAVES:</Text>
+                      </View>
+                      <View style={styles.amountSection}>
+                          <Text>{cabecera[0]?.ae_llaves}</Text>
+                      </View>
+                      </View>
+              
+                      {/* Más filas de datos similares */}
+                      <View style={styles.amountRow}>
+                      <View style={[styles.amountSection, styles.boldText]}>
+                          <Text>FECHERO:</Text>
+                      </View>
+                      <View style={styles.amountSection}>
+                          <Text>{cabecera[0]?.ae_fechero}</Text>
+                      </View>
+                      <View style={[styles.amountSection, styles.boldText]}>
+                          <Text>TAMPO:</Text>
+                      </View>
+                      <View style={styles.amountSection}>
+                          <Text>{cabecera[0]?.ae_tampo}</Text>
+                      </View>
+                      <View style={[styles.amountSection, styles.boldText]}>
+                          <Text>CANDADOS:</Text>
+                      </View>
+                      <View style={styles.amountSection}>
+                          <Text>{cabecera[0]?.ae_candados}</Text>
+                      </View>
+                      </View>
+                  
+                      {/* Disclaimer */}
+                      <View style={styles.disclaimerRow}>
+                      <Text>Mediante esta Acta queda establecido toda la responsabilidad de los talionarios de facturación de cada uso de servicios, entregado al grupo de turno a la cabeza del supervisor siendo ellos los principales responsables por cualquier daño, extravío de las mismas una vez firmada el acta hasta su retorno.</Text>
+                      </View>
+              
+                      {/* Cabecera de entrega */}
+                      <View style={[styles.signatureHeader, styles.boldText]}>
+                        <Text> ENTREGA DE PREVALORADAS (DE CAJERO A OPERADOR 1ER TURNO)</Text>
+                      </View>
+                      <View style={styles.bodySignature}>
+                        <View style={styles.signature}>
+                          <Text>ENTREGUE CONFORME - Operador de 1er turno firma</Text>
+                        </View>
+                        <View style={styles.signature}>
+                          <Text>ENTREGUE CONFORME - Operador de 1er turno firma</Text>
+                        </View>
+                      </View>
+              
+                      <View style={styles.sectionHeader}>
+                      <Text>RESPONSABLE - OPERADOR 1ER TURNO</Text>
+                      </View>
+                      <View style={styles.tableRow}>
+                      <Text>PUESTOS SEGÚN TIPO DE PREVALORADA:</Text>
+                      </View>
+              
+                      <View style={styles.tableHeader}>
+                      <View style={styles.columnHeader}>
+                          <Text>Nº</Text>
+                      </View>
+                      <View style={styles.columnHeader}>
+                          <Text style={styles.textSmallT}>TIPO DE PRE</Text>
+                      </View>
+                      <View style={styles.dataColumn}>
+                          <Text style={styles.redText}>A</Text>
+                          <Text style={[styles.redText, styles.textSmallT]}>DESDE EL NÚMERO:</Text>
+                      </View>
+                      <View style={styles.dataColumn}>
+                          <Text>B</Text>
+                          <Text style={styles.textSmallT}>HASTA EL NÚMERO:</Text>
+                      </View>
+                      <View style={styles.dataColumn}>
+                          <Text>C</Text>
+                          <Text style={styles.textSmallT}>VENDIDO HASTA EL:</Text>
+                      </View>
+                      <View style={styles.dataColumn}>
+                          <Text>D</Text>
+                          <Text style={styles.textSmallT}>CANTIDAD (C-A+1)</Text>
+                      </View>
+                      <View style={styles.dataColumn}>
+                          <Text>E</Text>
+                          <Text style={styles.textSmallT}>IMPORTE Bs.- (D*COST)</Text>
+                      </View>
+                      </View>
+                      
+                      {/* Filas de la tabla con datos */}
+                      {filasCompletasFirstOperator.map((item, idx) => (
+                      <View key={idx} style={styles.tableRow}>
+                          <View style={styles.indexCell}>
+                          <Text style={styles.textSmall}>{idx + 1}</Text>
+                          </View>
+                          <View style={styles.typeCell}>
+                          <Text style={styles.textSmall}>{item.servicio_abreviatura}</Text> 
+                          </View>
+                          <View style={[styles.dataCell, 
+                          (item.aed_hastanumero - item.aed_desdenumero) < 99 ? styles.redCell : null]}>
+                          <Text style={styles.textSmall}>{item.aed_desdenumero}</Text>
+                          </View>
+                          <View style={styles.dataCell}>
+                          <Text style={styles.textSmall}>{item.aed_hastanumero}</Text>
+                          </View>
+                          <View style={styles.dataCell}>
+                          <Text></Text>
+                          </View>
+                          <View style={styles.dataCell}>
+                          <Text></Text>
+                          </View>
+                          <View style={styles.lastDataCell}>
+                          <Text></Text>
+                          </View>
+                      </View>
+                      ))}
+              
+                      {/* TIPO DE PRE VALORADA SECTION */}
+                      <View style={styles.tableRow}>
+                      <View style={styles.CellInformatioIndex}>
+                          <Text>TIPO DE PREVALORADA:</Text>
+                      </View>
+                      <View style={styles.headerCellInformation}>
+                          <Text>COSTO:</Text>
+                      </View>
+                      <View style={[styles.headerCellInformation]}>
+                          <Text>CANTIDAD:</Text>
+                      </View>
+                      <View style={styles.headerCellInfoLast}>
+                          <Text>APORTE Bs:</Text>
+                      </View>
+                      </View>
+              
+                      {uniqueDetalles.map((item) => (
+                      <View key={item.index} style={styles.tableRow}>
+                          <View style={[styles.tableRow,styles.CellInformatioIndex]}>
+                          <View style={styles.informationFirst}>
+                              <Text>{item.servicio_abreviatura}</Text>
+                          </View>
+                          <View style={styles.informationSecond}>
+                              <Text>{item.servicio_descripcion}</Text>
+                          </View>
+                          </View>
+                          <View style={styles.dataInformationCell}>
+                          <Text>Bs.  {item.aed_preciounitario}</Text>
+                          </View>
+                          <View style={styles.dataInformationCell}>
+                          <Text></Text>
+                          </View>
+                          <View style={styles.headerCellInfoLast}>
+                          <Text></Text>
+                          </View>
+                      </View>
+                      ))}
+                      
+                      {/* INFRACCIONES */}
+                      <View style={styles.tableRow}>
+                      <View style={[styles.tableRow,styles.CellInformatioIndex]}>
+                          <View style={styles.infractionCell}>
+                          <Text>Infracciones</Text>
+                          </View>
+                          <View>
+                          <Text></Text>
+                          </View>
+                      </View>
+                      <View style={styles.dataInformationCell}>
+                          <Text></Text>
+                      </View>
+                      <View style={styles.dataInformationCell}>
+                          <Text></Text>
+                      </View>
+                      <View style={styles.headerCellInfoLast}>
+                          <Text></Text>
+                      </View>
+                      </View>
+              
+                      {/* RECAUDACIÓN TOTAL */}
+                      <View style={styles.tableRow}>
+                      <View style={[styles.totalRecaudation, styles.boldText, styles.centerText]}>
+                          <Text>1er TURNO - RECAUDACIÓN TOTAL Bs:</Text>
+                      </View>
+                      <View>
+                          <Text></Text>
+                      </View>
+                      </View>
+              
+                      {/* OBSERVACIÓN */}
+                      <View style={styles.tableRow}>
+                      <View style={[styles.observationTitle, styles.boldText]}>
+                          <Text>OBSERVACIÓN:</Text>
+                      </View>
+                      <View>
+                          <Text>PRUEBA OBSERVACIÓN</Text>
+                      </View>
+                      </View>
+                  </View>
+                  
+                  {/* Tabla para operador 2do turno */}
+                  <View style={styles.tableContainer}>
+                      <View style={styles.sectionHeader}>
+                      <Text>RESPONSABLE - OPERADOR 2DO TURNO</Text>
+                      </View>
+              
+                      <View style={styles.tableHeader}>
+                      <View style={styles.columnHeader}>
+                          <Text style={styles.textSmallT}>TIPO DE PRE</Text>
+                      </View>
+                      <View style={styles.dataColumn}>
+                          <Text>A</Text>
+                          <Text style={styles.textSmallT}>DESDE EL NÚMERO:</Text>
+                      </View>
+                      <View style={styles.dataColumn}>
+                          <Text>B</Text>
+                          <Text style={styles.textSmallT}>HASTA EL NÚMERO:</Text>
+                      </View>
+                      <View style={styles.dataColumn}>
+                          <Text>C</Text>
+                          <Text style={styles.textSmallT}>VENDIDO HASTA EL:</Text>
+                      </View>
+                      <View style={styles.dataColumn}>
+                          <Text>D</Text>
+                          <Text style={styles.textSmallT}>CANTIDAD (C-A+1)</Text>
+                      </View>
+                      <View style={styles.dataColumn}>
+                          <Text>E</Text>
+                          <Text style={styles.textSmallT}>IMPORTE Bs.- (D*COST)</Text>
+                      </View>
+                      </View>
+                      
+                      {/* Filas de la tabla */}
+                      {filasSecondTable.map((i) => (
+                      <View key={i} style={styles.tableRow}>
+                          <View style={styles.indexCell}>
+                          <Text style={styles.textSmall}>{i}</Text>
+                          </View>
+                          <View style={styles.dataCell}>
+                          <Text></Text>
+                          </View>
+                          <View style={styles.dataCell}>
+                          <Text></Text>
+                          </View>
+                          <View style={styles.dataCell}>
+                          <Text></Text>
+                          </View>
+                          <View style={styles.dataCell}>
+                          <Text></Text>
+                          </View>
+                          <View style={styles.lastDataCell}>
+                          <Text></Text>
+                          </View>
+                      </View>
+                      ))}
+              
+                      {/* TIPO DE PRE VALORADA SECTION */}
+                      <View style={styles.tableRow}>
+                      <View style={styles.CellInformatioIndex}>
+                          <Text>TIPO DE PREVALORADA:</Text>
+                      </View>
+                      <View style={styles.headerCellInformation}>
+                          <Text>COSTO:</Text>
+                      </View>
+                      <View style={[styles.headerCellInformation]}>
+                          <Text>CANTIDAD:</Text>
+                      </View>
+                      <View style={styles.headerCellInfoLast}>
+                          <Text>APORTE Bs:</Text>
+                      </View>
+                      </View>
+              
+                      {uniqueDetalles.map((item) => (
+                      <View key={item.index} style={styles.tableRow}>
+                          <View style={[styles.tableRow,styles.CellInformatioIndex]}>
+                          <View style={styles.informationFirst}>
+                              <Text>{item.servicio_abreviatura}</Text>
+                          </View>
+                          <View style={styles.informationSecond}>
+                              <Text>{item.servicio_descripcion}</Text>
+                          </View>
+                          </View>
+                          <View style={styles.dataInformationCell}>
+                          <Text>Bs.  {item.aed_preciounitario}</Text>
+                          </View>
+                          <View style={styles.dataInformationCell}>
+                          <Text></Text>
+                          </View>
+                          <View style={styles.headerCellInfoLast}>
+                          <Text></Text>
+                          </View>
+                      </View>
+                      ))}
+                      
+                      {/* INFRACCIONES */}
+                      <View style={styles.tableRow}>
+                      <View style={[styles.tableRow,styles.CellInformatioIndex]}>
+                          <View style={styles.infractionCell}>
+                          <Text>Infracciones</Text>
+                          </View>
+                          <View>
+                          <Text></Text>
+                          </View>
+                      </View>
+                      <View style={styles.dataInformationCell}>
+                          <Text></Text>
+                      </View>
+                      <View style={styles.dataInformationCell}>
+                          <Text></Text>
+                      </View>
+                      <View style={styles.dataInformationCell}>
+                          <Text></Text>
+                      </View>
+                      </View>
+              
+                      {/* RECAUDACIÓN TOTAL */}
+                      <View style={styles.tableRow}>
+                      <View style={[styles.totalRecaudation, styles.boldText, styles.centerText]}>
+                          <Text>2do TURNO - RECAUDACIÓN TOTAL Bs:</Text>
+                      </View>
+                      <View>
+                          <Text></Text>
+                      </View>
+                      </View>
+              
+                      {/* OBSERVACIÓN */}
+                      <View style={styles.tableRow}>
+                      <View style={[styles.observationTitle, styles.boldText]}>
+                          <Text>OBSERVACIÓN:</Text>
+                      </View>
+                      <View>
+                          <Text>PRUEBA OBSERVACIÓN</Text>
+                      </View>
+                      </View>
+                  </View>
+                  </View>
+                  
+                  {/* Firmas */}
+                  <View style={styles.tablesRow}>
+                    <View style={styles.signatureContainer}>
+                      <View style={[styles.signatureHeader, styles.boldText]}>
+                        <Text> FIRMA DE PREVALORADAS (DE OPERADOR 1ER TURNO A OPERADOR)</Text>
+                      </View>
+                      <View style={styles.bodySignature}>
+                        <View style={styles.signature}>
+                          <Text>ENTREGUE CONFORME - Operador de 1er turno firma</Text>
+                        </View>
+                        <View style={styles.signature}>
+                          <Text>ENTREGUE CONFORME - Operador de 1er turno firma</Text>
+                        </View>
                       </View>
                     </View>
-                
-                    <View style={styles.operatorRow}>
-                    <View style={styles.operatorLabel}>
-                        <Text>OPERADOR(A) TURNO 2:</Text>
-                    </View>
-                    <View style={styles.operatorValue}>
-                        <Text>{cabecera[0].ae_operador2doturno}</Text>
-                    </View>
-                    <View style={styles.operatorRight}>
-                       
-                    </View>
-                    </View>
-                
-                    {/* Fila de montos */}
-                    <View style={styles.amountRow}>
-                    <View style={[styles.amountSection, styles.boldText]}>
-                        <Text>CAMBIO Bs:</Text>
-                    </View>
-                    <View style={styles.amountSection}>
-                        <Text>{cabecera[0]?.ae_cambiobs}</Text>
-                    </View>
-                    <View style={[styles.amountSection, styles.boldText]}>
-                        <Text>CAJA CHICA Bs:</Text>
-                    </View>
-                    <View style={styles.amountSection}>
-                        <Text>{cabecera[0]?.ae_cajachicabs}</Text>
-                    </View>
-                    <View style={[styles.amountSection, styles.boldText]}>
-                        <Text>LLAVES:</Text>
-                    </View>
-                    <View style={styles.amountSection}>
-                        <Text>{cabecera[0]?.ae_llaves}</Text>
-                    </View>
-                    </View>
-        
-                    {/* Más filas de datos similares */}
-                    <View style={styles.amountRow}>
-                    <View style={[styles.amountSection, styles.boldText]}>
-                        <Text>FECHERO:</Text>
-                    </View>
-                    <View style={styles.amountSection}>
-                        <Text>{cabecera[0]?.ae_fechero}</Text>
-                    </View>
-                    <View style={[styles.amountSection, styles.boldText]}>
-                        <Text>TAMPO:</Text>
-                    </View>
-                    <View style={styles.amountSection}>
-                        <Text>{cabecera[0]?.ae_tampo}</Text>
-                    </View>
-                    <View style={[styles.amountSection, styles.boldText]}>
-                        <Text>CANDADOS:</Text>
-                    </View>
-                    <View style={styles.amountSection}>
-                        <Text>{cabecera[0]?.ae_candados}</Text>
-                    </View>
-                    </View>
-                
-                    {/* Disclaimer */}
-                    <View style={styles.disclaimerRow}>
-                    <Text>Mediante esta Acta queda establecido toda la responsabilidad de los talionarios de facturación de cada uso de servicios, entregado al grupo de turno a la cabeza del supervisor siendo ellos los principales responsables por cualquier daño, extravío de las mismas una vez firmada el acta hasta su retorno.</Text>
-                    </View>
-        
-                    {/* Cabecera de entrega */}
-                    <View style={styles.entregaHeader}>
-                    <Text>ENTREGA DE PREVALORADAS (DE CAJERO A OPERADOR 1ER TURNO)</Text>
-                    </View>
-        
-                    <View style={styles.sectionHeader}>
-                    <Text>RESPONSABLE - OPERADOR 1ER TURNO</Text>
-                    </View>
-                    <View style={styles.tableRow}>
-                    <Text>PUESTOS SEGÚN TIPO DE PREVALORADA:</Text>
-                    </View>
-        
-                    <View style={styles.tableHeader}>
-                    <View style={styles.columnHeader}>
-                        <Text>Nº</Text>
-                    </View>
-                    <View style={styles.columnHeader}>
-                        <Text style={styles.textSmall}>TIPO DE PRE</Text>
-                    </View>
-                    <View style={styles.dataColumn}>
-                        <Text style={styles.redText}>A</Text>
-                        <Text style={[styles.redText, styles.textSmall]}>DESDE EL NÚMERO:</Text>
-                    </View>
-                    <View style={styles.dataColumn}>
-                        <Text>B</Text>
-                        <Text style={styles.textSmall}>HASTA EL NÚMERO:</Text>
-                    </View>
-                    <View style={styles.dataColumn}>
-                        <Text>C</Text>
-                        <Text style={styles.textSmall}>VENDIDO HASTA EL:</Text>
-                    </View>
-                    <View style={styles.dataColumn}>
-                        <Text>D</Text>
-                        <Text style={styles.textSmall}>CANTIDAD (C-A+1)</Text>
-                    </View>
-                    <View style={styles.dataColumn}>
-                        <Text>E</Text>
-                        <Text style={styles.textSmall}>IMPORTE Bs.- (D*COST)</Text>
-                    </View>
-                    </View>
-                    
-                    {/* Filas de la tabla con datos */}
-                    {filasCompletasFirstOperator.map((item, idx) => (
-                    <View key={idx} style={styles.tableRow}>
-                        <View style={styles.indexCell}>
-                        <Text style={styles.textSmall}>{idx + 1}</Text>
-                        </View>
-                        <View style={styles.typeCell}>
-                        <Text style={styles.textSmall}>{item.servicio_abreviatura}</Text> 
-                        </View>
-                        <View style={[styles.dataCell, 
-                        (item.aed_hastanumero - item.aed_desdenumero) < 99 ? styles.redCell : null]}>
-                        <Text style={styles.textSmall}>{item.aed_desdenumero}</Text>
-                        </View>
-                        <View style={styles.dataCell}>
-                        <Text style={styles.textSmall}>{item.aed_hastanumero}</Text>
-                        </View>
-                        <View style={styles.dataCell}>
-                        <Text></Text>
-                        </View>
-                        <View style={styles.dataCell}>
-                        <Text></Text>
-                        </View>
-                        <View style={styles.lastDataCell}>
-                        <Text></Text>
-                        </View>
-                    </View>
-                    ))}
-        
-                    {/* TIPO DE PRE VALORADA SECTION */}
-                    <View style={styles.tableRow}>
-                    <View style={styles.CellInformatioIndex}>
-                        <Text>TIPO DE PREVALORADA:</Text>
-                    </View>
-                    <View style={styles.headerCellInformation}>
-                        <Text>COSTO:</Text>
-                    </View>
-                    <View style={[styles.headerCellInformation]}>
-                        <Text>CANTIDAD:</Text>
-                    </View>
-                    <View style={styles.headerCellInfoLast}>
-                        <Text>APORTE Bs:</Text>
-                    </View>
-                    </View>
-        
-                    {uniqueDetalles.map((item) => (
-                    <View key={item.index} style={styles.tableRow}>
-                        <View style={[styles.tableRow,styles.CellInformatioIndex]}>
-                        <View style={styles.informationFirst}>
-                            <Text>{item.servicio_abreviatura}</Text>
-                        </View>
-                        <View style={styles.informationSecond}>
-                            <Text>{item.servicio_descripcion}</Text>
-                        </View>
-                        </View>
-                        <View style={styles.dataInformationCell}>
-                        <Text>Bs.  {item.aed_preciounitario}</Text>
-                        </View>
-                        <View style={styles.dataInformationCell}>
-                        <Text></Text>
-                        </View>
-                        <View style={styles.headerCellInfoLast}>
-                        <Text></Text>
-                        </View>
-                    </View>
-                    ))}
-                    
-                    {/* INFRACCIONES */}
-                    <View style={styles.tableRow}>
-                    <View style={[styles.tableRow,styles.CellInformatioIndex]}>
-                        <View style={styles.infractionCell}>
-                        <Text>Infracciones</Text>
-                        </View>
-                        <View>
-                        <Text></Text>
-                        </View>
-                    </View>
-                    <View style={styles.dataInformationCell}>
-                        <Text></Text>
-                    </View>
-                    <View style={styles.dataInformationCell}>
-                        <Text></Text>
-                    </View>
-                    <View style={styles.headerCellInfoLast}>
-                        <Text></Text>
-                    </View>
-                    </View>
-        
-                    {/* RECAUDACIÓN TOTAL */}
-                    <View style={styles.tableRow}>
-                    <View style={[styles.totalRecaudation, styles.boldText, styles.centerText]}>
-                        <Text>1er TURNO - RECAUDACIÓN TOTAL Bs:</Text>
-                    </View>
-                    <View>
-                        <Text></Text>
-                    </View>
-                    </View>
-        
-                    {/* OBSERVACIÓN */}
-                    <View style={styles.tableRow}>
-                    <View style={[styles.observationTitle, styles.boldText]}>
-                        <Text>OBSERVACIÓN:</Text>
-                    </View>
-                    <View>
-                        <Text>PRUEBA OBSERVACIÓN</Text>
-                    </View>
-                    </View>
-                </View>
-                
-                {/* Tabla para operador 2do turno */}
-                <View style={styles.tableContainer}>
-                    <View style={styles.sectionHeader}>
-                    <Text>RESPONSABLE - OPERADOR 2DO TURNO</Text>
-                    </View>
-        
-                    <View style={styles.tableHeader}>
-                    <View style={styles.columnHeader}>
-                        <Text style={styles.textSmall}>TIPO DE PRE</Text>
-                    </View>
-                    <View style={styles.dataColumn}>
-                        <Text>A</Text>
-                        <Text style={styles.textSmall}>DESDE EL NÚMERO:</Text>
-                    </View>
-                    <View style={styles.dataColumn}>
-                        <Text>B</Text>
-                        <Text style={styles.textSmall}>HASTA EL NÚMERO:</Text>
-                    </View>
-                    <View style={styles.dataColumn}>
-                        <Text>C</Text>
-                        <Text style={styles.textSmall}>VENDIDO HASTA EL:</Text>
-                    </View>
-                    <View style={styles.dataColumn}>
-                        <Text>D</Text>
-                        <Text style={styles.textSmall}>CANTIDAD (C-A+1)</Text>
-                    </View>
-                    <View style={styles.dataColumn}>
-                        <Text>E</Text>
-                        <Text style={styles.textSmall}>IMPORTE Bs.- (D*COST)</Text>
-                    </View>
-                    </View>
-                    
-                    {/* Filas de la tabla */}
-                    {filasSecondTable.map((i) => (
-                    <View key={i} style={styles.tableRow}>
-                        <View style={styles.indexCell}>
-                        <Text style={styles.textSmall}>{i}</Text>
-                        </View>
-                        <View style={styles.dataCell}>
-                        <Text></Text>
-                        </View>
-                        <View style={styles.dataCell}>
-                        <Text></Text>
-                        </View>
-                        <View style={styles.dataCell}>
-                        <Text></Text>
-                        </View>
-                        <View style={styles.dataCell}>
-                        <Text></Text>
-                        </View>
-                        <View style={styles.lastDataCell}>
-                        <Text></Text>
-                        </View>
-                    </View>
-                    ))}
-        
-                    {/* TIPO DE PRE VALORADA SECTION */}
-                    <View style={styles.tableRow}>
-                    <View style={styles.CellInformatioIndex}>
-                        <Text>TIPO DE PREVALORADA:</Text>
-                    </View>
-                    <View style={styles.headerCellInformation}>
-                        <Text>COSTO:</Text>
-                    </View>
-                    <View style={[styles.headerCellInformation]}>
-                        <Text>CANTIDAD:</Text>
-                    </View>
-                    <View style={styles.headerCellInfoLast}>
-                        <Text>APORTE Bs:</Text>
-                    </View>
-                    </View>
-        
-                    {uniqueDetalles.map((item) => (
-                    <View key={item.index} style={styles.tableRow}>
-                        <View style={[styles.tableRow,styles.CellInformatioIndex]}>
-                        <View style={styles.informationFirst}>
-                            <Text>{item.servicio_abreviatura}</Text>
-                        </View>
-                        <View style={styles.informationSecond}>
-                            <Text>{item.servicio_descripcion}</Text>
-                        </View>
-                        </View>
-                        <View style={styles.dataInformationCell}>
-                        <Text>Bs.  {item.aed_preciounitario}</Text>
-                        </View>
-                        <View style={styles.dataInformationCell}>
-                        <Text></Text>
-                        </View>
-                        <View style={styles.headerCellInfoLast}>
-                        <Text></Text>
-                        </View>
-                    </View>
-                    ))}
-                    
-                    {/* INFRACCIONES */}
-                    <View style={styles.tableRow}>
-                    <View style={[styles.tableRow,styles.CellInformatioIndex]}>
-                        <View style={styles.infractionCell}>
-                        <Text>Infracciones</Text>
-                        </View>
-                        <View>
-                        <Text></Text>
-                        </View>
-                    </View>
-                    <View style={styles.dataInformationCell}>
-                        <Text></Text>
-                    </View>
-                    <View style={styles.dataInformationCell}>
-                        <Text></Text>
-                    </View>
-                    <View style={styles.dataInformationCell}>
-                        <Text></Text>
-                    </View>
-                    </View>
-        
-                    {/* RECAUDACIÓN TOTAL */}
-                    <View style={styles.tableRow}>
-                    <View style={[styles.totalRecaudation, styles.boldText, styles.centerText]}>
-                        <Text>2do TURNO - RECAUDACIÓN TOTAL Bs:</Text>
-                    </View>
-                    <View>
-                        <Text></Text>
-                    </View>
-                    </View>
-        
-                    {/* OBSERVACIÓN */}
-                    <View style={styles.tableRow}>
-                    <View style={[styles.observationTitle, styles.boldText]}>
-                        <Text>OBSERVACIÓN:</Text>
-                    </View>
-                    <View>
-                        <Text>PRUEBA OBSERVACIÓN</Text>
-                    </View>
-                    </View>
-                </View>
-                </View>
-                
-                {/* Firmas */}
-                <View style={styles.tablesRow}>
-                  <View style={styles.signatureContainer}>
-                    <View style={[styles.signatureHeader, styles.boldText]}>
-                      <Text> FIRMA DE PREVALORADAS (DE OPERADOR 1ER TURNO A OPERADOR)</Text>
-                    </View>
-                    <View style={styles.bodySignature}>
-                      <View style={styles.signature}>
-                        <Text>ENTREGUE CONFORME - Operador de 1er turno firma</Text>
+            
+                    <View style={styles.signatureContainer}>
+                      <View style={[styles.signatureHeader, styles.boldText]}>
+                        <Text> FIRMA DE PREVALORADAS (DE OPERADOR 1ER TURNO A OPERADOR)</Text>
                       </View>
-                      <View style={styles.signature}>
-                        <Text>ENTREGUE CONFORME - Operador de 1er turno firma</Text>
+                      <View style={styles.bodySignature}>
+                        <View style={styles.signature}>
+                          <Text>ENTREGUE CONFORME - Operador de 1er turno firma</Text>
+                        </View>
+                        <View style={styles.signature}>
+                          <Text>ENTREGUE CONFORME - Operador de 1er turno firma</Text>
+                        </View>
                       </View>
                     </View>
                   </View>
-        
-                  <View style={styles.signatureContainer}>
-                    <View style={[styles.signatureHeader, styles.boldText]}>
-                      <Text> FIRMA DE PREVALORADAS (DE OPERADOR 1ER TURNO A OPERADOR)</Text>
-                    </View>
-                    <View style={styles.bodySignature}>
-                      <View style={styles.signature}>
-                        <Text>ENTREGUE CONFORME - Operador de 1er turno firma</Text>
-                      </View>
-                      <View style={styles.signature}>
-                        <Text>ENTREGUE CONFORME - Operador de 1er turno firma</Text>
-                      </View>
-                    </View>
-                  </View>
-                </View>
-            </Page>
-        );
-      })}
-    </Document>
-  );
+              </Page>
+          );
+        })}
+      </Document>
+    );
+  };
 
 export default TemplateActa;

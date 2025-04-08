@@ -156,6 +156,46 @@ const ActaentregadetViewPage = (props) => {
                                     </div>
                                 </div>
                             </div>
+                            <div className="col-12 md:col-4">
+                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                    <div className="">
+                                        <div className="text-400 font-medium mb-1">Tblservicios Servicio Id</div>
+                                        <div className="font-bold">{ item.tblservicios_servicio_id }</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="col-12 md:col-4">
+                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                    <div className="">
+                                        <div className="text-400 font-medium mb-1">Tblservicios Servicio Abreviatura</div>
+                                        <div className="font-bold">{ item.tblservicios_servicio_abreviatura }</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="col-12 md:col-4">
+                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                    <div className="">
+                                        <div className="text-400 font-medium mb-1">Tblservicios Servicio Descripcion</div>
+                                        <div className="font-bold">{ item.tblservicios_servicio_descripcion }</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="col-12 md:col-4">
+                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                    <div className="">
+                                        <div className="text-400 font-medium mb-1">Tblservicios Servicio Precio Base</div>
+                                        <div className="font-bold">{ item.tblservicios_servicio_precio_base }</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="col-12 md:col-4">
+                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                    <div className="">
+                                        <div className="text-400 font-medium mb-1">Tblservicios Servicio Estado</div>
+                                        <div className="font-bold">{ item.tblservicios_servicio_estado }</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         {/*PageComponentEnd*/}
                     </div>

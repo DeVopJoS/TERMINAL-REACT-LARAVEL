@@ -126,16 +126,7 @@ function DialogActa({visible, onHide, reloadData}) {
             isValid = false;
         }
         
-        if (!document.getElementById("operador1erturno")?.value) {
-            erroresTemp.operador_1er_turno = "Ingrese el operador del 1er turno";
-            isValid = false;
-        }
-        
-        if (!document.getElementById("operador2doturno")?.value) {
-            erroresTemp.operador_2do_turno = "Ingrese el operador del 2do turno";
-            isValid = false;
-        }
-    
+   
         setErrores(erroresTemp);
         
         if (!isValid) {

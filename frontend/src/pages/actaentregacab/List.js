@@ -13,6 +13,7 @@ import { Title } from 'components/Title';
 import useApp from 'hooks/useApp';
 
 import useListPage from 'hooks/useListPage';
+import MasterDetailPages from './MasterDetailPages';
 const ActaentregacabListPage = (props) => {
 		const app = useApp();
 	const filterSchema = {
@@ -25,7 +26,7 @@ const ActaentregacabListPage = (props) => {
 	}
 	const pageController = useListPage(props, filterSchema);
 	const filterController = pageController.filterController;
-	const { records, pageReady, loading, selectedItems, sortBy, sortOrder, apiRequestError, setSelectedItems, getPageBreadCrumbs, onSort, deleteItem, pagination } = pageController;
+	const { records, pageReady, loading, selectedItems, currentRecord, sortBy, sortOrder, apiRequestError, setSelectedItems, getPageBreadCrumbs, onSort, deleteItem, setCurrentRecord, pagination } = pageController;
 	const { filters, setFilterValue } = filterController;
 	const { totalRecords, totalPages, recordsPosition, firstRow, limit, onPageChange } =  pagination;
 	function ActionButton(data){
@@ -52,6 +53,20 @@ const ActaentregacabListPage = (props) => {
 		if(data){
 			return (
 				<Link to={`/actaentregacab/view/${data.ae_actaid}`}> { data.ae_actaid }</Link>
+			);
+		}
+	}
+	function PuntorecaudNombreTemplate(data){
+		if(data){
+			return (
+				<>{ data.tblpuntosrecaudacion_puntorecaud_nombre }</>
+			);
+		}
+	}
+	function MasterDetailBtnTemplate(data){
+		if(data){
+			return (
+				<><Button className="p-button-text" onClick={()=>setCurrentRecord(data)} icon="pi pi-caret-down" label="" /></>
 			);
 		}
 	}
@@ -108,6 +123,11 @@ const ActaentregacabListPage = (props) => {
 		return (
 			<div className="flex flex-wrap">
 				<MultiDelete />
+				<div className="m-2 flex-grow-0">
+					<Link to="/arqueo-recaudacion/arqueo-final">
+						<Button label="Cerrar Arqueo" icon="pi pi-lock" className="p-button-success" />
+					</Link>
+				</div>
 			</div>
 		);
 	}
@@ -139,7 +159,7 @@ const ActaentregacabListPage = (props) => {
         <div className="container-fluid">
             <div className="grid justify-content-between align-items-center">
                 <div className="col " >
-                    <Title title="Actaentregacab"   titleClass="text-2xl text-primary font-bold" subTitleClass="text-500"      separator={false} />
+                    <Title title="Listado de Actas Elaboradas"   titleClass="text-2xl text-primary font-bold" subTitleClass="text-500"      separator={false} />
                 </div>
                 <div className="col-fixed " >
                     <Link to={`/actaentregacab/add`}>
@@ -163,51 +183,53 @@ const ActaentregacabListPage = (props) => {
                         <FilterTags filterController={filterController} />
                         <div >
                             <PageBreadcrumbs />
-                            <div className="page-records">
-                                <DataTable 
-                                    lazy={true} 
-                                    loading={loading} 
-                                    selectionMode="checkbox" selection={selectedItems} onSelectionChange={e => setSelectedItems(e.value)}
-                                    value={records} 
-                                    dataKey="ae_actaid" 
-                                    sortField={sortBy} 
-                                    sortOrder={sortOrder} 
-                                    onSort={onSort}
-                                    className=" p-datatable-sm" 
-                                    stripedRows={true}
-                                    showGridlines={false} 
-                                    rowHover={true} 
-                                    responsiveLayout="stack" 
-                                    emptyMessage={<EmptyRecordMessage />} 
-                                    >
-                                    {/*PageComponentStart*/}
-                                    <Column selectionMode="multiple" headerStyle={{width: '2rem'}}></Column>
-                                    <Column  field="ae_actaid" header="Ae Actaid" body={AeActaidTemplate}  ></Column>
-                                    <Column  field="ae_correlativo" header="Ae Correlativo"   ></Column>
-                                    <Column  field="punto_recaud_id" header="Punto Recaud Id"   ></Column>
-                                    <Column  field="ae_fecha" header="Ae Fecha"   ></Column>
-                                    <Column  field="ae_grupo" header="Ae Grupo"   ></Column>
-                                    <Column  field="ae_operador1erturno" header="Ae Operador1erturno"   ></Column>
-                                    <Column  field="ae_operador2doturno" header="Ae Operador2doturno"   ></Column>
-                                    <Column  field="ae_cambiobs" header="Ae Cambiobs"   ></Column>
-                                    <Column  field="ae_cajachicabs" header="Ae Cajachicabs"   ></Column>
-                                    <Column  field="ae_llaves" header="Ae Llaves"   ></Column>
-                                    <Column  field="ae_fechero" header="Ae Fechero"   ></Column>
-                                    <Column  field="ae_tampo" header="Ae Tampo"   ></Column>
-                                    <Column  field="ae_candados" header="Ae Candados"   ></Column>
-                                    <Column  field="ae_observacion" header="Ae Observacion"   ></Column>
-                                    <Column  field="ae_recaudaciontotalbs" header="Ae Recaudaciontotalbs"   ></Column>
-                                    <Column  field="ae_usuario" header="Ae Usuario"   ></Column>
-                                    <Column  field="ae_usuarioarqueo" header="Ae Usuarioarqueo"   ></Column>
-                                    <Column  field="ae_fecharegistro" header="Ae Fecharegistro"   ></Column>
-                                    <Column  field="ae_fechaarqueo" header="Ae Fechaarqueo"   ></Column>
-                                    <Column  field="ae_estado" header="Ae Estado"   ></Column>
-                                    <Column  field="arqueoid" header="Arqueoid"   ></Column>
-                                    <Column headerStyle={{width: '2rem'}} headerClass="text-center" body={ActionButton}></Column>
-                                    {/*PageComponentEnd*/}
-                                </DataTable>
+                            <div className="grid ">
+                                <div className="col">
+                                    <div className="page-records">
+									<DataTable 
+										lazy={true} 
+										loading={loading} 
+										selectionMode="checkbox" 
+										selection={selectedItems} 
+										onSelectionChange={e => setSelectedItems(e.value)}
+										value={records} 
+										dataKey="ae_actaid" 
+										sortField={sortBy} 
+										sortOrder={sortOrder} 
+										onSort={onSort}
+										className="p-datatable-sm" 
+										stripedRows={true}
+										showGridlines={false} 
+										rowHover={true} 
+										responsiveLayout="stack" 
+										emptyMessage={<EmptyRecordMessage />}
+										rowStyle={{ height: '2rem', padding: '0.1rem' }} // Reducir altura de filas
+										>
+										{/*PageComponentStart*/}
+										<Column selectionMode="multiple" headerStyle={{width: '2rem'}}></Column>
+										<Column headerStyle={{width: '3rem'}} field=""  body={MasterDetailBtnTemplate}></Column>
+										<Column field="ae_actaid" header="Actaid" className="compact-row"></Column>
+										<Column field="punto_recaudacion.puntorecaud_nombre" header="PUNTO RECAUDACIÓN" className="text-xs py-0 px-2 compact-row"></Column>
+										<Column field="ae_fecha" header="Fecha" className="compact-row"></Column>
+										<Column field="ae_grupo" header="Grupo" className="compact-row"></Column>
+										<Column field="ae_operador1erturno" header="Operador 1erTurno" className="compact-row"></Column>
+										<Column field="ae_operador2doturno" header="Operador 2doTurno" className="compact-row"></Column>
+										<Column field="ae_estado" header="Estado" className="compact-row"></Column>
+										<Column headerStyle={{width: '2rem'}} headerClass="text-center" body={ActionButton}></Column>
+										{/*PageComponentEnd*/}
+									</DataTable>
+                                    </div>
+                                    <PageFooter />
+                                </div>
+                                {
+                                (currentRecord && !props.isSubPage) && 
+                                <div className="col-12">
+                                    <div className="card p-0">
+                                        <MasterDetailPages masterRecord={currentRecord} scrollIntoView={true} />
+                                    </div>
+                                </div>
+                                }
                             </div>
-                            <PageFooter />
                         </div>
                     </div>
                 </div>

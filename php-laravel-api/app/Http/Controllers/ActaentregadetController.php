@@ -21,7 +21,7 @@ class ActaentregadetController extends Controller
      * @return \Illuminate\View\View
      */
 	function index(Request $request, $fieldname = null , $fieldvalue = null){
-		$query = Actaentregadet::query()->with(['servicio:servicio_id,servicio_descripcion']);
+		$query = Actaentregadet::query()->with(['servicio:servicio_id,servicio_descripcion,servicio_abreviatura']);
 		
 		if($request->search){
 			$search = trim($request->search);
@@ -36,7 +36,7 @@ class ActaentregadetController extends Controller
 		$records = $this->paginate($query, Actaentregadet::listFields());
 		return $this->respond($records);
 	}
-	
+
 
 	/**
      * Select table record by ID

@@ -1,10 +1,11 @@
-import { Page, Text, View, Document, StyleSheet } from '@react-pdf/renderer';
+import { Page, Text, View, Document, StyleSheet, Image } from '@react-pdf/renderer';
 
 const styles = StyleSheet.create({
     page: {
       padding: 20,
       backgroundColor: '#ffffff',
-      fontSize: 12
+      fontSize: 12,
+      size: 'legal'
     },
     headerContainer: {
       flexDirection: 'row',
@@ -338,7 +339,7 @@ const MyPDF = ({ cabecera = {}, detalles = [] }) => {
   }, []);
 
   const filasSecondTable = [];
-  for(let i=0; i<52; i++){
+  for(let i=1; i<52; i++){
     filasSecondTable.push(i);
   }
 
@@ -347,7 +348,7 @@ const MyPDF = ({ cabecera = {}, detalles = [] }) => {
           {/* Cabecera */}
           <View style={styles.headerContainer}>
             <View style={styles.headerLeft}>
-              <Text>LOGO</Text>
+              <Image src="/path/to/logo.png" style={{ width: '100%', height: 'auto' }} />
             </View>
             <View style={styles.headerRight}>
               <Text>ENTIDAD DESCENTRALIZADA TERMINAL METROPOLITANA EL ALTO - ACTA DE ENTREGA</Text>

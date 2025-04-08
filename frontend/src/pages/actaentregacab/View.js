@@ -7,10 +7,11 @@ import ActaentregacabEditPage from 'pages/actaentregacab/Edit';
 import useApp from 'hooks/useApp';
 
 import useViewPage from 'hooks/useViewPage';
+import MasterDetailPages from './MasterDetailPages';
 const ActaentregacabViewPage = (props) => {
 		const app = useApp();
 	const pageController = useViewPage(props);
-	const { item, pageReady, loading, apiRequestError, deleteItem } = pageController;
+	const { item, currentRecord, pageReady, loading, apiRequestError, deleteItem } = pageController;
 	function ActionButton(data){
 		const items = [
 		{
@@ -74,178 +75,214 @@ const ActaentregacabViewPage = (props) => {
             <div className="grid ">
                 <div className="col comp-grid" >
                     <div >
-                        {/*PageComponentStart*/}
-                        <div className="mb-3 grid ">
-                            <div className="col-12 md:col-4">
-                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
-                                    <div className="">
-                                        <div className="text-400 font-medium mb-1">Ae Actaid</div>
-                                        <div className="font-bold">{ item.ae_actaid }</div>
+                        <div className="grid ">
+                            <div className="col">
+                                {/*PageComponentStart*/}
+                                <div className="mb-3 grid ">
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Ae Actaid</div>
+                                                <div className="font-bold">{ item.ae_actaid }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Ae Correlativo</div>
+                                                <div className="font-bold">{ item.ae_correlativo }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Punto Recaud Id</div>
+                                                <div className="font-bold">{ item.punto_recaud_id }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Ae Fecha</div>
+                                                <div className="font-bold">{ item.ae_fecha }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Ae Grupo</div>
+                                                <div className="font-bold">{ item.ae_grupo }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Ae Operador1erturno</div>
+                                                <div className="font-bold">{ item.ae_operador1erturno }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Ae Operador2doturno</div>
+                                                <div className="font-bold">{ item.ae_operador2doturno }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Ae Cambiobs</div>
+                                                <div className="font-bold">{ item.ae_cambiobs }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Ae Cajachicabs</div>
+                                                <div className="font-bold">{ item.ae_cajachicabs }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Ae Llaves</div>
+                                                <div className="font-bold">{ item.ae_llaves }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Ae Fechero</div>
+                                                <div className="font-bold">{ item.ae_fechero }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Ae Tampo</div>
+                                                <div className="font-bold">{ item.ae_tampo }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Ae Candados</div>
+                                                <div className="font-bold">{ item.ae_candados }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Ae Observacion</div>
+                                                <div className="font-bold">{ item.ae_observacion }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Ae Recaudaciontotalbs</div>
+                                                <div className="font-bold">{ item.ae_recaudaciontotalbs }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Ae Usuario</div>
+                                                <div className="font-bold">{ item.ae_usuario }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Ae Usuarioarqueo</div>
+                                                <div className="font-bold">{ item.ae_usuarioarqueo }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Ae Fecharegistro</div>
+                                                <div className="font-bold">{ item.ae_fecharegistro }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Ae Fechaarqueo</div>
+                                                <div className="font-bold">{ item.ae_fechaarqueo }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Ae Estado</div>
+                                                <div className="font-bold">{ item.ae_estado }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Arqueoid</div>
+                                                <div className="font-bold">{ item.arqueoid }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Tblpuntosrecaudacion Punto Recaud Id</div>
+                                                <div className="font-bold">{ item.tblpuntosrecaudacion_punto_recaud_id }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Tblpuntosrecaudacion Puntorecaud Nombre</div>
+                                                <div className="font-bold">{ item.tblpuntosrecaudacion_puntorecaud_nombre }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Tblpuntosrecaudacion Puntorecaud Estado</div>
+                                                <div className="font-bold">{ item.tblpuntosrecaudacion_puntorecaud_estado }</div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
+                                {/*PageComponentEnd*/}
                             </div>
-                            <div className="col-12 md:col-4">
-                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
-                                    <div className="">
-                                        <div className="text-400 font-medium mb-1">Ae Correlativo</div>
-                                        <div className="font-bold">{ item.ae_correlativo }</div>
-                                    </div>
+                            {
+                            (currentRecord && !props.isSubPage) && 
+                            <div className="col-12">
+                                <div className="card my-3 p-1">
+                                    <MasterDetailPages masterRecord={currentRecord} scrollIntoView={false} />
                                 </div>
                             </div>
-                            <div className="col-12 md:col-4">
-                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
-                                    <div className="">
-                                        <div className="text-400 font-medium mb-1">Punto Recaud Id</div>
-                                        <div className="font-bold">{ item.punto_recaud_id }</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-12 md:col-4">
-                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
-                                    <div className="">
-                                        <div className="text-400 font-medium mb-1">Ae Fecha</div>
-                                        <div className="font-bold">{ item.ae_fecha }</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-12 md:col-4">
-                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
-                                    <div className="">
-                                        <div className="text-400 font-medium mb-1">Ae Grupo</div>
-                                        <div className="font-bold">{ item.ae_grupo }</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-12 md:col-4">
-                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
-                                    <div className="">
-                                        <div className="text-400 font-medium mb-1">Ae Operador1erturno</div>
-                                        <div className="font-bold">{ item.ae_operador1erturno }</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-12 md:col-4">
-                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
-                                    <div className="">
-                                        <div className="text-400 font-medium mb-1">Ae Operador2doturno</div>
-                                        <div className="font-bold">{ item.ae_operador2doturno }</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-12 md:col-4">
-                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
-                                    <div className="">
-                                        <div className="text-400 font-medium mb-1">Ae Cambiobs</div>
-                                        <div className="font-bold">{ item.ae_cambiobs }</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-12 md:col-4">
-                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
-                                    <div className="">
-                                        <div className="text-400 font-medium mb-1">Ae Cajachicabs</div>
-                                        <div className="font-bold">{ item.ae_cajachicabs }</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-12 md:col-4">
-                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
-                                    <div className="">
-                                        <div className="text-400 font-medium mb-1">Ae Llaves</div>
-                                        <div className="font-bold">{ item.ae_llaves }</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-12 md:col-4">
-                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
-                                    <div className="">
-                                        <div className="text-400 font-medium mb-1">Ae Fechero</div>
-                                        <div className="font-bold">{ item.ae_fechero }</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-12 md:col-4">
-                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
-                                    <div className="">
-                                        <div className="text-400 font-medium mb-1">Ae Tampo</div>
-                                        <div className="font-bold">{ item.ae_tampo }</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-12 md:col-4">
-                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
-                                    <div className="">
-                                        <div className="text-400 font-medium mb-1">Ae Candados</div>
-                                        <div className="font-bold">{ item.ae_candados }</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-12 md:col-4">
-                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
-                                    <div className="">
-                                        <div className="text-400 font-medium mb-1">Ae Observacion</div>
-                                        <div className="font-bold">{ item.ae_observacion }</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-12 md:col-4">
-                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
-                                    <div className="">
-                                        <div className="text-400 font-medium mb-1">Ae Recaudaciontotalbs</div>
-                                        <div className="font-bold">{ item.ae_recaudaciontotalbs }</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-12 md:col-4">
-                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
-                                    <div className="">
-                                        <div className="text-400 font-medium mb-1">Ae Usuario</div>
-                                        <div className="font-bold">{ item.ae_usuario }</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-12 md:col-4">
-                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
-                                    <div className="">
-                                        <div className="text-400 font-medium mb-1">Ae Usuarioarqueo</div>
-                                        <div className="font-bold">{ item.ae_usuarioarqueo }</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-12 md:col-4">
-                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
-                                    <div className="">
-                                        <div className="text-400 font-medium mb-1">Ae Fecharegistro</div>
-                                        <div className="font-bold">{ item.ae_fecharegistro }</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-12 md:col-4">
-                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
-                                    <div className="">
-                                        <div className="text-400 font-medium mb-1">Ae Fechaarqueo</div>
-                                        <div className="font-bold">{ item.ae_fechaarqueo }</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-12 md:col-4">
-                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
-                                    <div className="">
-                                        <div className="text-400 font-medium mb-1">Ae Estado</div>
-                                        <div className="font-bold">{ item.ae_estado }</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-12 md:col-4">
-                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
-                                    <div className="">
-                                        <div className="text-400 font-medium mb-1">Arqueoid</div>
-                                        <div className="font-bold">{ item.arqueoid }</div>
-                                    </div>
-                                </div>
-                            </div>
+                            }
                         </div>
-                        {/*PageComponentEnd*/}
                     </div>
                 </div>
             </div>

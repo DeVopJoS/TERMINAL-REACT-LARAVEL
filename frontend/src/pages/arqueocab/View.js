@@ -7,22 +7,6 @@ import ArqueocabEditPage from 'pages/arqueocab/Edit';
 import useApp from 'hooks/useApp';
 
 import useViewPage from 'hooks/useViewPage';
-
-const getDiferenciaText = (tipo, monto) => {
-    if (!monto) return 'Sin diferencia';
-    
-    const montoAbs = Math.abs(parseFloat(monto));
-    
-    switch (tipo) {
-        case 'S':
-            return `Sobrante: Bs. ${montoAbs.toFixed(2)}`;
-        case 'F':
-            return `Faltante: Bs. ${montoAbs.toFixed(2)}`;
-        default:
-            return `Diferencia: Bs. ${montoAbs.toFixed(2)}`;
-    }
-};
-
 const ArqueocabViewPage = (props) => {
 		const app = useApp();
 	const pageController = useViewPage(props);
@@ -176,27 +160,11 @@ const ArqueocabViewPage = (props) => {
                                     </div>
                                 </div>
                             </div>
-                            {/* Comentado para evitar duplicidad con el card de Diferencia
                             <div className="col-12 md:col-4">
                                 <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
                                     <div className="">
                                         <div className="text-400 font-medium mb-1">Arqueodiferencia</div>
                                         <div className="font-bold">{ item.arqueodiferencia }</div>
-                                    </div>
-                                </div>
-                            </div>
-                            */}
-                            <div className="col-12 md:col-4">
-                                <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100">
-                                    <div className="">
-                                        <div className="text-400 font-medium mb-1">Diferencia</div>
-                                        <div className={`font-bold ${
-                                            item.arqueodiferenciatipo === 'S' ? 'text-blue-600' :
-                                            item.arqueodiferenciatipo === 'F' ? 'text-red-600' :
-                                            'text-gray-600'
-                                        }`}>
-                                            {getDiferenciaText(item.arqueodiferenciatipo, item.arqueodiferencia)}
-                                        </div>
                                     </div>
                                 </div>
                             </div>

@@ -12,10 +12,14 @@ import { SplitButton } from 'primereact/splitbutton';
 import { Title } from 'components/Title';
 import ArqueorecaudacioncabViewPage from 'pages/arqueorecaudacioncab/View';
 import useApp from 'hooks/useApp';
+import { useEffect, useState } from 'react';
+import { Card } from 'primereact/card';
 
 import useListPage from 'hooks/useListPage';
 const ArqueorecaudaciondetListPage = (props) => {
-		const app = useApp();
+	const app = useApp();
+	const [totalImportebs, setTotalImportebs] = useState(0);
+	
 	const filterSchema = {
 		search: {
 			tagTitle: "Search",
@@ -29,6 +33,19 @@ const ArqueorecaudaciondetListPage = (props) => {
 	const { records, pageReady, loading, selectedItems, sortBy, sortOrder, apiRequestError, setSelectedItems, getPageBreadCrumbs, onSort, deleteItem, pagination } = pageController;
 	const { filters, setFilterValue } = filterController;
 	const { totalRecords, totalPages, recordsPosition, firstRow, limit, onPageChange } =  pagination;
+	
+	// Calculate the total of arqueodetimportebs where arqueoestado is "L"
+	useEffect(() => {
+		if (records && records.length > 0) {
+			const total = records
+				.filter(record => record.arqueoestado === "L")
+				.reduce((sum, record) => sum + (parseFloat(record.arqueodetimportebs) || 0), 0);
+			setTotalImportebs(total);
+		} else {
+			setTotalImportebs(0);
+		}
+	}, [records]);
+	
 	function ActionButton(data){
 		const items = [
 		{
@@ -149,65 +166,78 @@ const ArqueorecaudaciondetListPage = (props) => {
                 <div className="col " >
                     <Title title="Arqueorecaudaciondet"   titleClass="text-2xl text-primary font-bold" subTitleClass="text-500"      separator={false} />
                 </div>
+				<div className="col-12 md:col-3 " >
+					<Card className="p-2 border-1 border-primary">
+                            <div className="flex align-items-center justify-content-center">
+                                <i className="pi pi-money-bill text-primary mr-2" style={{fontSize: '1.2rem'}}></i>
+                                <span className="font-bold mr-2">Total (Estado "L"):</span>
+                                <span className="font-bold text-primary text-xl">{totalImportebs.toFixed(2)} Bs</span>
+                            </div>
+                    </Card>
+                </div>
                 <div className="col-fixed " >
-                    <Link to={`/arqueorecaudaciondet/add`}>
-                        <Button label="Agregar nuevo" icon="pi pi-plus" type="button" className="p-button w-full bg-primary "  />
+
+                    <div className="flex flex-column">
+                        <Link to={`/arqueorecaudaciondet/add`}>
+                            <Button label="Agregar nuevo" icon="pi pi-plus" type="button" className="p-button w-full bg-primary mb-2"  />
                         </Link>
+
                     </div>
-                    <div className="col-12 md:col-3 " >
-                        <span className="p-input-icon-left w-full">
+                </div>
+                <div className="col-12 md:col-3 " >
+                    <span className="p-input-icon-left w-full">
                         <i className="pi pi-search" />
                         <InputText placeholder="Buscar" className="w-full" value={filters.search.value}  onChange={(e) => setFilterValue('search', e.target.value)} />
-                        </span>
-                    </div>
+                    </span>
                 </div>
             </div>
-        </section>
-        }
-        <section className="page-section " >
-            <div className="container-fluid">
-                <div className="grid ">
-                    <div className="col comp-grid" >
-                        <FilterTags filterController={filterController} />
-                        <div >
-                            <PageBreadcrumbs />
-                            <div className="page-records">
-                                <DataTable 
-                                    lazy={true} 
-                                    loading={loading} 
-                                    selectionMode="checkbox" selection={selectedItems} onSelectionChange={e => setSelectedItems(e.value)}
-                                    value={records} 
-                                    dataKey="arqueorecdetid" 
-                                    sortField={sortBy} 
-                                    sortOrder={sortOrder} 
-                                    onSort={onSort}
-                                    className=" p-datatable-sm" 
-                                    stripedRows={true}
-                                    showGridlines={false} 
-                                    rowHover={true} 
-                                    responsiveLayout="stack" 
-                                    emptyMessage={<EmptyRecordMessage />} 
-                                    >
-                                    {/*PageComponentStart*/}
-                                    <Column selectionMode="multiple" headerStyle={{width: '2rem'}}></Column>
-                                    <Column  field="arqueorecdetid" header="Arqueorecdetid" body={ArqueorecdetidTemplate}  ></Column>
-                                    <Column  field="arqueorecid" header="Arqueorecid" body={ArqueorecidTemplate}  ></Column>
-                                    <Column  field="servicio_id" header="Servicio Id"   ></Column>
-                                    <Column  field="arqueodetcantidad" header="Arqueodetcantidad"   ></Column>
-                                    <Column  field="arqueodettarifabs" header="Arqueodettarifabs"   ></Column>
-                                    <Column  field="arqueodetimportebs" header="Arqueodetimportebs"   ></Column>
-                                    <Column  field="arqueoestado" header="Arqueoestado"   ></Column>
-                                    <Column headerStyle={{width: '2rem'}} headerClass="text-center" body={ActionButton}></Column>
-                                    {/*PageComponentEnd*/}
-                                </DataTable>
-                            </div>
-                            <PageFooter />
+        </div>
+    </section>
+    }
+    <section className="page-section " >
+        <div className="container-fluid">
+            <div className="grid ">
+                <div className="col comp-grid" >
+                    <FilterTags filterController={filterController} />
+                    <div >
+                        <PageBreadcrumbs />
+                        <div className="page-records">
+                            <DataTable 
+                                lazy={true} 
+                                loading={loading} 
+                                selectionMode="checkbox" selection={selectedItems} onSelectionChange={e => setSelectedItems(e.value)}
+                                value={records} 
+                                dataKey="arqueorecdetid" 
+                                sortField={sortBy} 
+                                sortOrder={sortOrder} 
+                                onSort={onSort}
+                                className=" p-datatable-sm" 
+                                stripedRows={true}
+                                showGridlines={false} 
+                                rowHover={true} 
+                                responsiveLayout="stack" 
+                                emptyMessage={<EmptyRecordMessage />} 
+                                >
+                                {/*PageComponentStart*/}
+                                <Column selectionMode="multiple" headerStyle={{width: '2rem'}}></Column>
+                                <Column  field="arqueorecdetid" header="Arqueorecdetid" body={ArqueorecdetidTemplate}  ></Column>
+                                <Column  field="arqueorecid" header="Arqueorecid" body={ArqueorecidTemplate}  ></Column>
+                                <Column  field="servicio_id" header="Servicio Id"   ></Column>
+                                <Column  field="arqueodetcantidad" header="Arqueodetcantidad"   ></Column>
+                                <Column  field="arqueodettarifabs" header="Arqueodettarifabs"   ></Column>
+                                <Column  field="arqueodetimportebs" header="Arqueodetimportebs"   ></Column>
+                                <Column  field="arqueoestado" header="Arqueoestado"   ></Column>
+                                <Column headerStyle={{width: '2rem'}} headerClass="text-center" body={ActionButton}></Column>
+                                {/*PageComponentEnd*/}
+                            </DataTable>
                         </div>
+                        <PageFooter />
                     </div>
                 </div>
             </div>
-        </section>
-    </main>
+        </div>
+    </section>
+</main>
 	);
 }
 ArqueorecaudaciondetListPage.defaultProps = {
