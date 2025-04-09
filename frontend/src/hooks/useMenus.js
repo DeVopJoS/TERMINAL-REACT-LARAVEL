@@ -48,6 +48,13 @@ export default function useMenus() {
     "target": "",
   },
   {
+    "to": "/importacion-facturas",
+    "label": "Importar Facturastmp",
+    "icon": "pi pi-file-import",
+    "iconcolor": "",
+    "target": "",
+  },
+  {
     "to": "/actaentregacab",
     "label": "Actaentregacab",
     "icon": "pi pi-th-large",
