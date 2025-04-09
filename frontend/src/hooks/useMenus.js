@@ -48,9 +48,9 @@ export default function useMenus() {
     "target": "",
   },
   {
-    "to": "/importacion-facturas",
-    "label": "Importar Facturastmp",
-    "icon": "pi pi-file-import",
+    "to": "/importacion",
+    "label": "Centro de Importaciones",
+    "icon": "pi pi-database",
     "iconcolor": "",
     "target": "",
   },

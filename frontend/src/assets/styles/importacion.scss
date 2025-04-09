@@ -1,0 +1,83 @@
+.custom-timeline {
+  .p-timeline-event {
+    margin-bottom: 1.5rem;
+  }
+
+  .p-timeline-event-marker-success {
+    background-color: var(--green-100);
+    border-color: var(--green-500);
+    color: var(--green-500);
+  }
+
+  .p-timeline-event-marker-error {
+    background-color: var(--red-100);
+    border-color: var(--red-500);
+    color: var(--red-500);
+  }
+
+  .p-timeline-event-marker-warn {
+    background-color: var(--yellow-100);
+    border-color: var(--yellow-500);
+    color: var(--yellow-500);
+  }
+
+  .p-timeline-event-marker-info {
+    background-color: var(--blue-100);
+    border-color: var(--blue-500);
+    color: var(--blue-500);
+  }
+
+  .p-timeline-event-connector {
+    background-color: var(--surface-300);
+  }
+}
+
+// Steps personalizado
+.custom-steps {
+  .p-steps-item {
+    .p-steps-number {
+      border-radius: 50%;
+      width: 2.5rem;
+      height: 2.5rem;
+      line-height: 2.5rem;
+      font-weight: 600;
+    }
+
+    &.p-highlight {
+      .p-steps-number {
+        background-color: var(--primary-color);
+        color: var(--primary-color-text);
+      }
+    }
+
+    &:before {
+      border-top: 1px solid var(--surface-300);
+    }
+  }
+}
+
+// Cards con hover
+.importacion-card {
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+}
+
+// Asegurar que el layout sea responsivo
+.importacion-menu {
+  .grid {
+    margin-right: -0.5rem;
+    margin-left: -0.5rem;
+    margin-top: -0.5rem;
+    margin-bottom: -0.5rem;
+  }
+
+  @media screen and (max-width: 768px) {
+    .col-12 {
+      padding: 0.5rem;
+    }
+  }
+}
