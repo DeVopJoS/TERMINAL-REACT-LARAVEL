@@ -37,6 +37,7 @@ Route::middleware(['auth:api'])->group(function () {
 	Route::post('actaentregadet/add', 'ActaentregadetController@add');	
 	Route::any('actaentregadet/edit/{rec_id}', 'ActaentregadetController@edit');	
 	Route::any('actaentregadet/delete/{rec_id}', 'ActaentregadetController@delete');
+	Route::post('actaentregadet/delete-per-acta', 'ActaentregadetController@deleteDetailByActaId');
 
 /* routes for Arqueocab Controller  */	
 	Route::get('arqueocab/', 'ArqueocabController@index');
@@ -269,11 +270,6 @@ Route::middleware(['auth:api'])->group(function () {
     /* routes for Importación */
     Route::post('importar-facturas', 'ImportacionFacturasController@importarFacturas');
 
-/* routes for FileUpload Controller  */	
-	Route::post('fileuploader/upload/{fieldname}', 'FileUploaderController@upload');
-	Route::post('fileuploader/s3upload/{fieldname}', 'FileUploaderController@s3upload');
-	Route::post('fileuploader/remove_temp_file', 'FileUploaderController@remove_temp_file');
-
 // Routes from TblServicioController
 	Route::get('/servicios', [TblServiciosController::class, 'obtenerServicios']);
 
@@ -282,8 +278,6 @@ Route::middleware(['auth:api'])->group(function () {
 	Route::get('/actas/cabecera/{rec_id}', 'ActaentregacabController@showActaWithDet');
 	Route::post('/actas/cabecera', 'ActaentregacabController@showMultipleActas');
 	Route::post('/actas', [ActaentregacabController::class, 'store']);
-	Route::put('actas/{rec_id}', 'ActaentregacabController@update');
-	Route::any('actas/edit/{rec_id}', 'ActaentregacabController@update');
 
 // Routes for ActaentregadetController
 	Route::get('/tblactaentregadet/index', 'ActaentregadetController@index');
@@ -291,6 +285,7 @@ Route::middleware(['auth:api'])->group(function () {
 	Route::post('/tblactaentregadet/add', 'ActaentregadetController@add'); 
 	Route::put('/registros/{id}', 'ActaentregadetController@nuevo');
 	Route::post('/tblactaentregadet/finalizar', 'ActaentregadetController@closeActa'); 
+	Route::post('/tblactaentregadet/update/detail', 'ActaentregadetController@updateDetailByActa'); 
 
 // Routes for TblPuntosRecaudacionController
 	Route::get('tblpuntosrecaudacion/index/{filter?}/{filtervalue?}', 'TblPuntosRecaudacionController@index');
@@ -310,3 +305,7 @@ Route::get('home', 'HomeController@index');
 		
 	Route::post('auth/forgotpassword', 'AuthController@forgotpassword')->name('password.reset');	
 	Route::post('auth/resetpassword', 'AuthController@resetpassword');
+/* routes for FileUpload Controller  */	
+Route::post('fileuploader/upload/{fieldname}', 'FileUploaderController@upload');
+Route::post('fileuploader/s3upload/{fieldname}', 'FileUploaderController@s3upload');
+Route::post('fileuploader/remove_temp_file', 'FileUploaderController@remove_temp_file');

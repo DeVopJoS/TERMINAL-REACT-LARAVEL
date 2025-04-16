@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\DB;
 
 class ActaentregacabController extends Controller
 {
+	
+
 	/**
      * List table records
 	 * @param  \Illuminate\Http\Request
@@ -39,33 +41,14 @@ class ActaentregacabController extends Controller
 
 		if($request->search){
 			$search = trim($request->search);
-            $query->where(function($q) use ($search) {
-                if (is_numeric($search)) {
-                    $q->orWhere('ae_actaid', $search)
-                      ->orWhere('ae_correlativo', $search)
-                      ->orWhere('ae_recaudaciontotalbs', $search);
-                }
-
-                $possibleDate = date('Y-m-d', strtotime($search));
-                if (strtotime($search) !== false) {
-                    $q->orWhere('ae_fecha', 'like', "%$possibleDate%");
-                }
-
-                $q->orWhere('ae_grupo', 'like', "%$search%")
-                  ->orWhere('ae_operador1erturno', 'like', "%$search%")
-                  ->orWhere('ae_operador2doturno', 'like', "%$search%")
-                  ->orWhere('ae_observacion', 'like', "%$search%");
-
-                $q->orWhereHas('puntoRecaudacion', function($query) use ($search) {
-                    $query->where('puntorecaud_nombre', 'like', "%$search%");
-                });
-            });
+			Actaentregacab::search($query, $search);
 		}
-
 		$orderby = $request->orderby ?? "actaentregacab.ae_actaid";
 		$ordertype = $request->ordertype ?? "desc";
 		$query->orderBy($orderby, $ordertype);
-
+		// if($fieldname){
+		// 	$query->where($fieldname , $fieldvalue); //filter by a single field name
+		// }
 		$records = $query->select(Actaentregacab::listFields())->get();
 		return $this->respond($records);
 	}
@@ -103,55 +86,39 @@ class ActaentregacabController extends Controller
      * @return \Illuminate\View\View;
      */
 	function edit(Request $request, $rec_id = null){
-    try {
+		$record = '';
         DB::beginTransaction();
-        
-        // Encontrar el registro existente
-        $acta = Actaentregacab::findOrFail($rec_id);
-        
-        // Actualizar los campos de la cabecera
-        $acta->update([
-            'ae_observacion' => $request->input('observacion'),
-            'ae_recaudaciontotalbs' => $request->input('recaudacion_total'),
-            'punto_recaud_id' => $request->input('punto_recaudacion'),
-            'ae_fecha' => $request->input('fecha'),
-            'ae_grupo' => $request->input('grupo'),
-            'ae_operador1erturno' => $request->input('operador_1er_turno'),
-            'ae_operador2doturno' => $request->input('operador_2do_turno'),
-            'ae_cambiobs' => $request->input('cambio_bs'),
-            'ae_cajachicabs' => $request->input('caja_chica_bs'),
-            'ae_llaves' => $request->input('llaves'),
-            'ae_fechero' => $request->input('fechero'),
-            'ae_tampo' => $request->input('tampo'),
-            'ae_candados' => $request->input('candados'),
-        ]);
+        try {
+            $record = Actaentregacab::find($rec_id);
 
-        Actaentregadet::where('ae_actaid', $rec_id)->delete();
-        
-        if ($request->has('registros')) {
-            foreach ($request->input('registros') as $registro) {
-                Actaentregadet::create([
-                    'ae_actaid' => $rec_id,
-                    'servicio_id' => $registro['tipo_servicio'],
-                    'aed_desdenumero' => $registro['desde_numero'],
-                    'aed_hastanumero' => $registro['hasta_numero'],
-                    'aed_vendidohasta' => $registro['desde_numero'], // Inicial
-                    'aed_cantidad' => $registro['cantidad_boletos'],
-                    'aed_preciounitario' => $registro['precio_unitario'],
-                    'aed_importebs' => $registro['importe_total'],
-                    'aed_estado' => "P",
-                ]);
-            }
+            $actaCab = [
+                'ae_observacion' => $request->observacion,
+                'ae_recaudaciontotalbs' => $request->recaudacion_total,
+                'punto_recaud_id' => $request->punto_recaudacion,
+                'ae_fecha' => $request->fecha,
+                'ae_grupo' => $request->grupo,
+                'ae_operador1erturno' => $request->operador_1er_turno,
+                'ae_operador2doturno' => $request->operador_2do_turno,
+                'ae_cambiobs' => $request->cambio_bs,
+                'ae_cajachicabs' => $request->caja_chica_bs,
+                'ae_llaves' => $request->llaves,
+                'ae_fechero' => $request->fechero,
+                'ae_tampo' => $request->tampo,
+                'ae_candados' => $request->candados,
+                'ae_estado' => "P",
+            ];
+
+            $record->update($actaCab);
+
+            DB::commit();
+            return response()->json(['message' => 'Acta guardada correctamente'], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json(['error' => 'Error al guardar el acta', 'details' => $e->getMessage()], 500);
         }
-        
-        DB::commit();
-        return response()->json(['success' => true, 'message' => 'Acta actualizada correctamente', 'data' => $acta]);
-        
-    } catch (\Exception $e) {
-        DB::rollback();
-        return response()->json(['success' => false, 'message' => 'Error al actualizar acta: ' . $e->getMessage()], 500);
-    }
-}
+
+		return $this->respond($record);
+	}
 	
 
 	/**
@@ -165,7 +132,15 @@ class ActaentregacabController extends Controller
 		$arr_id = explode(",", $rec_id);
 		$query = Actaentregacab::query();
 		$query->whereIn("ae_actaid", $arr_id);
+
 		$query->delete();
+        //$query->update(["ae_estado" => "E"]);
+
+        $query = Actaentregadet::query();
+        $query->whereIn("ae_actaid", $arr_id);
+        //$query->update(["aed_estado" => "E"]);
+        $query->delete();
+
 		return $this->respond($arr_id);
 	}
 

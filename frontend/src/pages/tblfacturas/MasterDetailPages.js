@@ -33,7 +33,7 @@ const MasterDetailPages = (props) => {
 		return (
 <div id="master-detailpage">
     <TabView value={activeTab}>
-        <TabPanel header={<Title title="Tbl Factura Tbl Factura Detalle 2"  headerClass="p-0" titleClass="text-lg font-bold"  iconClass="pi pi-th-large" avatarSize="small"    separator={false} />}>
+        <TabPanel header={<Title title="Tbl Factura Tbl Factura Detalle"  headerClass="p-0" titleClass="text-lg font-bold"  iconClass="pi pi-th-large" avatarSize="small"    separator={false} />}>
             <div className="reset-grid">
                 <TblfacturadetalleListPage isSubPage  fieldName="tbl_factura_detalle.factura_id" fieldValue={masterRecord.factura_id} showBreadcrumbs={false} showHeader={true} showFooter={true}>
                 </TblfacturadetalleListPage>

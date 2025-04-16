@@ -139,17 +139,18 @@ const ActaentregadetListPage = (props) => {
 			return;
 		}
 		
-		if (field === 'aed_vendidohasta') {
-			// Validate: Should be <= aed_hastanumero and >= aed_desdenumero
-			const vendidoHasta = Number(newValue);
+		if (field === 'aed_cantidad') {
+			// Validate: Cantidad should be within the valid range
+			const cantidad = Number(newValue);
 			const hastaNumero = Number(data.aed_hastanumero);
 			const desdeNumero = Number(data.aed_desdenumero);
+			const maxPosible = hastaNumero - desdeNumero + 1;
 			
-			if (vendidoHasta > hastaNumero || vendidoHasta < desdeNumero) {
+			if (cantidad <= 0 || cantidad > maxPosible) {
 				toast.current.show({
 					severity: 'error', 
 					summary: 'Error de validación', 
-					detail: 'El valor debe ser menor o igual a Hasta Número y mayor o igual a Desde Número', 
+					detail: `La cantidad debe ser mayor a 0 y no mayor a ${maxPosible}`, 
 					life: 3000
 				});
 				return;
@@ -157,20 +158,20 @@ const ActaentregadetListPage = (props) => {
 			
 			try {
 				// Calculate new values
-				const cantidad = vendidoHasta - desdeNumero + 1;
+				const vendidoHasta = desdeNumero + cantidad - 1;
 				const precioUnitario = Number(data.aed_preciounitario);
 				const importebs = cantidad * precioUnitario;
 				
 				// Update local data
-				data[field] = vendidoHasta;
-				data.aed_cantidad = cantidad;
+				data[field] = cantidad;
+				data.aed_vendidohasta = vendidoHasta;
 				data.aed_importebs = importebs;
 				data.aed_estado = "L"; // Set estado to "L"
 				
 				// Prepare payload for API update
 				const payload = {
-					[field]: vendidoHasta,
-					aed_cantidad: cantidad,
+					[field]: cantidad,
+					aed_vendidohasta: vendidoHasta,
 					aed_importebs: importebs,
 					aed_estado: "L" // Add estado to payload
 				};
@@ -230,30 +231,34 @@ const ActaentregadetListPage = (props) => {
 		if (isChecked) {
 			const hastaNumero = Number(rowData.aed_hastanumero);
 			const desdeNumero = Number(rowData.aed_desdenumero);
+			const maxCantidad = hastaNumero - desdeNumero + 1;
 			
 			// Create a synthetic event for onCellEditComplete
 			const syntheticEvent = {
 				rowData: rowData,
-				newValue: hastaNumero,
-				field: 'aed_vendidohasta',
+				newValue: maxCantidad,
+				field: 'aed_cantidad',
 				rowIndex: rowIndex
 			};
 			
 			// Call the edit complete function
 			await onCellEditComplete(syntheticEvent);
-			
-			// No need to recalculate total here since onCellEditComplete already does it
 		}
 	};
 	
 	// Checkbox template
 	function AutofillCheckboxTemplate(rowData, options) {
+		// Calculate max possible quantity
+		const hastaNumero = Number(rowData.aed_hastanumero);
+		const desdeNumero = Number(rowData.aed_desdenumero);
+		const maxCantidad = hastaNumero - desdeNumero + 1;
+		
 		// If row is not editable, show disabled checkbox
 		if (!isRowEditable(rowData)) {
 			return (
 				<Checkbox 
 					disabled={true}
-					checked={Number(rowData.aed_vendidohasta) === Number(rowData.aed_hastanumero)}
+					checked={Number(rowData.aed_cantidad) === maxCantidad}
 				/>
 			);
 		}
@@ -261,7 +266,7 @@ const ActaentregadetListPage = (props) => {
 		return (
 			<Checkbox 
 				onChange={(e) => handleCheckboxChange(e, rowData, options.rowIndex)} 
-				checked={Number(rowData.aed_vendidohasta) === Number(rowData.aed_hastanumero)}
+				checked={Number(rowData.aed_cantidad) === maxCantidad}
 			/>
 		);
 	}
@@ -454,8 +459,8 @@ const ActaentregadetListPage = (props) => {
 		}
 	};
 	
-	// Custom CellEditor for aed_vendidohasta
-	const VendidohastaEditor = (options) => {
+	// Custom CellEditor for aed_cantidad
+	const CantidadEditor = (options) => {
 		// Check if the current row is editable
 		const rowData = records[options.rowIndex];
 		if (!isRowEditable(rowData)) {
@@ -552,7 +557,7 @@ const ActaentregadetListPage = (props) => {
 										sortField={sortBy} 
 										sortOrder={sortOrder} 
 										onSort={onSort}
-										className="editable-cells-table p-datatable-sm" 
+										className="editable-cells-table p-datatable-sm compact-table" 
 										stripedRows={true}
 										showGridlines={false} 
 										rowHover={true}
@@ -570,20 +575,22 @@ const ActaentregadetListPage = (props) => {
 										
 										<Column 
 											field="autofill" 
-											header="Vendido" 
+											header="Máxima" 
 											body={(rowData, options) => AutofillCheckboxTemplate(rowData, options)} 
 											style={{width: '5rem'}}
 											className="text-center"
 										></Column>
+										
 										<Column 
-											field="aed_vendidohasta" 
-											header="Vendido Hasta" 
-											body={AedVendidohastaTemplate} 
+											field="aed_cantidad" 
+											header="Cantidad" 
+											body={AedCantidadTemplate} 
 											onCellEditComplete={onCellEditComplete} 
-											editor={(options) => VendidohastaEditor(options)}
+											editor={(options) => CantidadEditor(options)}
 											className="bg-gray-100" // Applying light gray background to the column
 										></Column>
-										<Column field="aed_cantidad" header="Cantidad" body={AedCantidadTemplate}></Column>
+										
+										<Column field="aed_vendidohasta" header="Vendido Hasta" body={AedVendidohastaTemplate}></Column>
 										<Column field="aed_preciounitario" header="Precio Unitario" body={AedPreciounitarioTemplate}></Column>
 										<Column field="aed_importebs" header="Importe Bs" body={AedImportebsTemplate}></Column>
 										<Column field="aed_estado" header="Estado" body={AedEstadoTemplate}></Column>

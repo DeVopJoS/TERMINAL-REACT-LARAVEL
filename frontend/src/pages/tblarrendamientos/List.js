@@ -153,7 +153,7 @@ const TblarrendamientosListPage = (props) => {
         <div className="container-fluid">
             <div className="grid justify-content-between align-items-center">
                 <div className="col " >
-                    <Title title="Tbl Arrendamientos"   titleClass="text-2xl text-primary font-bold" subTitleClass="text-500"      separator={false} />
+                    <Title title="Arrendatarios"   titleClass="text-2xl text-primary font-bold" subTitleClass="text-500"      separator={false} />
                 </div>
                 <div className="col-fixed " >
                     <Link to={`/tblarrendamientos/add`}>
@@ -196,25 +196,19 @@ const TblarrendamientosListPage = (props) => {
                                     >
                                     {/*PageComponentStart*/}
                                     <Column selectionMode="multiple" headerStyle={{width: '2rem'}}></Column>
-                                    <Column  field="arrendamiento_id" header="Arrendamiento Id" body={ArrendamientoIdTemplate}  ></Column>
-                                    <Column  field="ambiente_id" header="Ambiente Id"   ></Column>
+                                    <Column  field="arrendamiento_id" header="Id" body={ArrendamientoIdTemplate}  ></Column>
                                     <Column  field="num_contrato" header="Num Contrato"   ></Column>
-                                    <Column  field="operador_nombre" header="Operador Nombre"   ></Column>
-                                    <Column  field="arrendatario_nombre" header="Arrendatario Nombre"   ></Column>
-                                    <Column  field="arrendatario_apellido_paterno" header="Arrendatario Apellido Paterno"   ></Column>
-                                    <Column  field="arrendatario_apellido_materno" header="Arrendatario Apellido Materno"   ></Column>
-                                    <Column  field="arrendatario_ci" header="Arrendatario Ci"   ></Column>
-                                    <Column  field="arrendatario_nombre_comercial" header="Arrendatario Nombre Comercial"   ></Column>
-                                    <Column  field="arrendatario_telefono" header="Arrendatario Telefono"   ></Column>
-                                    <Column  field="arrendatario_celular" header="Arrendatario Celular"   ></Column>
+                                    <Column  field="arrendatario_nombre" header="Nombre"   ></Column>
+                                    <Column  field="arrendatario_ci" header="Ci"   ></Column>
+                                    <Column  field="arrendatario_nombre_comercial" header="Nombre Comercial"   ></Column>
+                                    <Column  field="arrendatario_telefono" header="Telefono"   ></Column>
                                     <Column  field="ambiente_codigo" header="Ambiente Codigo"   ></Column>
-                                    <Column  field="arrendamiento_fecha_inicio" header="Arrendamiento Fecha Inicio"   ></Column>
-                                    <Column  field="arrendamiento_fecha_fin" header="Arrendamiento Fecha Fin"   ></Column>
-                                    <Column  field="arrendamiento_canon" header="Arrendamiento Canon"   ></Column>
-                                    <Column  field="arrendamiento_funcion" header="Arrendamiento Funcion"   ></Column>
-                                    <Column  field="arrendamiento_forma_pago" header="Arrendamiento Forma Pago"   ></Column>
-                                    <Column  field="arrendamiento_estado" header="Arrendamiento Estado"   ></Column>
-                                    <Column  field="arrendamiento_fecha" header="Arrendamiento Fecha"   ></Column>
+									<Column field="arrendamiento_fecha_inicio" header="Fecha Inicio" body={(rowData) => {return new Date(rowData.arrendamiento_fecha_inicio).toLocaleDateString();}} />
+									<Column field="arrendamiento_fecha_fin" header="Fecha Fin" body={(rowData) => {return new Date(rowData.arrendamiento_fecha_fin).toLocaleDateString();}} />
+                                    <Column  field="operador_nombre" header="Operador"   ></Column>
+                                    <Column  field="arrendamiento_funcion" header="Funcion"   ></Column>
+                                    <Column  field="arrendamiento_canon" header="Canon"   ></Column>
+                                    <Column  field="arrendamiento_estado" header="Estado"   ></Column>
                                     <Column headerStyle={{width: '2rem'}} headerClass="text-center" body={ActionButton}></Column>
                                     {/*PageComponentEnd*/}
                                 </DataTable>

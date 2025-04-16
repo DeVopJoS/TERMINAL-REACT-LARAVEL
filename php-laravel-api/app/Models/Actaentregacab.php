@@ -219,6 +219,8 @@ class Actaentregacab extends Model
         return self::from('actaentregacab as acab')
             ->select(
                 DB::raw("TO_CHAR(acab.ae_fecha, 'DD \"de\" TMMonth \"de\" YYYY') as formatted_fecha"),
+                'acab.ae_actaid',
+				'acab.ae_fecha',
                 'acab.ae_grupo',
                 'acab.ae_cambiobs',
                 'acab.ae_cajachicabs',
@@ -226,8 +228,10 @@ class Actaentregacab extends Model
                 'acab.ae_fechero',
                 'acab.ae_tampo',
                 'acab.ae_candados',
-                'acab.ae_operador1erturno',
-                'acab.ae_operador2doturno',
+				'acab.ae_operador1erturno',
+				'acab.ae_operador2doturno',
+				'acab.punto_recaud_id',
+				'acab.ae_observacion',
                 'tpr.puntorecaud_nombre'
             )
             ->join('tbl_puntos_recaudacion as tpr', 'acab.punto_recaud_id', '=', 'tpr.punto_recaud_id')

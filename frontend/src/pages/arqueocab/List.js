@@ -10,6 +10,8 @@ import { Paginator } from 'primereact/paginator';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { SplitButton } from 'primereact/splitbutton';
 import { Title } from 'components/Title';
+import ArqueocabEditPage from 'pages/arqueocab/Edit';
+import ArqueocabViewPage from 'pages/arqueocab/View';
 import useApp from 'hooks/useApp';
 
 import useListPage from 'hooks/useListPage';
@@ -32,19 +34,15 @@ const ArqueocabListPage = (props) => {
 		const items = [
 		{
 			label: "View",
-			command: (event) => { app.navigate(`/arqueocab/view/${data.arqueoid}`) },
+			command: (event) => { app.openPageDialog(<ArqueocabViewPage isSubPage apiPath={`/arqueocab/view/${data.arqueoid}`} />, {closeBtn: true }) },
 			icon: "pi pi-eye"
 		},
-		{
+		/*{
 			label: "Edit",
-			command: (event) => { app.navigate(`/arqueocab/edit/${data.arqueoid}`) },
+			command: (event) => { app.openPageDialog(<ArqueocabEditPage isSubPage apiPath={`/arqueocab/edit/${data.arqueoid}`} />, {closeBtn: true }) },
 			icon: "pi pi-pencil"
-		},
-		{
-			label: "Delete",
-			command: (event) => { deleteItem(data.arqueoid) },
-			icon: "pi pi-trash"
-		}
+		},*/
+
 	]
 		return (<SplitButton dropdownIcon="pi pi-bars" className="dropdown-only p-button-text p-button-plain" model={items} />);
 	}
@@ -164,42 +162,67 @@ const ArqueocabListPage = (props) => {
                         <div >
                             <PageBreadcrumbs />
                             <div className="page-records">
-                                <DataTable 
-                                    lazy={true} 
-                                    loading={loading} 
-                                    selectionMode="checkbox" selection={selectedItems} onSelectionChange={e => setSelectedItems(e.value)}
-                                    value={records} 
-                                    dataKey="arqueoid" 
-                                    sortField={sortBy} 
-                                    sortOrder={sortOrder} 
-                                    onSort={onSort}
-                                    className=" p-datatable-sm" 
-                                    stripedRows={true}
-                                    showGridlines={false} 
-                                    rowHover={true} 
-                                    responsiveLayout="stack" 
-                                    emptyMessage={<EmptyRecordMessage />} 
-                                    >
-                                    {/*PageComponentStart*/}
-                                    <Column selectionMode="multiple" headerStyle={{width: '2rem'}}></Column>
-                                    <Column  field="arqueoid" header="Arqueoid" body={ArqueoidTemplate}  ></Column>
-                                    <Column  field="arqueonumero" header="Arqueonumero"   ></Column>
-                                    <Column  field="arqueofecha" header="Arqueofecha"   ></Column>
-                                    <Column  field="arqueoturno" header="Arqueoturno"   ></Column>
-                                    <Column  field="arqueohorainicio" header="Arqueohorainicio"   ></Column>
-                                    <Column  field="arqueohorafin" header="Arqueohorafin"   ></Column>
-                                    <Column  field="arqueosupervisor" header="Arqueosupervisor"   ></Column>
-                                    <Column  field="arqueorealizadopor" header="Arqueorealizadopor"   ></Column>
-                                    <Column  field="arqueorevisadopor" header="Arqueorevisadopor"   ></Column>
-                                    <Column  field="arqueorecaudaciontotal" header="Arqueorecaudaciontotal"   ></Column>
-                                    <Column  field="arqueodiferencia" header="Arqueodiferencia"   ></Column>
-                                    <Column  field="arqueoobservacion" header="Arqueoobservacion"   ></Column>
-                                    <Column  field="arqueoestado" header="Arqueoestado"   ></Column>
-                                    <Column  field="arqueofecharegistro" header="Arqueofecharegistro"   ></Column>
-                                    <Column  field="arqueousuario" header="Arqueousuario"   ></Column>
-                                    <Column headerStyle={{width: '2rem'}} headerClass="text-center" body={ActionButton}></Column>
-                                    {/*PageComponentEnd*/}
-                                </DataTable>
+							<DataTable
+								lazy={true}
+								loading={loading}
+								selectionMode="checkbox" 
+								selection={selectedItems} 
+								onSelectionChange={e => setSelectedItems(e.value)}
+								value={records}
+								dataKey="arqueoid"
+								sortField={sortBy}
+								sortOrder={sortOrder}
+								onSort={onSort}
+								className="p-datatable-sm"
+								stripedRows={true}
+								showGridlines={false}
+								rowHover={true}
+								responsiveLayout="stack"
+								emptyMessage={<EmptyRecordMessage />}
+								>
+								{/*PageComponentStart*/}
+								<Column selectionMode="multiple" headerStyle={{width: '2rem'}}></Column>
+								<Column field="arqueoid" header="Id"></Column>
+								<Column field="arqueonumero" header="Numero"></Column>
+								<Column 
+									field="arqueofecha" 
+									header="Fecha"
+									body={(rowData) => {
+									if (!rowData.arqueofecha) return '';
+									
+									const date = new Date(rowData.arqueofecha);
+									if (isNaN(date.getTime())) return rowData.arqueofecha;
+									
+									// Format as DD/MM/YYYY
+									const day = String(date.getDate()).padStart(2, '0');
+									const month = String(date.getMonth() + 1).padStart(2, '0');
+									const year = date.getFullYear();
+									
+									return `${day}/${month}/${year}`;
+									}}
+								></Column>
+								<Column 
+									field="arqueoturno" 
+									header="Turno"
+									body={(rowData) => {
+									switch(rowData.arqueoturno) {
+										case 'M':
+										return 'Mañana';
+										case 'T':
+										return 'Tarde';
+										default:
+										return rowData.arqueoturno;
+									}
+									}}
+								></Column>
+								<Column field="arqueosupervisor" header="Supervisor"></Column>
+								<Column field="arqueorecaudaciontotal" header="Recaudacion Total"></Column>
+								<Column field="arqueodiferencia" header="Diferencia"></Column>
+								<Column field="arqueoobservacion" header="Observacion"></Column>
+								<Column field="arqueoestado" header="Estado"></Column>
+								<Column headerStyle={{width: '2rem'}} headerClass="text-center" body={ActionButton}></Column>
+								{/*PageComponentEnd*/}
+							</DataTable>
                             </div>
                             <PageFooter />
                         </div>

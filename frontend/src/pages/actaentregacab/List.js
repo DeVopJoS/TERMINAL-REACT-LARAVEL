@@ -197,13 +197,15 @@ const ActaentregacabListPage = (props) => {
 										sortField={sortBy} 
 										sortOrder={sortOrder} 
 										onSort={onSort}
-										className="p-datatable-sm" 
+										className="p-datatable-sm compact-table" 
 										stripedRows={true}
 										showGridlines={false} 
 										rowHover={true} 
 										responsiveLayout="stack" 
 										emptyMessage={<EmptyRecordMessage />}
-										rowStyle={{ height: '2rem', padding: '0.1rem' }} // Reducir altura de filas
+										//rowStyle={{ height: '2rem', padding: '0.1rem' }} // Reducir altura de filas
+										rowStyle={{ height: '1.5rem', padding: '0rem' }}
+										
 										>
 										{/*PageComponentStart*/}
 										<Column selectionMode="multiple" headerStyle={{width: '2rem'}}></Column>

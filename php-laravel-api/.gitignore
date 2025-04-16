@@ -19,4 +19,3 @@ yarn-error.log
 /.idea
 /.vscode
 /public/uploads/files/
-storage/logs/*.log

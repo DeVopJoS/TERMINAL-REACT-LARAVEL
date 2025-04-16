@@ -148,4 +148,42 @@ class ActaentregadetController extends Controller
 			return response()->json(["error" => "Error al cerrar actas", "details" => $e->getMessage()], 500);
 		}
 	}
+
+	function deleteDetailByActaId(Request $request){
+		$record = Actaentregadet::where('ae_actaid', $request->ae_actaid)
+		->where('aed_actaid', $request->aed_actaid)->first();
+		
+		$record->delete();
+		return $this->respond($record);
+	}
+
+	function updateDetailByActa(Request $request){
+		$record = Actaentregadet::where('ae_actaid',$request->ae_actaid)
+			->where('aed_actaid',$request->aed_actaid)
+			->first();
+			
+		if (!$record) {
+			$record = new Actaentregadet();
+			$record->ae_actaid = $request->ae_actaid;
+		}
+
+		$record->aed_desdenumero = $request->aed_desdenumero;
+		$record->aed_hastanumero = $request->aed_hastanumero;
+		$record->aed_vendidohasta = $request->has('aed_vendidohasta') 
+			? $request->aed_vendidohasta 
+			: $request->aed_desdenumero;
+
+		$record->aed_preciounitario = $request->aed_preciounitario;
+		$record->aed_cantidad = $request->aed_hastanumero - $request->aed_desdenumero + 1;
+		$record->servicio_id = $request->servicio_id;
+		$record->aed_importebs = $request->aed_preciounitario * ($request->aed_hastanumero - $request->aed_desdenumero + 1);
+		$record->aed_estado = 'P';
+
+		$record->save();
+
+		return response()->json([
+			'success' => true,
+			'record' => $record
+		]);
+	}
 }

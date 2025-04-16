@@ -34,19 +34,9 @@ const TblfacturadetalleListPage = (props) => {
 	function ActionButton(data){
 		const items = [
 		{
-			label: "Adicionar",
-			command: (event) => { app.openPageDialog(<TblfacturadetalleAddPage isSubPage apiPath={`/tblfacturadetalle/add`} />, {closeBtn: true }) },
-			icon: "pi pi-plus"
-		},
-		{
 			label: "Edit",
 			command: (event) => { app.openPageDialog(<TblfacturadetalleEditPage isSubPage apiPath={`/tblfacturadetalle/edit/${data.detalle_id}`} />, {closeBtn: true }) },
 			icon: "pi pi-pencil"
-		},
-		{
-			label: "View",
-			command: (event) => { app.openPageDialog(<TblfacturadetalleViewPage isSubPage apiPath={`/tblfacturadetalle/view/${data.detalle_id}`} />, {closeBtn: true }) },
-			icon: "pi pi-eye"
 		},
 		{
 			label: "Delete",
@@ -147,7 +137,7 @@ const TblfacturadetalleListPage = (props) => {
         <div className="container-fluid">
             <div className="grid justify-content-between align-items-center">
                 <div className="col " >
-                    <Title title="Tbl Factura Detalle"   titleClass="text-2xl text-primary font-bold" subTitleClass="text-500"      separator={false} />
+                    <Title title="Detalle de la Factura"   titleClass="text-2xl text-primary font-bold" subTitleClass="text-500"      separator={false} />
                 </div>
                 <div className="col-fixed " >
                     <Button 
@@ -173,7 +163,7 @@ const TblfacturadetalleListPage = (props) => {
                 <div className="grid ">
                     <div className="col comp-grid" >
                         <FilterTags filterController={filterController} />
-                        <div >
+                        <div style={{ backgroundColor: "#d0d0d0" }}> {/* Added dark gray background color */}
                             <PageBreadcrumbs />
                             <div className="page-records">
                                 <DataTable 
@@ -195,15 +185,14 @@ const TblfacturadetalleListPage = (props) => {
                                     {/*PageComponentStart*/}
                                     <Column selectionMode="multiple" headerStyle={{width: '2rem'}}></Column>
                                     <Column  field="detalle_id" header="Detalle Id" body={DetalleIdTemplate}  ></Column>
-                                    <Column  field="factura_id" header="Factura Id"   ></Column>
                                     <Column  field="arrendamiento_id" header="Arrendamiento Id"   ></Column>
-                                    <Column  field="fact_detalle_periodo_pago" header="Fact Detalle Periodo Pago"   ></Column>
-                                    <Column  field="fact_detalle_canon_alquiler" header="Fact Detalle Canon Alquiler"   ></Column>
-                                    <Column  field="fact_detalle_morosidad_penalidad" header="Fact Detalle Morosidad Penalidad"   ></Column>
-                                    <Column  field="fact_detalle_dias_morosidad" header="Fact Detalle Dias Morosidad"   ></Column>
-                                    <Column  field="fact_detalle_total_mora" header="Fact Detalle Total Mora"   ></Column>
-                                    <Column  field="fact_detalle_importe_bs" header="Fact Detalle Importe Bs"   ></Column>
-                                    <Column  field="fact_detalle_observaciones" header="Fact Detalle Observaciones"   ></Column>
+                                    <Column  field="fact_detalle_periodo_pago" header="Detalle Periodo Pago"   ></Column>
+                                    <Column  field="fact_detalle_canon_alquiler" header="Canon Alquiler"   ></Column>
+                                    <Column  field="fact_detalle_morosidad_penalidad" header="Morosidad Penalidad"   ></Column>
+                                    <Column  field="fact_detalle_dias_morosidad" header="Dias Morosidad"   ></Column>
+                                    <Column  field="fact_detalle_total_mora" header="Total Mora"   ></Column>
+                                    <Column  field="fact_detalle_importe_bs" header="Importe Bs"   ></Column>
+                                    <Column  field="fact_detalle_observaciones" header="Observaciones"   ></Column>
                                     <Column headerStyle={{width: 'auto'}} headerClass="text-center" body={ActionButton}></Column>
                                     {/*PageComponentEnd*/}
                                 </DataTable>

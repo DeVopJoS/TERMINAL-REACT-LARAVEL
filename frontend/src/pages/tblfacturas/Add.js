@@ -3,7 +3,6 @@ import * as yup from 'yup';
 import { Button } from 'primereact/button';
 import { Calendar } from 'primereact/calendar';
 import { InputText } from 'primereact/inputtext';
-import { InputTextarea } from 'primereact/inputtextarea';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Title } from 'components/Title';
 import useApp from 'hooks/useApp';
@@ -14,23 +13,63 @@ const TblfacturasAddPage = (props) => {
 	
 	//form validation rules
 	const validationSchema = yup.object().shape({
-		arrendatario_nombre: yup.string().required().label("Arrendatario Nombre"),
-		arrendatario_ci: yup.string().required().label("Arrendatario Ci"),
-		factura_numero: yup.string().required().label("Factura Numero"),
-		factura_fecha_emision: yup.string().nullable().label("Factura Fecha Emision"),
-		factura_total: yup.number().required().label("Factura Total"),
-		factura_fecha_pago: yup.string().nullable().label("Factura Fecha Pago"),
+		n: yup.number().nullable().label("N"),
+		fecha_de_la_factura: yup.string().nullable().label("Fecha De La Factura"),
+		n_de_la_factura: yup.number().nullable().label("N De La Factura"),
+		codigo_de_autorizacion: yup.string().nullable().label("Codigo De Autorizacion"),
+		nit_ci_cliente: yup.string().nullable().label("Nit Ci Cliente"),
+		complemento: yup.string().nullable().label("Complemento"),
+		nombre_o_razon_social: yup.string().nullable().label("Nombre O Razon Social"),
+		importe_total_de_la_venta: yup.number().nullable().label("Importe Total De La Venta"),
+		importe_ice: yup.number().nullable().label("Importe Ice"),
+		importe_iehd: yup.number().nullable().label("Importe Iehd"),
+		importe_ipj: yup.number().nullable().label("Importe Ipj"),
+		tasas: yup.number().nullable().label("Tasas"),
+		otros_no_sujetos_al_iva: yup.number().nullable().label("Otros No Sujetos Al Iva"),
+		exportaciones_y_operaciones_exentas: yup.number().nullable().label("Exportaciones Y Operaciones Exentas"),
+		ventas_gravadas_a_tasa_cero: yup.number().nullable().label("Ventas Gravadas A Tasa Cero"),
+		subtotal: yup.number().nullable().label("Subtotal"),
+		descuentos_bonificaciones_y_rebajas_sujetas_al_iva: yup.number().nullable().label("Descuentos Bonificaciones Y Rebajas Sujetas Al Iva"),
+		importe_gift_card: yup.number().nullable().label("Importe Gift Card"),
+		importe_base_para_debito_fiscal: yup.number().nullable().label("Importe Base Para Debito Fiscal"),
+		debito_fiscal: yup.number().nullable().label("Debito Fiscal"),
+		estado: yup.string().nullable().label("Estado"),
+		codigo_de_control: yup.string().nullable().label("Codigo De Control"),
+		tipo_de_venta: yup.string().nullable().label("Tipo De Venta"),
+		con_derecho_a_credito_fiscal: yup.string().nullable().label("Con Derecho A Credito Fiscal"),
+		estado_consolidacion: yup.string().nullable().label("Estado Consolidacion"),
+		fecha_registro: yup.string().nullable().label("Fecha Registro"),
 		factura_estado: yup.string().nullable().label("Factura Estado")
 	});
 	
 	//form default values
 	const formDefaultValues = {
-		arrendatario_nombre: '', 
-		arrendatario_ci: '', 
-		factura_numero: '', 
-		factura_fecha_emision: new Date(), 
-		factura_total: '', 
-		factura_fecha_pago: new Date(), 
+		n: '', 
+		fecha_de_la_factura: new Date(), 
+		n_de_la_factura: '', 
+		codigo_de_autorizacion: '', 
+		nit_ci_cliente: '', 
+		complemento: '', 
+		nombre_o_razon_social: '', 
+		importe_total_de_la_venta: '', 
+		importe_ice: '', 
+		importe_iehd: '', 
+		importe_ipj: '', 
+		tasas: '', 
+		otros_no_sujetos_al_iva: '', 
+		exportaciones_y_operaciones_exentas: '', 
+		ventas_gravadas_a_tasa_cero: '', 
+		subtotal: '', 
+		descuentos_bonificaciones_y_rebajas_sujetas_al_iva: '', 
+		importe_gift_card: '', 
+		importe_base_para_debito_fiscal: '', 
+		debito_fiscal: '', 
+		estado: '', 
+		codigo_de_control: '', 
+		tipo_de_venta: '', 
+		con_derecho_a_credito_fiscal: '', 
+		estado_consolidacion: '', 
+		fecha_registro: new Date(), 
 		factura_estado: '', 
 	}
 	
@@ -94,68 +133,286 @@ const TblfacturasAddPage = (props) => {
                                     <div className="col-12">
                                         <div className="formgrid grid">
                                             <div className="col-12 md:col-3">
-                                                Arrendatario Nombre *
+                                                N 
                                             </div>
                                             <div className="col-12 md:col-9">
-                                                <InputTextarea name="arrendatario_nombre"  className={inputClassName(formik?.errors?.arrendatario_nombre)}   value={formik.values.arrendatario_nombre} placeholder="Escribir Arrendatario Nombre" onChange={formik.handleChange}   >
-                                                </InputTextarea>
-                                                <ErrorMessage name="arrendatario_nombre" component="span" className="p-error" />
+                                                <InputText name="n"  onChange={formik.handleChange}  value={formik.values.n}   label="N" type="number" placeholder="Escribir N"  min={0}  step="any"    className={inputClassName(formik?.errors?.n)} />
+                                                <ErrorMessage name="n" component="span" className="p-error" />
                                             </div>
                                         </div>
                                     </div>
                                     <div className="col-12">
                                         <div className="formgrid grid">
                                             <div className="col-12 md:col-3">
-                                                Arrendatario Ci *
+                                                Fecha De La Factura 
                                             </div>
                                             <div className="col-12 md:col-9">
-                                                <InputText name="arrendatario_ci"  onChange={formik.handleChange}  value={formik.values.arrendatario_ci}   label="Arrendatario Ci" type="text" placeholder="Escribir Arrendatario Ci"        className={inputClassName(formik?.errors?.arrendatario_ci)} />
-                                                <ErrorMessage name="arrendatario_ci" component="span" className="p-error" />
+                                                <Calendar name="fecha_de_la_factura" showButtonBar className={inputClassName(formik?.errors?.fecha_de_la_factura)} dateFormat="yy-mm-dd" value={formik.values.fecha_de_la_factura} onChange={formik.handleChange} showIcon        />
+                                                <ErrorMessage name="fecha_de_la_factura" component="span" className="p-error" />
                                             </div>
                                         </div>
                                     </div>
                                     <div className="col-12">
                                         <div className="formgrid grid">
                                             <div className="col-12 md:col-3">
-                                                Factura Numero *
+                                                N De La Factura 
                                             </div>
                                             <div className="col-12 md:col-9">
-                                                <InputTextarea name="factura_numero"  className={inputClassName(formik?.errors?.factura_numero)}   value={formik.values.factura_numero} placeholder="Escribir Factura Numero" onChange={formik.handleChange}   >
-                                                </InputTextarea>
-                                                <ErrorMessage name="factura_numero" component="span" className="p-error" />
+                                                <InputText name="n_de_la_factura"  onChange={formik.handleChange}  value={formik.values.n_de_la_factura}   label="N De La Factura" type="number" placeholder="Escribir N De La Factura"  min={0}  step="any"    className={inputClassName(formik?.errors?.n_de_la_factura)} />
+                                                <ErrorMessage name="n_de_la_factura" component="span" className="p-error" />
                                             </div>
                                         </div>
                                     </div>
                                     <div className="col-12">
                                         <div className="formgrid grid">
                                             <div className="col-12 md:col-3">
-                                                Factura Fecha Emision 
+                                                Codigo De Autorizacion 
                                             </div>
                                             <div className="col-12 md:col-9">
-                                                <Calendar name="factura_fecha_emision" value={formik.values.factura_fecha_emision} onChange={formik.handleChange} showButtonBar showTime dateFormat="yy-mm-dd" hourFormat="24"showIcon className={inputClassName(formik?.errors?.factura_fecha_emision)}        />
-                                                <ErrorMessage name="factura_fecha_emision" component="span" className="p-error" />
+                                                <InputText name="codigo_de_autorizacion"  onChange={formik.handleChange}  value={formik.values.codigo_de_autorizacion}   label="Codigo De Autorizacion" type="text" placeholder="Escribir Codigo De Autorizacion"        className={inputClassName(formik?.errors?.codigo_de_autorizacion)} />
+                                                <ErrorMessage name="codigo_de_autorizacion" component="span" className="p-error" />
                                             </div>
                                         </div>
                                     </div>
                                     <div className="col-12">
                                         <div className="formgrid grid">
                                             <div className="col-12 md:col-3">
-                                                Factura Total *
+                                                Nit Ci Cliente 
                                             </div>
                                             <div className="col-12 md:col-9">
-                                                <InputText name="factura_total"  onChange={formik.handleChange}  value={formik.values.factura_total}   label="Factura Total" type="number" placeholder="Escribir Factura Total"  min={0}  step={0.1}    className={inputClassName(formik?.errors?.factura_total)} />
-                                                <ErrorMessage name="factura_total" component="span" className="p-error" />
+                                                <InputText name="nit_ci_cliente"  onChange={formik.handleChange}  value={formik.values.nit_ci_cliente}   label="Nit Ci Cliente" type="text" placeholder="Escribir Nit Ci Cliente"        className={inputClassName(formik?.errors?.nit_ci_cliente)} />
+                                                <ErrorMessage name="nit_ci_cliente" component="span" className="p-error" />
                                             </div>
                                         </div>
                                     </div>
                                     <div className="col-12">
                                         <div className="formgrid grid">
                                             <div className="col-12 md:col-3">
-                                                Factura Fecha Pago 
+                                                Complemento 
                                             </div>
                                             <div className="col-12 md:col-9">
-                                                <Calendar name="factura_fecha_pago" value={formik.values.factura_fecha_pago} onChange={formik.handleChange} showButtonBar showTime dateFormat="yy-mm-dd" hourFormat="24"showIcon className={inputClassName(formik?.errors?.factura_fecha_pago)}        />
-                                                <ErrorMessage name="factura_fecha_pago" component="span" className="p-error" />
+                                                <InputText name="complemento"  onChange={formik.handleChange}  value={formik.values.complemento}   label="Complemento" type="text" placeholder="Escribir Complemento"        className={inputClassName(formik?.errors?.complemento)} />
+                                                <ErrorMessage name="complemento" component="span" className="p-error" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12">
+                                        <div className="formgrid grid">
+                                            <div className="col-12 md:col-3">
+                                                Nombre O Razon Social 
+                                            </div>
+                                            <div className="col-12 md:col-9">
+                                                <InputText name="nombre_o_razon_social"  onChange={formik.handleChange}  value={formik.values.nombre_o_razon_social}   label="Nombre O Razon Social" type="text" placeholder="Escribir Nombre O Razon Social"        className={inputClassName(formik?.errors?.nombre_o_razon_social)} />
+                                                <ErrorMessage name="nombre_o_razon_social" component="span" className="p-error" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12">
+                                        <div className="formgrid grid">
+                                            <div className="col-12 md:col-3">
+                                                Importe Total De La Venta 
+                                            </div>
+                                            <div className="col-12 md:col-9">
+                                                <InputText name="importe_total_de_la_venta"  onChange={formik.handleChange}  value={formik.values.importe_total_de_la_venta}   label="Importe Total De La Venta" type="number" placeholder="Escribir Importe Total De La Venta"  min={0}  step={0.1}    className={inputClassName(formik?.errors?.importe_total_de_la_venta)} />
+                                                <ErrorMessage name="importe_total_de_la_venta" component="span" className="p-error" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12">
+                                        <div className="formgrid grid">
+                                            <div className="col-12 md:col-3">
+                                                Importe Ice 
+                                            </div>
+                                            <div className="col-12 md:col-9">
+                                                <InputText name="importe_ice"  onChange={formik.handleChange}  value={formik.values.importe_ice}   label="Importe Ice" type="number" placeholder="Escribir Importe Ice"  min={0}  step={0.1}    className={inputClassName(formik?.errors?.importe_ice)} />
+                                                <ErrorMessage name="importe_ice" component="span" className="p-error" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12">
+                                        <div className="formgrid grid">
+                                            <div className="col-12 md:col-3">
+                                                Importe Iehd 
+                                            </div>
+                                            <div className="col-12 md:col-9">
+                                                <InputText name="importe_iehd"  onChange={formik.handleChange}  value={formik.values.importe_iehd}   label="Importe Iehd" type="number" placeholder="Escribir Importe Iehd"  min={0}  step={0.1}    className={inputClassName(formik?.errors?.importe_iehd)} />
+                                                <ErrorMessage name="importe_iehd" component="span" className="p-error" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12">
+                                        <div className="formgrid grid">
+                                            <div className="col-12 md:col-3">
+                                                Importe Ipj 
+                                            </div>
+                                            <div className="col-12 md:col-9">
+                                                <InputText name="importe_ipj"  onChange={formik.handleChange}  value={formik.values.importe_ipj}   label="Importe Ipj" type="number" placeholder="Escribir Importe Ipj"  min={0}  step={0.1}    className={inputClassName(formik?.errors?.importe_ipj)} />
+                                                <ErrorMessage name="importe_ipj" component="span" className="p-error" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12">
+                                        <div className="formgrid grid">
+                                            <div className="col-12 md:col-3">
+                                                Tasas 
+                                            </div>
+                                            <div className="col-12 md:col-9">
+                                                <InputText name="tasas"  onChange={formik.handleChange}  value={formik.values.tasas}   label="Tasas" type="number" placeholder="Escribir Tasas"  min={0}  step={0.1}    className={inputClassName(formik?.errors?.tasas)} />
+                                                <ErrorMessage name="tasas" component="span" className="p-error" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12">
+                                        <div className="formgrid grid">
+                                            <div className="col-12 md:col-3">
+                                                Otros No Sujetos Al Iva 
+                                            </div>
+                                            <div className="col-12 md:col-9">
+                                                <InputText name="otros_no_sujetos_al_iva"  onChange={formik.handleChange}  value={formik.values.otros_no_sujetos_al_iva}   label="Otros No Sujetos Al Iva" type="number" placeholder="Escribir Otros No Sujetos Al Iva"  min={0}  step={0.1}    className={inputClassName(formik?.errors?.otros_no_sujetos_al_iva)} />
+                                                <ErrorMessage name="otros_no_sujetos_al_iva" component="span" className="p-error" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12">
+                                        <div className="formgrid grid">
+                                            <div className="col-12 md:col-3">
+                                                Exportaciones Y Operaciones Exentas 
+                                            </div>
+                                            <div className="col-12 md:col-9">
+                                                <InputText name="exportaciones_y_operaciones_exentas"  onChange={formik.handleChange}  value={formik.values.exportaciones_y_operaciones_exentas}   label="Exportaciones Y Operaciones Exentas" type="number" placeholder="Escribir Exportaciones Y Operaciones Exentas"  min={0}  step={0.1}    className={inputClassName(formik?.errors?.exportaciones_y_operaciones_exentas)} />
+                                                <ErrorMessage name="exportaciones_y_operaciones_exentas" component="span" className="p-error" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12">
+                                        <div className="formgrid grid">
+                                            <div className="col-12 md:col-3">
+                                                Ventas Gravadas A Tasa Cero 
+                                            </div>
+                                            <div className="col-12 md:col-9">
+                                                <InputText name="ventas_gravadas_a_tasa_cero"  onChange={formik.handleChange}  value={formik.values.ventas_gravadas_a_tasa_cero}   label="Ventas Gravadas A Tasa Cero" type="number" placeholder="Escribir Ventas Gravadas A Tasa Cero"  min={0}  step={0.1}    className={inputClassName(formik?.errors?.ventas_gravadas_a_tasa_cero)} />
+                                                <ErrorMessage name="ventas_gravadas_a_tasa_cero" component="span" className="p-error" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12">
+                                        <div className="formgrid grid">
+                                            <div className="col-12 md:col-3">
+                                                Subtotal 
+                                            </div>
+                                            <div className="col-12 md:col-9">
+                                                <InputText name="subtotal"  onChange={formik.handleChange}  value={formik.values.subtotal}   label="Subtotal" type="number" placeholder="Escribir Subtotal"  min={0}  step={0.1}    className={inputClassName(formik?.errors?.subtotal)} />
+                                                <ErrorMessage name="subtotal" component="span" className="p-error" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12">
+                                        <div className="formgrid grid">
+                                            <div className="col-12 md:col-3">
+                                                Descuentos Bonificaciones Y Rebajas Sujetas Al Iva 
+                                            </div>
+                                            <div className="col-12 md:col-9">
+                                                <InputText name="descuentos_bonificaciones_y_rebajas_sujetas_al_iva"  onChange={formik.handleChange}  value={formik.values.descuentos_bonificaciones_y_rebajas_sujetas_al_iva}   label="Descuentos Bonificaciones Y Rebajas Sujetas Al Iva" type="number" placeholder="Escribir Descuentos Bonificaciones Y Rebajas Sujetas Al Iva"  min={0}  step={0.1}    className={inputClassName(formik?.errors?.descuentos_bonificaciones_y_rebajas_sujetas_al_iva)} />
+                                                <ErrorMessage name="descuentos_bonificaciones_y_rebajas_sujetas_al_iva" component="span" className="p-error" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12">
+                                        <div className="formgrid grid">
+                                            <div className="col-12 md:col-3">
+                                                Importe Gift Card 
+                                            </div>
+                                            <div className="col-12 md:col-9">
+                                                <InputText name="importe_gift_card"  onChange={formik.handleChange}  value={formik.values.importe_gift_card}   label="Importe Gift Card" type="number" placeholder="Escribir Importe Gift Card"  min={0}  step={0.1}    className={inputClassName(formik?.errors?.importe_gift_card)} />
+                                                <ErrorMessage name="importe_gift_card" component="span" className="p-error" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12">
+                                        <div className="formgrid grid">
+                                            <div className="col-12 md:col-3">
+                                                Importe Base Para Debito Fiscal 
+                                            </div>
+                                            <div className="col-12 md:col-9">
+                                                <InputText name="importe_base_para_debito_fiscal"  onChange={formik.handleChange}  value={formik.values.importe_base_para_debito_fiscal}   label="Importe Base Para Debito Fiscal" type="number" placeholder="Escribir Importe Base Para Debito Fiscal"  min={0}  step={0.1}    className={inputClassName(formik?.errors?.importe_base_para_debito_fiscal)} />
+                                                <ErrorMessage name="importe_base_para_debito_fiscal" component="span" className="p-error" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12">
+                                        <div className="formgrid grid">
+                                            <div className="col-12 md:col-3">
+                                                Debito Fiscal 
+                                            </div>
+                                            <div className="col-12 md:col-9">
+                                                <InputText name="debito_fiscal"  onChange={formik.handleChange}  value={formik.values.debito_fiscal}   label="Debito Fiscal" type="number" placeholder="Escribir Debito Fiscal"  min={0}  step={0.1}    className={inputClassName(formik?.errors?.debito_fiscal)} />
+                                                <ErrorMessage name="debito_fiscal" component="span" className="p-error" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12">
+                                        <div className="formgrid grid">
+                                            <div className="col-12 md:col-3">
+                                                Estado 
+                                            </div>
+                                            <div className="col-12 md:col-9">
+                                                <InputText name="estado"  onChange={formik.handleChange}  value={formik.values.estado}   label="Estado" type="text" placeholder="Escribir Estado"        className={inputClassName(formik?.errors?.estado)} />
+                                                <ErrorMessage name="estado" component="span" className="p-error" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12">
+                                        <div className="formgrid grid">
+                                            <div className="col-12 md:col-3">
+                                                Codigo De Control 
+                                            </div>
+                                            <div className="col-12 md:col-9">
+                                                <InputText name="codigo_de_control"  onChange={formik.handleChange}  value={formik.values.codigo_de_control}   label="Codigo De Control" type="text" placeholder="Escribir Codigo De Control"        className={inputClassName(formik?.errors?.codigo_de_control)} />
+                                                <ErrorMessage name="codigo_de_control" component="span" className="p-error" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12">
+                                        <div className="formgrid grid">
+                                            <div className="col-12 md:col-3">
+                                                Tipo De Venta 
+                                            </div>
+                                            <div className="col-12 md:col-9">
+                                                <InputText name="tipo_de_venta"  onChange={formik.handleChange}  value={formik.values.tipo_de_venta}   label="Tipo De Venta" type="text" placeholder="Escribir Tipo De Venta"        className={inputClassName(formik?.errors?.tipo_de_venta)} />
+                                                <ErrorMessage name="tipo_de_venta" component="span" className="p-error" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12">
+                                        <div className="formgrid grid">
+                                            <div className="col-12 md:col-3">
+                                                Con Derecho A Credito Fiscal 
+                                            </div>
+                                            <div className="col-12 md:col-9">
+                                                <InputText name="con_derecho_a_credito_fiscal"  onChange={formik.handleChange}  value={formik.values.con_derecho_a_credito_fiscal}   label="Con Derecho A Credito Fiscal" type="text" placeholder="Escribir Con Derecho A Credito Fiscal"        className={inputClassName(formik?.errors?.con_derecho_a_credito_fiscal)} />
+                                                <ErrorMessage name="con_derecho_a_credito_fiscal" component="span" className="p-error" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12">
+                                        <div className="formgrid grid">
+                                            <div className="col-12 md:col-3">
+                                                Estado Consolidacion 
+                                            </div>
+                                            <div className="col-12 md:col-9">
+                                                <InputText name="estado_consolidacion"  onChange={formik.handleChange}  value={formik.values.estado_consolidacion}   label="Estado Consolidacion" type="text" placeholder="Escribir Estado Consolidacion"        className={inputClassName(formik?.errors?.estado_consolidacion)} />
+                                                <ErrorMessage name="estado_consolidacion" component="span" className="p-error" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12">
+                                        <div className="formgrid grid">
+                                            <div className="col-12 md:col-3">
+                                                Fecha Registro 
+                                            </div>
+                                            <div className="col-12 md:col-9">
+                                                <Calendar name="fecha_registro" value={formik.values.fecha_registro} onChange={formik.handleChange} showButtonBar showTime dateFormat="yy-mm-dd" hourFormat="24"showIcon className={inputClassName(formik?.errors?.fecha_registro)}        />
+                                                <ErrorMessage name="fecha_registro" component="span" className="p-error" />
                                             </div>
                                         </div>
                                     </div>

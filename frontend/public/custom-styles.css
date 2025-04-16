@@ -225,3 +225,13 @@ body{
 .p-datatable .p-datatable-tbody > tr.row-warning {
 	background-color: #e4da94 !important; 
 }
+
+.p-datatable.compact-table .p-datatable-tbody > tr > td {
+	padding: 0.1rem 0.3rem;
+	font-size: 0.75rem;
+}
+
+.p-datatable.compact-table .p-datatable-thead > tr > th {
+	padding: 0.25rem 0.3rem;
+	font-size: 0.8rem;
+}

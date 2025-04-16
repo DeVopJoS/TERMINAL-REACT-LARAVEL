@@ -53,6 +53,12 @@ class TblArrendamientosDocumentosController extends Controller
 	function add(TblArrendamientosDocumentosAddRequest $request){
 		$modeldata = $request->validated();
 		
+		if( array_key_exists("documento_url", $modeldata) ){
+			//move uploaded file from temp directory to destination directory
+			$fileInfo = $this->moveUploadedFiles($modeldata['documento_url'], "documento_url");
+			$modeldata['documento_url'] = $fileInfo['filepath'];
+		}
+		
 		//save TblArrendamientosDocumentos record
 		$record = TblArrendamientosDocumentos::create($modeldata);
 		$rec_id = $record->documento_id;
@@ -70,6 +76,12 @@ class TblArrendamientosDocumentosController extends Controller
 		$record = $query->findOrFail($rec_id, TblArrendamientosDocumentos::editFields());
 		if ($request->isMethod('post')) {
 			$modeldata = $request->validated();
+		
+		if( array_key_exists("documento_url", $modeldata) ){
+			//move uploaded file from temp directory to destination directory
+			$fileInfo = $this->moveUploadedFiles($modeldata['documento_url'], "documento_url");
+			$modeldata['documento_url'] = $fileInfo['filepath'];
+		}
 			$record->update($modeldata);
 		}
 		return $this->respond($record);
