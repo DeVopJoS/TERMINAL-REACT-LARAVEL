@@ -129,6 +129,7 @@ import PrevaloradasEdit from 'pages/registroprevaloradas/Edit';
 import ControlDiarioList from 'pages/control-diario/List';
 import ImportarFacturas from 'pages/importaciones/ImportarFacturas';
 import ImportacionMenu from 'pages/importaciones/ImportacionMenu';
+import MenuList from 'pages/panelMenus/List';
 
 const App = () => {
 	const auth = useAuth();
@@ -363,6 +364,9 @@ const App = () => {
 				{/* Importaciones */}
 				<Route path="/importacion" element={<ImportacionMenu />} />
 				<Route path="/importacion-facturas" element={<ImportarFacturas />} />
+
+				{/* Panel Menu */}
+				<Route path="/panelMenus" element={<MenuList />} />
 				
 			</Route>
 			</Route>

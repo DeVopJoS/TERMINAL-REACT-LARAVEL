@@ -4,14 +4,98 @@
  * 
 **/
 
+import { useState, useEffect } from 'react';
+import useApi from './useApi';
 
 export default function useMenus() {
-    
+    const [dynamicMenus, setDynamicMenus] = useState([]);
+    const api = useApi();
+
+    useEffect(() => {
+        loadMenusFromDb();
+    }, []);
+
+    const loadMenusFromDb = async () => {
+        try {
+            const response = await api.get('tblsegmenu');
+            const menus = response.data || [];
+            const processedMenus = processMenus(menus);
+            setDynamicMenus(processedMenus);
+        } catch (error) {
+        }
+    };
+
+    const processMenus = (menus) => {
+        if (!Array.isArray(menus)) {
+            return [];
+        }
+        
+        const activeMenus = menus.filter(menu => menu.me_estado === 'V');
+        const menuMap = {};
+        activeMenus.forEach(menu => {
+            menuMap[menu.me_id] = {
+                originalData: menu, 
+                key: menu.me_id.toString(), 
+                to: menu.me_url || undefined,
+                label: menu.me_descripcion,
+                icon: menu.me_icono || "pi pi-th-large",
+                iconcolor: "",
+                target: "",
+                items: undefined 
+            };
+        });
+
+        const result = [];
+        activeMenus.forEach(menu => {
+            const menuItem = menuMap[menu.me_id];
+            const parentId = menu.me_id_padre === null ? 0 : menu.me_id_padre;
+
+            if (parentId === 0) {
+                result.push(menuItem);
+            } else if (menuMap[parentId]) {
+                if (!menuMap[parentId].items) {
+                    menuMap[parentId].items = [];
+                }
+                menuMap[parentId].items.push(menuItem);
+            } else {
+                 result.push(menuItem); 
+            }
+        });
+
+        const finalizeNodes = (nodes) => {
+            if (!nodes || !Array.isArray(nodes)) return;
+            
+            nodes.forEach(node => {
+                if (node.items && node.items.length > 0) {
+                    node.to = undefined;
+                    finalizeNodes(node.items); 
+                } else {
+                    node.items = undefined; 
+                }
+            });
+        };
+        finalizeNodes(result);
+        result.sort((a, b) => (a.originalData?.me_orden || 0) - (b.originalData?.me_orden || 0));
+        
+        const sortChildrenByOrder = (nodes) => {
+             if (!nodes || !Array.isArray(nodes)) return;
+             nodes.forEach(node => {
+                 if (node.items && node.items.length > 0) {
+                     node.items.sort((a, b) => (a.originalData?.me_orden || 0) - (b.originalData?.me_orden || 0));
+                     sortChildrenByOrder(node.items);
+                 }
+             });
+        };
+        sortChildrenByOrder(result);
+
+
+        return result;
+    };
     
     return {
-	navbarTopRight: [],
-	navbarTopLeft: [],
-	navbarSideLeft: [
+        navbarTopRight: [],
+        navbarTopLeft: [],
+        navbarSideLeft: [
   {
     "to": "/home",
     "label": "Home",
@@ -249,7 +333,15 @@ export default function useMenus() {
     "iconcolor": "",
     "target": "",
   },
-],
+  {
+    "to": "/panelMenus",
+    "label": "Configuración de Menus",
+    "icon": "pi pi-bars",
+    "iconcolor": "",
+    "target": "",
+  },
+            ...dynamicMenus
+        ],
         exportFormats: {
             print: {
                 label: 'Print',

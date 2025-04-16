@@ -295,6 +295,15 @@ Route::middleware(['auth:api'])->group(function () {
 	Route::get('control-diario/historial', 'ControlDiarioController@obtenerHistorial');
 	Route::post('control-diario/deposito', 'ControlDiarioController@registrarDeposito');
 	Route::get('control-diario/reporte-rango', 'ControlDiarioController@obtenerReporteRango');
+
+/* routes for TblSegMenu Controller  */	
+	Route::get('tblsegmenu/', 'TblSegMenuController@index');
+	Route::get('tblsegmenu/index', 'TblSegMenuController@index');
+	Route::get('tblsegmenu/index/{filter?}/{filtervalue?}', 'TblSegMenuController@index');	
+	Route::get('tblsegmenu/view/{rec_id}', 'TblSegMenuController@view');	
+	Route::post('tblsegmenu/add', 'TblSegMenuController@add');	
+	Route::any('tblsegmenu/edit/{rec_id}', 'TblSegMenuController@edit');	
+	Route::any('tblsegmenu/delete/{rec_id}', 'TblSegMenuController@delete');
 });
 
 Route::get('home', 'HomeController@index');
