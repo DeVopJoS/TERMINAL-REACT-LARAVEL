@@ -241,7 +241,14 @@ export default function useMenus() {
         "target": ""
       }
     ]
-  }
+  },
+  {
+    "to": "/importacion",
+    "label": "Centro de importaciones",
+    "icon": "pi pi-database",
+    "iconcolor": "",
+    "target": "",
+  },
 ],
         exportFormats: {
             print: {

@@ -267,8 +267,8 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('components_data/servicio_id_option_list/{arg1?}', 'Components_dataController@servicio_id_option_list');	
     Route::get('components_data/turno_option_list/{arg1?}', 'Components_dataController@turno_option_list');	
 
-    /* routes for Importación */
-    Route::post('importar-facturas', 'ImportacionFacturasController@importarFacturas');
+/* routes for Importación */
+    Route::post('importar-facturas', [App\Imports\ImportacionFacturasController::class, 'importarFacturas']);
 
 // Routes from TblServicioController
 	Route::get('/servicios', [TblServiciosController::class, 'obtenerServicios']);
