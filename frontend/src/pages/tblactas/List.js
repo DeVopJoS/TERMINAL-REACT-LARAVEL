@@ -103,7 +103,6 @@ const TblActasList = () => {
 
       setActas(data);
     } catch (error) {
-        console.error("Error al buscar datos:", error);
     }
   };
 
@@ -112,15 +111,58 @@ const TblActasList = () => {
       const { data } = await axios.get(`/actas/cabecera/${ae_actaid}`);
 
       if (!data || data.length === 0) {
-        console.error("No se encontraron datos en la cabecera");
         return;
       }
-      console.log(data.cabecera[0])
-      console.log(data.detalles)
-      const blob = await pdf(<MyPDF cabecera={data.cabecera[0]} detalles={data.detalles} />).toBlob();
-      saveAs(blob, "acta.pdf");
+      
+      const isSHService = (detalle) => {
+        if (!detalle) return false;
+        
+        const descripcion = detalle.servicio_descripcion ? 
+                          detalle.servicio_descripcion.toLowerCase() : '';
+        const abreviatura = detalle.servicio_abreviatura ? 
+                          detalle.servicio_abreviatura.toLowerCase() : '';
+        
+        return descripcion.includes('higienico') || 
+              descripcion.includes('higiénico') ||
+              descripcion.includes('baño') || 
+              descripcion.includes('sanitario') ||
+              descripcion.includes('servicio hig') ||
+              descripcion.includes('s.h.') ||
+              abreviatura === 'sh' || 
+              abreviatura === 's.h.' ||
+              abreviatura.includes('higien') ||
+              abreviatura.includes('baño');
+      };
+      
+      // Separar los detalles en servicios normales y SH
+      const detallesSH = data.detalles.filter(detalle => isSHService(detalle));
+      const detallesNormales = data.detalles.filter(detalle => !isSHService(detalle));
+      
+      const actasData = [];
+      
+      if (detallesNormales.length > 0) {
+        actasData.push({
+          cabecera: data.cabecera,
+          detalles: detallesNormales
+        });
+      }
+      
+      if (detallesSH.length > 0) {
+        actasData.push({
+          cabecera: data.cabecera,
+          detalles: detallesSH
+        });
+      }
+      
+      // Generar PDF
+      if (actasData.length === 1) {
+        const blob = await pdf(<MyPDF cabecera={data.cabecera[0]} detalles={data.detalles} />).toBlob();
+        saveAs(blob, "acta.pdf");
+      } else {
+        const blob = await pdf(<TemplateActa actas={actasData} />).toBlob();
+        saveAs(blob, "acta.pdf");
+      }
     } catch (error) {
-      console.error("Error obteniendo el acta:", error);
     }
   }
 
@@ -148,7 +190,51 @@ const TblActasList = () => {
               return;
           }
           
-          const blob = await pdf(<TemplateActa actas={data} />).toBlob();
+          const isSHService = (detalle) => {
+            if (!detalle) return false;
+            
+            const descripcion = detalle.servicio_descripcion ? 
+                               detalle.servicio_descripcion.toLowerCase() : '';
+            const abreviatura = detalle.servicio_abreviatura ? 
+                               detalle.servicio_abreviatura.toLowerCase() : '';
+            
+            return descripcion.includes('higienico') || 
+                  descripcion.includes('higiénico') ||
+                  descripcion.includes('baño') || 
+                  descripcion.includes('sanitario') ||
+                  descripcion.includes('servicio hig') ||
+                  descripcion.includes('s.h.') ||
+                  abreviatura === 'sh' || 
+                  abreviatura === 's.h.' ||
+                  abreviatura.includes('higien') ||
+                  abreviatura.includes('baño');
+          };
+          
+          // Procesar cada acta para separar servicios SH y normales
+          const actasProcesadas = [];
+          
+          data.forEach(acta => {
+            if (!acta.cabecera || !acta.detalles || acta.cabecera.length === 0) return;
+            
+            const detallesSH = acta.detalles.filter(detalle => isSHService(detalle));
+            const detallesNormales = acta.detalles.filter(detalle => !isSHService(detalle));
+            
+            if (detallesNormales.length > 0) {
+              actasProcesadas.push({
+                cabecera: acta.cabecera,
+                detalles: detallesNormales
+              });
+            }
+            
+            if (detallesSH.length > 0) {
+              actasProcesadas.push({
+                cabecera: acta.cabecera,
+                detalles: detallesSH
+              });
+            }
+          });
+          
+          const blob = await pdf(<TemplateActa actas={actasProcesadas} />).toBlob();
           saveAs(blob, "actas_seleccionadas.pdf");
           
           toast.current.show({severity:'success', summary: 'Éxito', detail:'PDF generado correctamente', life: 3000});
