@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\TblSegMenu;
 use Illuminate\Http\Request;
 use Exception;
+use Illuminate\Support\Facades\Storage;
 
 class TblSegMenuController extends Controller
 {
@@ -22,6 +23,11 @@ class TblSegMenuController extends Controller
             $records = $records->map(function($item) {
                 $item->me_id = (int)$item->me_id;
                 $item->me_id_padre = (int)$item->me_id_padre;
+                
+                if ($item->me_icono && $this->isStoredImage($item->me_icono)) {
+                    $item->me_icono = asset('storage/' . $item->me_icono);
+                }
+                
                 return $item;
             });
             
@@ -36,6 +42,11 @@ class TblSegMenuController extends Controller
     {
         try {
             $record = TblSegMenu::findOrFail($id);
+            
+            if ($record->me_icono && $this->isStoredImage($record->me_icono)) {
+                $record->me_icono = asset('storage/' . $record->me_icono);
+            }
+            
             return $this->respond($record);
         }
         catch(Exception $e) {
@@ -51,9 +62,14 @@ class TblSegMenuController extends Controller
                 'me_url' => 'nullable|string|max:255',
                 'me_icono' => 'nullable|string|max:255',
                 'me_id_padre' => 'nullable|integer',
+                'icon_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:5120'
             ]);
 
-            $data = $request->all();
+            $data = $request->except('icon_file');
+            if ($request->hasFile('icon_file')) {
+                $path = $request->file('icon_file')->store('', 'public');
+                $data['me_icono'] = $path;
+            }
             
             $data['me_fecha_creacion'] = now();
             $data['me_usuario_creacion'] = auth()->id() ?? 1;
@@ -70,6 +86,10 @@ class TblSegMenuController extends Controller
             
             $record = TblSegMenu::create($data);
             
+            if ($record->me_icono && $this->isStoredImage($record->me_icono)) {
+                $record->me_icono = asset('storage/' . $record->me_icono);
+            }
+            
             return $this->respond($record);
         }
         catch(Exception $e) {
@@ -85,9 +105,10 @@ class TblSegMenuController extends Controller
                 'me_url' => 'nullable|string|max:255',
                 'me_icono' => 'nullable|string|max:255',
                 'me_id_padre' => 'nullable|integer',
+                'icon_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:5120'
             ]);
             
-            $data = $request->all();
+            $data = $request->except('icon_file');
             $record = TblSegMenu::findOrFail($id);
             
             if ($data['me_id_padre'] == $id) {
@@ -98,7 +119,28 @@ class TblSegMenuController extends Controller
                 return response()->json(['error' => 'Esta operación crearía un ciclo en la jerarquía de menús'], 422);
             }
             
+            if ($request->hasFile('icon_file')) {
+                if ($record->me_icono && $this->isStoredImage($record->me_icono)) {
+                    Storage::disk('public')->delete($record->me_icono);
+                }
+                
+                $path = $request->file('icon_file')->store('', 'public');
+                $data['me_icono'] = $path;
+            }
+
+            if (isset($data['me_estado']) && $data['me_estado'] === 'V' && $record->me_estado === 'C') {
+                $this->setEstadoRecursivo($id, 'V');
+            }
+            
+            else if (isset($data['me_estado']) && $data['me_estado'] === 'C') {
+                $this->setEstadoRecursivo($id, 'C');
+            }
+
             $record->update($data);
+            
+            if ($record->me_icono && $this->isStoredImage($record->me_icono)) {
+                $record->me_icono = asset('storage/' . $record->me_icono);
+            }
             
             return $this->respond($record);
         }
@@ -138,19 +180,55 @@ class TblSegMenuController extends Controller
     {
         try {
             $record = TblSegMenu::findOrFail($id);
-            
-            $hasChildren = TblSegMenu::where('me_id_padre', $id)->exists();
-            
-            if ($hasChildren) {
-                return response()->json(['error' => 'No se puede eliminar un menú que tiene submenús'], 422);
+
+            $this->deleteChildrenRecursive($id);
+
+            if ($record->me_icono && $this->isStoredImage($record->me_icono)) {
+                Storage::disk('public')->delete($record->me_icono);
             }
-            
+
             $record->delete();
-            
-            return $this->respondDeleted();
+
+            return response()->json(['success' => true, 'message' => 'Menú y submenús eliminados correctamente']);
         }
         catch(Exception $e) {
-            return $this->respondWithError($e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    private function deleteChildrenRecursive($parentId)
+    {
+        $hijos = TblSegMenu::where('me_id_padre', $parentId)->get();
+        foreach ($hijos as $hijo) {
+            $this->deleteChildrenRecursive($hijo->me_id);
+
+            if ($hijo->me_icono && $this->isStoredImage($hijo->me_icono)) {
+                Storage::disk('public')->delete($hijo->me_icono);
+            }
+
+            $hijo->delete();
+        }
+    }
+    
+    private function isStoredImage($iconValue)
+    {
+        return $iconValue && 
+               !str_starts_with($iconValue, 'pi pi-') && 
+               Storage::disk('public')->exists($iconValue);
+    }
+
+    /**
+     * Desactiva recursivamente todos los hijos de un menú.
+     */
+    private function setEstadoRecursivo($parentId, $estado)
+    {
+        $hijos = TblSegMenu::where('me_id_padre', $parentId)->get();
+        foreach ($hijos as $hijo) {
+            if ($hijo->me_estado !== $estado) {
+                $hijo->me_estado = $estado;
+                $hijo->save();
+                $this->setEstadoRecursivo($hijo->me_id, $estado);
+            }
         }
     }
 }

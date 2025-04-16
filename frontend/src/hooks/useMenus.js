@@ -4,6 +4,7 @@
  * 
 **/
 
+import React from 'react';
 import { useState, useEffect } from 'react';
 import useApi from './useApi';
 
@@ -15,6 +16,50 @@ export default function useMenus() {
         loadMenusFromDb();
     }, []);
 
+    const isIconImage = (iconValue) => {
+        return typeof iconValue === 'string' && 
+            (iconValue.startsWith('http') || 
+             iconValue.startsWith('/storage/'));
+    };
+
+    const ImageIcon = ({ src }) => {
+        return (
+            <img 
+                src={src} 
+                alt="" 
+                style={{ 
+                    width: '18px', 
+                    height: '18px', 
+                    verticalAlign: 'middle',
+                    marginRight: '5px',
+                    display: 'inline-block'
+                }} 
+            />
+        );
+    };
+
+    const processMenuIcon = (iconValue) => {
+        return iconValue;
+    };
+
+    const processIconsRecursive = (nodes) => {
+        if (!Array.isArray(nodes)) return;
+        nodes.forEach(node => {
+            const originalIcon = node.originalData?.me_icono;
+            node.icon = originalIcon; 
+            
+            if (isIconImage(originalIcon)) {
+                node.iconType = 'image';
+            } else {
+                node.iconType = 'class';
+            }
+            
+            if (node.items && node.items.length > 0) {
+                processIconsRecursive(node.items);
+            }
+        });
+    };
+
     const loadMenusFromDb = async () => {
         try {
             const response = await api.get('tblsegmenu');
@@ -22,6 +67,7 @@ export default function useMenus() {
             const processedMenus = processMenus(menus);
             setDynamicMenus(processedMenus);
         } catch (error) {
+            console.error("Error loading menus:", error);
         }
     };
 
@@ -38,9 +84,7 @@ export default function useMenus() {
                 key: menu.me_id.toString(), 
                 to: menu.me_url || undefined,
                 label: menu.me_descripcion,
-                icon: menu.me_icono || "pi pi-th-large",
-                iconcolor: "",
-                target: "",
+                icon: menu.me_icono, 
                 items: undefined 
             };
         });
@@ -87,7 +131,7 @@ export default function useMenus() {
              });
         };
         sortChildrenByOrder(result);
-
+        processIconsRecursive(result);
 
         return result;
     };
@@ -130,57 +174,6 @@ export default function useMenus() {
       }
     ]
   },
-//{
-//    "to": "/arqueo-recaudacion",
-//    "label": "Arqueo Recaudación",
-//    "icon": "pi pi-money-bill",
-//    "iconcolor": "",
-//    "target": "",
-//  },
-//  {
-//    "to": "cajas/registro/prevaloradas",
-//    "label": "Registro de Prevaloradas",
-//    "icon": "pi pi-money-bill",
-//    "iconcolor": "",
-//    "target": "",
-//  },
-//  {
-//    "to": "/control-diario",
-//    "label": "Control de Recaudación",
-//    "icon": "pi pi-chart-line",
-//    "iconcolor": "",
-//    "target": "",
-//  },
-//  {
-//   "to": "/actaentregadet",
-//    "label": "Actaentregadet",
-//    "icon": "pi pi-th-large",
-//    "iconcolor": "",
-//    "target": "",
-//  },
-/*
-  {
-    "to": "/arqueodetcortes",
-    "label": "Arqueodetcortes",
-    "icon": "pi pi-th-large",
-    "iconcolor": "",
-    "target": "",
-  },
-  {
-    "to": "/arqueorecaudacioncab",
-    "label": "Arqueorecaudacioncab",
-    "icon": "pi pi-th-large",
-    "iconcolor": "",
-    "target": "",
-  },
-  {
-    "to": "/arqueorecaudaciondet",
-    "label": "Arqueorecaudaciondet",
-    "icon": "pi pi-th-large",
-    "iconcolor": "",
-    "target": "",
-  },
-  */
   {
     "label": "Arrendamientos",
     "icon": "pi pi-briefcase",

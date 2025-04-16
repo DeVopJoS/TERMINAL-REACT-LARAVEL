@@ -10,13 +10,11 @@ const AppSubmenu = (props) => {
     const [activeIndex, setActiveIndex] = useState(null)
 
     const onMenuItemClick = (event, item, index) => {
-        //avoid processing disabled items
         if (item.disabled) {
             event.preventDefault();
             return true;
         }
 
-        //execute command
         if (item.command) {
             item.command({ originalEvent: event, item: item });
         }
@@ -49,7 +47,29 @@ const AppSubmenu = (props) => {
     const renderLinkContent = (item) => {
         let submenuIcon = item.items && <i className="pi pi-fw pi-angle-down menuitem-toggle-icon"></i>;
         let badge = item.badge && <Badge value={item.badge} />;
-        let menuIcon = item.icon && <i className={`menu-icon ${item.icon}`}></i>;
+        
+        let menuIcon;
+        if (item.icon) {
+            // Verifica si el icono es una URL de imagen
+            if (typeof item.icon === 'string' && (item.icon.startsWith('http') || item.icon.startsWith('/storage/'))) {
+                menuIcon = (
+                    <img 
+                        src={item.icon} 
+                        alt="" 
+                        className="menu-icon"
+                        style={{ 
+                            width: '18px', 
+                            height: '18px',
+                            marginRight: '5px',
+                            verticalAlign: 'middle'
+                        }} 
+                    />
+                );
+            } else {
+                menuIcon = <i className={`menu-icon ${item.icon}`}></i>;
+            }
+        }
+        
         let menuLabel = item.label && <span className="menu-label">{item.label}</span>
         return (
             <React.Fragment>

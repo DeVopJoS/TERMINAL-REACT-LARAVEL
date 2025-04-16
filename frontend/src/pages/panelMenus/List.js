@@ -10,6 +10,8 @@ import { confirmDialog } from 'primereact/confirmdialog';
 import useApi from 'hooks/useApi';
 import { Card } from 'primereact/card';
 import { RadioButton } from 'primereact/radiobutton';
+import { FileUpload } from 'primereact/fileupload';
+import { Divider } from 'primereact/divider';
 
 export default function MenuList() {
     const [nodes, setNodes] = useState([]);
@@ -31,6 +33,9 @@ export default function MenuList() {
     const [isEdit, setIsEdit] = useState(false);
     const toast = useRef(null);
     const cm = useRef(null);
+    const fileUploadRef = useRef(null);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [iconType, setIconType] = useState('primereact');
 
     /**
      * Busca un nodo en un árbol por su key
@@ -92,6 +97,32 @@ export default function MenuList() {
         }
     };
 
+    const isIconImage = (iconValue) => {
+        return typeof iconValue === 'string' && 
+            (iconValue.startsWith('http') || 
+             iconValue.startsWith('/storage/'));
+    };
+
+    const renderIcon = (iconValue) => {
+        if (isIconImage(iconValue)) {
+            return (
+                <img
+                    src={iconValue}
+                    alt="Icono"
+                    style={{
+                        width: '1.5rem',
+                        height: '1.5rem',
+                        marginRight: '8px',
+                        objectFit: 'contain',
+                        verticalAlign: 'middle'
+                    }}
+                />
+            );
+        }
+        const iconClass = iconValue || 'pi pi-th-large';
+        return <i className={iconClass} style={{fontSize: '1.5rem', marginRight: '8px', verticalAlign: 'middle'}}></i>;
+    };
+
     const convertToTreeNodes = (menus) => {
         if (!menus || !Array.isArray(menus)) {
             return [];
@@ -102,8 +133,7 @@ export default function MenuList() {
             menuMap[menu.me_id] = {
                 key: menu.me_id.toString(),
                 label: menu.me_descripcion,
-                icon: menu.me_icono,
-                data: menu,
+                data: menu, 
                 children: [],
                 style: menu.me_estado === 'C' ? { color: '#aaa', textDecoration: 'line-through' } : {}
             };
@@ -112,7 +142,6 @@ export default function MenuList() {
         const tree = [];
         menus.forEach(menu => {
             const parentId = menu.me_id_padre === null ? 0 : menu.me_id_padre;
-            
             if (parentId === 0) {
                 tree.push(menuMap[menu.me_id]);
             } else if (menuMap[parentId]) {
@@ -159,6 +188,11 @@ export default function MenuList() {
             me_vista: 1,
             me_orden: 1
         });
+        setSelectedFile(null);
+        setIconType('primereact');
+        if (fileUploadRef.current) {
+            fileUploadRef.current.clear();
+        }
         setVisible(true);
     };
 
@@ -172,6 +206,17 @@ export default function MenuList() {
             ...node.data,
             me_id_padre: node.data.me_id_padre || 0
         });
+        
+        if (isIconImage(node.data.me_icono)) {
+            setIconType('custom');
+        } else {
+            setIconType('primereact');
+        }
+        
+        setSelectedFile(null);
+        if (fileUploadRef.current) {
+            fileUploadRef.current.clear();
+        }
         setVisible(true);
     };
 
@@ -186,15 +231,40 @@ export default function MenuList() {
                 return;
             }
             
+            const formData = new FormData();
+            
+            Object.keys(menuData).forEach(key => {
+                if (key !== 'me_icono' || !selectedFile) {
+                    formData.append(key, menuData[key]);
+                }
+            });
+            
+            if (selectedFile) {
+                formData.append('icon_file', selectedFile);
+            }
+            
+            let response;
             if (isEdit) {
-                const response = await api.put(`tblsegmenu/edit/${menuData.me_id}`, menuData);
+                response = await api.axios()({
+                    method: 'post',
+                    url: `tblsegmenu/edit/${menuData.me_id}`, 
+                    data: formData,
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+                
                 toast.current.show({
                     severity: 'success',
                     summary: 'Éxito',
                     detail: 'Menú actualizado correctamente'
                 });
             } else {
-                const response = await api.post('tblsegmenu/add', menuData);
+                response = await api.axios()({
+                    method: 'post',
+                    url: 'tblsegmenu/add',
+                    data: formData,
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+                
                 toast.current.show({
                     severity: 'success',
                     summary: 'Éxito',
@@ -366,6 +436,26 @@ export default function MenuList() {
         { label: 'Search', value: 'pi pi-search' },
         { label: 'Default', value: 'pi pi-th-large' }
     ];
+    
+    const onFileSelect = (e) => {
+        if (e.files && e.files.length > 0) {
+            setSelectedFile(e.files[0]);
+        }
+    };
+    
+    const onFileRemove = () => {
+        setSelectedFile(null);
+    };
+
+    const nodeTemplate = (node) => {
+        const iconElement = renderIcon(node.data?.me_icono);
+        return (
+            <span className="flex align-items-center">
+                {iconElement}
+                {node.label}
+            </span>
+        );
+    };
 
     return (
         <div className="grid">
@@ -381,7 +471,7 @@ export default function MenuList() {
             
             <div className="col-8">
                 <Card title="Estructura de Menús" className="h-full">
-                    <div className="flex justify-content-start align-items-center gap-2 mb-4"> {/* Use gap and align-items */}
+                    <div className="flex justify-content-start align-items-center gap-2 mb-4">
                         <Button 
                             label="Agregar Menú Principal" 
                             icon="pi pi-plus" 
@@ -420,6 +510,7 @@ export default function MenuList() {
                         filter
                         filterMode="strict"
                         filterPlaceholder="Buscar menú..."
+                        nodeTemplate={nodeTemplate} 
                     />
 
                     {nodes && nodes.length > 0 && !selectedNode && (
@@ -445,7 +536,18 @@ export default function MenuList() {
                             </div>
                             <div className="field">
                                 <label className="font-bold">Icono:</label>
-                                <div><i className={selectedNode.data.me_icono} style={{fontSize: '1.5rem', marginRight: '8px'}}></i> {selectedNode.data.me_icono}</div>
+                                <div className="flex align-items-center">
+                                    {isIconImage(selectedNode.data.me_icono) ? (
+                                        <img 
+                                            src={selectedNode.data.me_icono} 
+                                            alt="Icono personalizado" 
+                                            style={{width: '1.5rem', height: '1.5rem', marginRight: '8px', objectFit: 'contain', verticalAlign: 'middle'}}
+                                        />
+                                    ) : (
+                                        <i className={selectedNode.data.me_icono} style={{fontSize: '1.5rem', marginRight: '8px', verticalAlign: 'middle'}}></i>
+                                    )}
+                                    {isIconImage(selectedNode.data.me_icono) ? 'Imagen personalizada' : selectedNode.data.me_icono}
+                                </div>
                             </div>
                             <div className="field">
                                 <label className="font-bold">Estado:</label>
@@ -516,33 +618,91 @@ export default function MenuList() {
                             value={menuData.me_url || ''}
                             onChange={(e) => setMenuData({...menuData, me_url: e.target.value})}
                             className="w-full"
-                            placeholder="Ej: /pagina o /modulo/pagina"
+                            placeholder="Ej: /modulo/pagina"
                         />
                         <small className="text-muted">Deje en blanco para menús que solo contienen submenús</small>
                     </div>
                     
                     <div className="col-12 mb-2">
-                        <label htmlFor="me_icono" className="font-bold">Icono</label>
-                        <Dropdown
-                            id="me_icono"
-                            value={menuData.me_icono || 'pi pi-th-large'}
-                            options={iconOptions}
-                            onChange={(e) => setMenuData({...menuData, me_icono: e.value})}
-                            optionLabel="label"
-                            className="w-full"
-                            itemTemplate={(option) => option ? (
-                                <div className="flex align-items-center">
-                                    <i className={option.value} style={{fontSize: '1.25rem', marginRight: '8px'}}></i>
-                                    {option.label}
-                                </div>
-                            ) : null}
-                            valueTemplate={(option) => option ? (
-                                <div className="flex align-items-center">
-                                    <i className={option.value || menuData.me_icono} style={{fontSize: '1.25rem', marginRight: '8px'}}></i>
-                                    {option.label || menuData.me_icono} 
-                                </div>
-                            ) : null}
-                        />
+                        <label className="font-bold block mb-2">Tipo de Icono</label>
+                        <div className="flex mb-3">
+                            <div className="field-radiobutton mr-4">
+                                <RadioButton 
+                                    inputId="icono-primereact" 
+                                    value="primereact" 
+                                    name="icon-type" 
+                                    checked={iconType === 'primereact'}
+                                    onChange={() => setIconType('primereact')} 
+                                />
+                                <label htmlFor="icono-primereact" className="ml-2">Iconos PrimeReact</label>
+                            </div>
+                            <div className="field-radiobutton">
+                                <RadioButton 
+                                    inputId="icono-personalizado" 
+                                    value="custom" 
+                                    name="icon-type" 
+                                    checked={iconType === 'custom'}
+                                    onChange={() => setIconType('custom')} 
+                                />
+                                <label htmlFor="icono-personalizado" className="ml-2">Imagen Personalizada</label>
+                            </div>
+                        </div>
+                        
+                        {iconType === 'primereact' && (
+                            <div>
+                                <label htmlFor="me_icono" className="font-bold">Seleccionar Icono</label>
+                                <Dropdown
+                                    id="me_icono"
+                                    value={menuData.me_icono || 'pi pi-th-large'}
+                                    options={iconOptions}
+                                    onChange={(e) => setMenuData({...menuData, me_icono: e.value})}
+                                    optionLabel="label"
+                                    className="w-full"
+                                    itemTemplate={(option) => option ? (
+                                        <div className="flex align-items-center">
+                                            <i className={option.value} style={{fontSize: '1.25rem', marginRight: '8px'}}></i>
+                                            {option.label}
+                                        </div>
+                                    ) : null}
+                                    valueTemplate={(option) => option ? (
+                                        <div className="flex align-items-center">
+                                            <i className={option.value || menuData.me_icono} style={{fontSize: '1.25rem', marginRight: '8px'}}></i>
+                                            {option.label || menuData.me_icono} 
+                                        </div>
+                                    ) : null}
+                                />
+                            </div>
+                        )}
+                        
+                        {iconType === 'custom' && (
+                            <div>
+                                <label htmlFor="icon_file" className="font-bold">Subir Imagen de Icono</label>
+                                <FileUpload
+                                    ref={fileUploadRef}
+                                    name="icon_file"
+                                    accept="image/*"
+                                    maxFileSize={5000000}
+                                    onSelect={onFileSelect}
+                                    onClear={onFileRemove}
+                                    emptyTemplate={<p className="m-0">Arrastre y suelte una imagen aquí o haga clic para seleccionar.</p>}
+                                    chooseLabel="Seleccionar"
+                                    cancelLabel="Cancelar"
+                                    mode="basic"
+                                    className="w-full"
+                                />
+                                <small className="text-muted">Formatos: JPG, PNG, GIF. Tamaño máximo: 5MB</small>
+                                
+                                {isEdit && isIconImage(menuData.me_icono) && !selectedFile && (
+                                    <div className="mt-2">
+                                        <label className="font-bold block">Icono actual:</label>
+                                        <div className="flex align-items-center mt-1">
+                                            <img src={menuData.me_icono} alt="Icono actual" style={{width: '30px', height: '30px', marginRight: '8px'}} />
+                                            <span>Imagen personalizada</span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                     
                     <div className="col-12 mb-2">

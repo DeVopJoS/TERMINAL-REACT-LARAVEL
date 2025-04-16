@@ -102,9 +102,41 @@ const MainLayout = () => {
 			},
 		},
 	];
+
+	const menuTemplate = (item, options) => {
+		let iconElement;
+		if (item.iconType === 'image' || (typeof item.icon === 'string' && (item.icon.startsWith('http') || item.icon.startsWith('/storage/')))) {
+			iconElement = (
+				<img
+					src={item.icon}
+					alt=""
+					style={{
+						width: '1.5rem',
+						height: '1.5rem',
+						marginRight: '8px',
+						objectFit: 'contain',
+						verticalAlign: 'middle'
+					}}
+				/>
+				);
+		} else if (item.iconType === 'class' || typeof item.icon === 'string') {
+			iconElement = <i className={classNames('mr-2', item.icon)}></i>;
+		} else if (React.isValidElement(item.icon)) {
+			iconElement = item.icon;
+		} else {
+			iconElement = <i className="pi pi-th-large mr-2"></i>;
+		}
+
+		return (
+			<Link to={item.to || '#'} className={options.className} onClick={options.onClick}>
+				{iconElement}
+				<span className="ml-2">{item.label}</span>
+				{item.items && <i className="pi pi-fw pi-angle-down ml-auto"></i>}
+			</Link>
+		);
+	};
+
 	if (auth.loading){
-		// full screen loading. 
-		// Loading current user data from api
 	 	return (
 	 		<div style={{ height: '100vh' }} className="flex align-items-center justify-content-center">
 	 			<ProgressSpinner />
@@ -166,7 +198,7 @@ const MainLayout = () => {
 			Hola { auth.userName }
 		</div>
 	</div>
-                <AppMenu model={navbarSideLeft} onMenuItemClick={onMenuItemClick} />
+                <AppMenu model={navbarSideLeft} onMenuItemClick={onMenuItemClick} template={menuTemplate} />
                 </div>
 			<div className="layout-main-container ">
 				<div className="layout-main">
