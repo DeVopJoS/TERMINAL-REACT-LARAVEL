@@ -26,7 +26,7 @@ class TblFacturas extends Model
      *
      * @var array
      */
-	protected $fillable = ["arrendatario_nombre","arrendatario_ci","factura_numero","factura_fecha_emision","factura_total","factura_fecha_pago","factura_estado"];
+	protected $fillable = ["n","fecha_de_la_factura","n_de_la_factura","codigo_de_autorizacion","nit_ci_cliente","complemento","nombre_o_razon_social","importe_total_de_la_venta","importe_ice","importe_iehd","importe_ipj","tasas","otros_no_sujetos_al_iva","exportaciones_y_operaciones_exentas","ventas_gravadas_a_tasa_cero","subtotal","descuentos_bonificaciones_y_rebajas_sujetas_al_iva","importe_gift_card","importe_base_para_debito_fiscal","debito_fiscal","estado","codigo_de_control","tipo_de_venta","con_derecho_a_credito_fiscal","estado_consolidacion","fecha_registro","factura_estado"];
 	
 
 	/**
@@ -38,13 +38,19 @@ class TblFacturas extends Model
 		//search table record 
 		$search_condition = '(
 				CAST(factura_id AS TEXT) LIKE ?  OR 
-				arrendatario_nombre LIKE ?  OR 
-				arrendatario_ci LIKE ?  OR 
-				factura_numero LIKE ?  OR 
+				codigo_de_autorizacion LIKE ?  OR 
+				nit_ci_cliente LIKE ?  OR 
+				complemento LIKE ?  OR 
+				nombre_o_razon_social LIKE ?  OR 
+				estado LIKE ?  OR 
+				codigo_de_control LIKE ?  OR 
+				tipo_de_venta LIKE ?  OR 
+				con_derecho_a_credito_fiscal LIKE ?  OR 
+				estado_consolidacion LIKE ?  OR 
 				factura_estado LIKE ? 
 		)';
 		$search_params = [
-			"%$text%","%$text%","%$text%","%$text%","%$text%"
+			"%$text%","%$text%","%$text%","%$text%","%$text%","%$text%","%$text%","%$text%","%$text%","%$text%","%$text%"
 		];
 		//setting search conditions
 		$query->whereRaw($search_condition, $search_params);
@@ -59,12 +65,32 @@ class TblFacturas extends Model
 	public static function listFields(){
 		return [ 
 			"factura_id", 
-			"arrendatario_nombre", 
-			"arrendatario_ci", 
-			"factura_numero", 
-			"factura_fecha_emision", 
-			"factura_total", 
-			"factura_fecha_pago", 
+			"n", 
+			"fecha_de_la_factura", 
+			"n_de_la_factura", 
+			"codigo_de_autorizacion", 
+			"nit_ci_cliente", 
+			"complemento", 
+			"nombre_o_razon_social", 
+			"importe_total_de_la_venta", 
+			"importe_ice", 
+			"importe_iehd", 
+			"importe_ipj", 
+			"tasas", 
+			"otros_no_sujetos_al_iva", 
+			"exportaciones_y_operaciones_exentas", 
+			"ventas_gravadas_a_tasa_cero", 
+			"subtotal", 
+			"descuentos_bonificaciones_y_rebajas_sujetas_al_iva", 
+			"importe_gift_card", 
+			"importe_base_para_debito_fiscal", 
+			"debito_fiscal", 
+			"estado", 
+			"codigo_de_control", 
+			"tipo_de_venta", 
+			"con_derecho_a_credito_fiscal", 
+			"estado_consolidacion", 
+			"fecha_registro", 
 			"factura_estado" 
 		];
 	}
@@ -78,12 +104,32 @@ class TblFacturas extends Model
 	public static function exportListFields(){
 		return [ 
 			"factura_id", 
-			"arrendatario_nombre", 
-			"arrendatario_ci", 
-			"factura_numero", 
-			"factura_fecha_emision", 
-			"factura_total", 
-			"factura_fecha_pago", 
+			"n", 
+			"fecha_de_la_factura", 
+			"n_de_la_factura", 
+			"codigo_de_autorizacion", 
+			"nit_ci_cliente", 
+			"complemento", 
+			"nombre_o_razon_social", 
+			"importe_total_de_la_venta", 
+			"importe_ice", 
+			"importe_iehd", 
+			"importe_ipj", 
+			"tasas", 
+			"otros_no_sujetos_al_iva", 
+			"exportaciones_y_operaciones_exentas", 
+			"ventas_gravadas_a_tasa_cero", 
+			"subtotal", 
+			"descuentos_bonificaciones_y_rebajas_sujetas_al_iva", 
+			"importe_gift_card", 
+			"importe_base_para_debito_fiscal", 
+			"debito_fiscal", 
+			"estado", 
+			"codigo_de_control", 
+			"tipo_de_venta", 
+			"con_derecho_a_credito_fiscal", 
+			"estado_consolidacion", 
+			"fecha_registro", 
 			"factura_estado" 
 		];
 	}
@@ -97,12 +143,32 @@ class TblFacturas extends Model
 	public static function viewFields(){
 		return [ 
 			"factura_id", 
-			"arrendatario_nombre", 
-			"arrendatario_ci", 
-			"factura_numero", 
-			"factura_fecha_emision", 
-			"factura_total", 
-			"factura_fecha_pago", 
+			"n", 
+			"fecha_de_la_factura", 
+			"n_de_la_factura", 
+			"codigo_de_autorizacion", 
+			"nit_ci_cliente", 
+			"complemento", 
+			"nombre_o_razon_social", 
+			"importe_total_de_la_venta", 
+			"importe_ice", 
+			"importe_iehd", 
+			"importe_ipj", 
+			"tasas", 
+			"otros_no_sujetos_al_iva", 
+			"exportaciones_y_operaciones_exentas", 
+			"ventas_gravadas_a_tasa_cero", 
+			"subtotal", 
+			"descuentos_bonificaciones_y_rebajas_sujetas_al_iva", 
+			"importe_gift_card", 
+			"importe_base_para_debito_fiscal", 
+			"debito_fiscal", 
+			"estado", 
+			"codigo_de_control", 
+			"tipo_de_venta", 
+			"con_derecho_a_credito_fiscal", 
+			"estado_consolidacion", 
+			"fecha_registro", 
 			"factura_estado" 
 		];
 	}
@@ -116,12 +182,32 @@ class TblFacturas extends Model
 	public static function exportViewFields(){
 		return [ 
 			"factura_id", 
-			"arrendatario_nombre", 
-			"arrendatario_ci", 
-			"factura_numero", 
-			"factura_fecha_emision", 
-			"factura_total", 
-			"factura_fecha_pago", 
+			"n", 
+			"fecha_de_la_factura", 
+			"n_de_la_factura", 
+			"codigo_de_autorizacion", 
+			"nit_ci_cliente", 
+			"complemento", 
+			"nombre_o_razon_social", 
+			"importe_total_de_la_venta", 
+			"importe_ice", 
+			"importe_iehd", 
+			"importe_ipj", 
+			"tasas", 
+			"otros_no_sujetos_al_iva", 
+			"exportaciones_y_operaciones_exentas", 
+			"ventas_gravadas_a_tasa_cero", 
+			"subtotal", 
+			"descuentos_bonificaciones_y_rebajas_sujetas_al_iva", 
+			"importe_gift_card", 
+			"importe_base_para_debito_fiscal", 
+			"debito_fiscal", 
+			"estado", 
+			"codigo_de_control", 
+			"tipo_de_venta", 
+			"con_derecho_a_credito_fiscal", 
+			"estado_consolidacion", 
+			"fecha_registro", 
 			"factura_estado" 
 		];
 	}
@@ -134,14 +220,34 @@ class TblFacturas extends Model
      */
 	public static function editFields(){
 		return [ 
-			"arrendatario_nombre", 
-			"arrendatario_ci", 
-			"factura_numero", 
-			"factura_fecha_emision", 
-			"factura_total", 
-			"factura_fecha_pago", 
-			"factura_estado", 
-			"factura_id" 
+			"factura_id", 
+			"n", 
+			"fecha_de_la_factura", 
+			"n_de_la_factura", 
+			"codigo_de_autorizacion", 
+			"nit_ci_cliente", 
+			"complemento", 
+			"nombre_o_razon_social", 
+			"importe_total_de_la_venta", 
+			"importe_ice", 
+			"importe_iehd", 
+			"importe_ipj", 
+			"tasas", 
+			"otros_no_sujetos_al_iva", 
+			"exportaciones_y_operaciones_exentas", 
+			"ventas_gravadas_a_tasa_cero", 
+			"subtotal", 
+			"descuentos_bonificaciones_y_rebajas_sujetas_al_iva", 
+			"importe_gift_card", 
+			"importe_base_para_debito_fiscal", 
+			"debito_fiscal", 
+			"estado", 
+			"codigo_de_control", 
+			"tipo_de_venta", 
+			"con_derecho_a_credito_fiscal", 
+			"estado_consolidacion", 
+			"fecha_registro", 
+			"factura_estado" 
 		];
 	}
 	

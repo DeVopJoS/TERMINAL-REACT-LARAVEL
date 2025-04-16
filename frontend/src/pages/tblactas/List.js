@@ -6,6 +6,7 @@ import { Button } from "primereact/button";
 import { Dropdown } from "primereact/dropdown";
 import { Calendar } from "primereact/calendar";
 import { Paginator } from "primereact/paginator";
+import { confirmDialog } from 'primereact/confirmdialog';
 import { Toast } from "primereact/toast";
 import { InputSwitch } from 'primereact/inputswitch';
 import { saveAs } from "file-saver";
@@ -18,14 +19,20 @@ import TemplateActa from '../../pdf/ActasTemplate2'
 const TblActasList = () => {
   const [ actas, setActas ] = useState([]);
   const [ selectedIds, setSelectedIds ] = useState([]);
-  const [ searchTerm, setSearchTerm ] = useState("");
+  const [ correlativo, setCorrelativo ] = useState("");
+  const [ selectedRowId, setSelectedRowId ] = useState();
+  const [ fecha, setFecha ] = useState(null);
   const [ modalVisible, setModalVisible ] = useState(false);
   const [ loading, setLoading ] = useState(false);
-  const [ actaToEdit, setActaToEdit ] = useState(null);
+  const [ globalFilter, setGlobalFilter ] = useState("");
 
   useEffect(() => {
     fetchData();
   }, [])
+
+  useEffect(() => {
+    if( !modalVisible ) setSelectedRowId();
+  }, [modalVisible]);
   
   const fetchData = async () => {
     try{
@@ -44,10 +51,15 @@ const TblActasList = () => {
   const actionTemplate = (rowData) => {
     return (
       <div className="flex gap-2">
-        <Button
-          icon="pi pi-pencil"
-          className="p-button-rounded p-button-success p-button-sm"
-          onClick={() => handleEditActa(rowData)}
+        <Button 
+        icon="pi pi-trash"
+        className="p-button-rounded p-button-danger p-button-sm"
+        onClick={ () => handleDel(rowData) }
+        />
+        <Button 
+        icon="pi pi-pencil"
+        className="p-button-rounded p-button-warning p-button-sm"
+        onClick={ () => handleEdit(rowData) }
         />
         <Button
           icon="pi pi-download"
@@ -58,33 +70,40 @@ const TblActasList = () => {
     );
   };
 
+  const handleEdit = ({ae_actaid}) => {
+    setSelectedRowId(ae_actaid);
+    setModalVisible(true);
+  }
+
+  const handleDel = ({ ae_actaid }) => {
+    const deleteActa = async () => {
+      try{
+        const deleteActa = await axios.get(`actaentregacab/delete/${ae_actaid}`);
+        
+        toast.current.show({severity:'success', summary: 'Exito', detail:'Acta eliminada exitosamente!', life: 3000});
+        fetchData();
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    confirmDialog({
+        message: '¿Estas seguro de seguir con la acción?',
+        header: 'Eliminar acta',
+        icon: 'pi pi-exclamation-triangle',
+        accept: deleteActa,
+    });
+  }
+
   const searchActa = async () => {
     try {
-      setLoading(true);
-      
-      if (!searchTerm.trim()) {
-        fetchData();
-        return;
-      }
-      
-      const { data } = await axios.get(`/actas/index?search=${searchTerm}`);
+      const formattedDate = fecha ? fecha.toISOString().split('T')[0] : '';
+
+      const { data } = await axios.get(`/actas/index?ae_estado=P&ae_fecha=${formattedDate}`);
+
       setActas(data);
     } catch (error) {
-      console.error("Error al buscar datos:", error);
-      toast.current.show({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Error al buscar actas',
-        life: 3000
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      searchActa();
+        console.error("Error al buscar datos:", error);
     }
   };
 
@@ -93,9 +112,11 @@ const TblActasList = () => {
       const { data } = await axios.get(`/actas/cabecera/${ae_actaid}`);
 
       if (!data || data.length === 0) {
+        console.error("No se encontraron datos en la cabecera");
         return;
       }
-      
+      console.log(data.cabecera[0])
+      console.log(data.detalles)
       const blob = await pdf(<MyPDF cabecera={data.cabecera[0]} detalles={data.detalles} />).toBlob();
       saveAs(blob, "acta.pdf");
     } catch (error) {
@@ -112,28 +133,30 @@ const TblActasList = () => {
   };
 
   const printSelectedActas = async () => {
-    try {
-      if (selectedIds.length === 0) {
-        toast.warning('Selecciona al menos un acta para imprimir');
-        return;
+      try {
+          if (selectedIds.length === 0) {
+              toast.current.show({severity:'warn', summary: 'Advertencia', detail:'Selecciona al menos un acta para imprimir', life: 3000});
+              return;
+          }
+
+          const { data } = await axios.post('/actas/cabecera', { 
+              rec_ids: selectedIds 
+          });
+
+          if (!data || data.length === 0) {
+              toast.current.show({severity:'error', summary: 'Error', detail:'No se encontraron datos para las actas seleccionadas', life: 3000});
+              return;
+          }
+          
+          const blob = await pdf(<TemplateActa actas={data} />).toBlob();
+          saveAs(blob, "actas_seleccionadas.pdf");
+          
+          toast.current.show({severity:'success', summary: 'Éxito', detail:'PDF generado correctamente', life: 3000});
+          setSelectedIds([]);
+      } catch (error) {
+          console.error("Error imprimiendo actas:", error);
+          toast.current.show({severity:'error', summary: 'Error', detail:`Error al generar PDF: ${error.message}`, life: 3000});
       }
-
-      const { data } = await axios.post('/actas/cabecera', { 
-        rec_ids: selectedIds 
-      });
-      
-      const blob = await pdf(<TemplateActa actas={data} />).toBlob();
-      saveAs(blob, "actas_seleccionadas.pdf");
-
-      setSelectedIds([]);
-    } catch (error) {
-      console.error("Error imprimiendo actas:", error);
-    }
-  };
-
-  const handleEditActa = (acta) => {
-    setActaToEdit(acta);
-    setModalVisible(true);
   };
 
   return (
@@ -141,27 +164,34 @@ const TblActasList = () => {
       <Toast ref={toast} />
       <div className="card">
         <h5 className="text-black">Creación de Acta Entrega</h5>
-        <div className="grid mb-3">
-          <div className="col-12 md:col-8">
-            <span className="p-input-icon-left w-full">
-              <i className="pi pi-search" />
-              <InputText 
-                placeholder="Buscar por Acta ID, Correlativo, Fecha, Grupo, Operador, Recaudación..." 
-                className="w-full"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyDown={handleKeyDown}
+        {/* <div className="grid mb-3">
+          
+          <div className="col-12 md:col-3">
+            <InputText
+              value={correlativo}
+              placeholder="Correlativo"
+              onChange={(e) => setCorrelativo(e.target.value)}
+              className="w-full"
+            />           
+          </div>
+
+          <div className="col-12 md:col-3">
+              <Calendar placeholder="Fecha" value={fecha} onChange={(e) => setFecha(e.value)} showIcon className="w-full"
               />
-            </span>
           </div>
-          <div className="col-12 md:col-4 flex justify-content-end">
-            <Button 
-              label="BUSCAR" 
-              icon="pi pi-search" 
-              className="px-8"
-              onClick={searchActa}
-            />
+
+          <div className="col-12 md:col-6 flex justify-content-end">
+            <Button label="BUSCAR DATOS DE ACTA ENTREGA" icon="pi pi-search" className="px-8" onClick={searchActa}/>
           </div>
+        </div> */}
+
+        <div className="flex justify-content-end mb-2 mr-2">
+          <InputText 
+              value={globalFilter} 
+              onChange={(e) => setGlobalFilter(e.target.value)} 
+              placeholder="Buscar..."
+              className="ml-5 p-inputtext-sm md:w-50"
+          />
         </div>
         { selectedIds.length != 0 && <Button label="Imprimir" onClick={printSelectedActas}/>}
         {" "}
@@ -169,15 +199,23 @@ const TblActasList = () => {
         {/* DataTable */}
         <DataTable 
           value={actas} 
-          responsiveLayout="scroll" 
-          className="p-datatable-sm text-xs" 
-          paginator 
-          rows={10} 
           loading={loading} 
+          paginator rows={10} 
+          responsiveLayout="scroll" 
           rowsPerPageOptions={[10, 25, 50]} 
+          className="p-datatable-sm text-xs" 
           emptyMessage="No se encontraron actas"
-          rowStyle={{ height: '2rem', padding: '0' }}
-        >
+          filters={{ global: { value: globalFilter, matchMode: "contains" } }}
+          globalFilterFields={[
+              "ae_actaid",
+              "ae_correlativo",
+              "punto_recaudacion.puntorecaud_nombre",
+              "ae_fecha",
+              "ae_grupo",
+              "ae_operador1erturno",
+              "ae_operador2doturno",
+              "ae_recaudaciontotalbs",
+          ]}>
           <Column 
               body={(rowData) => (
                   <InputSwitch 
@@ -186,19 +224,20 @@ const TblActasList = () => {
                   />
               )}
               headerStyle={{ width: '4rem' }}
-              bodyStyle={{ padding: '0' }}
-              className="text-xs"
+              className="text-xs py-1 px-2"
           />
-          <Column field="ae_actaid" header="ACTA ID" className="text-xs" bodyStyle={{ padding: '0 0.1rem' }} sortable/>
-          <Column field="ae_correlativo" header="CORRELATIVO" className="text-xs" bodyStyle={{ padding: '0 0.1rem' }} sortable/>
-          <Column field="punto_recaudacion.puntorecaud_nombre" header="PUNTO RECAUDACIÓN" className="text-xs" bodyStyle={{ padding: '0 0.1rem' }} sortable/>
-          <Column field="ae_fecha" header="FECHA" className="text-xs" bodyStyle={{ padding: '0 0.1rem' }} sortable/>
-          <Column field="ae_grupo" header="GRUPO" className="text-xs" bodyStyle={{ padding: '0 0.1rem' }} sortable/>
-          <Column field="ae_operador1erturno" header="OPERADOR 1ER TURNO" className="text-xs" bodyStyle={{ padding: '0 0.1rem' }} sortable/>
-          <Column field="ae_operador2doturno" header="OPERADOR 2DO TURNO" className="text-xs" bodyStyle={{ padding: '0 0.1rem' }} sortable/>
-          <Column field="ae_observacion" header="OBSERVACIÓN" className="text-xs" bodyStyle={{ padding: '0 0.1rem' }} sortable/>
-          <Column field="ae_recaudaciontotalbs" header="RECAUDACIÓN TOTAL BS" className="text-xs" bodyStyle={{ padding: '0 0.1rem' }} sortable/>
-          <Column body={actionTemplate} header="" className="text-xs" bodyStyle={{ padding: '0 0.1rem' }}/>
+          <Column field="ae_actaid" header="ACTA ID" className="text-xs py-1 px-2" sortable/>
+          <Column field="ae_correlativo" header="CORRELATIVO" className="text-xs py-1 px-2" sortable/>
+          <Column field="punto_recaudacion.puntorecaud_nombre" header="PUNTO RECAUDACIÓN" className="text-xs py-1 px-2" sortable/>
+          <Column field="ae_fecha" header="FECHA" className="text-xs py-1 px-2" sortable/>
+          <Column field="ae_grupo" header="GRUPO" className="text-xs py-1 px-2" sortable/>
+          <Column field="ae_operador1erturno" header="OPERADOR 1ER TURNO" className="text-xs py-1 px-2" sortable/>
+          <Column field="ae_operador2doturno" header="OPERADOR 2DO TURNO" className="text-xs py-1 px-2" sortable/>
+          <Column field="ae_observacion" header="OBSERVACIÓN" className="text-xs py-1 px-2" sortable/>
+          <Column field="ae_recaudaciontotalbs" header="RECAUDACIÓN TOTAL BS" className="text-xs py-1 px-2"
+            // body={(rowData) => rowData.ae_recaudaciontotalbs.toFixed(2)} 
+            sortable/>
+          <Column body={actionTemplate} header="" className="text-xs py-1 px-2"/>
         </DataTable>
         
       </div>
@@ -207,22 +246,16 @@ const TblActasList = () => {
           icon="pi pi-plus"
           className="p-button-rounded p-button-info shadow-8"
           style={{ width: "3rem", height: "3rem", fontSize: "1.5rem" }} 
-          onClick={() => {
-            setActaToEdit(null);
-            setModalVisible(true);
-          }} 
+          onClick={() => setModalVisible(true) } 
         />
       </div>
       <div>
         {modalVisible && (
           <DialogActa
             visible={modalVisible}
-            onHide={() => {
-              setModalVisible(false);
-              setActaToEdit(null);
-            }} 
+            onHide={() => setModalVisible(false)} 
             reloadData={fetchData}
-            editData={actaToEdit}
+            selectedRowId={selectedRowId}
           />
         )}
       </div>      

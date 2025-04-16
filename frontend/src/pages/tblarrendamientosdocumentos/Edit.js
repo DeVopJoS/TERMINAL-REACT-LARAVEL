@@ -7,6 +7,7 @@ import { InputTextarea } from 'primereact/inputtextarea';
 import { PageRequestError } from 'components/PageRequestError';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Title } from 'components/Title';
+import { Uploader } from 'components/Uploader';
 import useApp from 'hooks/useApp';
 
 import useEditPage from 'hooks/useEditPage';
@@ -17,7 +18,7 @@ const TblarrendamientosdocumentosEditPage = (props) => {
 		arrendamiento_id: yup.number().nullable().label("Arrendamiento Id"),
 		documento_tipo: yup.string().required().label("Documento Tipo"),
 		documento_nombre: yup.string().required().label("Documento Nombre"),
-		documento_url: yup.string().required().label("Documento Url"),
+		documento_url: yup.string().required().label("Documentos"),
 		documento_descripcion: yup.string().required().label("Documento Descripcion"),
 		fecha_subida: yup.string().nullable().label("Fecha Subida"),
 		documento_estado: yup.string().nullable().label("Documento Estado")
@@ -133,11 +134,12 @@ const TblarrendamientosdocumentosEditPage = (props) => {
                                     <div className="col-12">
                                         <div className="formgrid grid">
                                             <div className="col-12 md:col-3">
-                                                Documento Url *
+                                                Documentos *
                                             </div>
                                             <div className="col-12 md:col-9">
-                                                <InputTextarea name="documento_url"  className={inputClassName(formik?.errors?.documento_url)}   value={formik.values.documento_url} placeholder="Escribir Documento Url" onChange={formik.handleChange}   >
-                                                </InputTextarea>
+                                                <div className={inputClassName(formik?.errors?.documento_url)}>
+                                                    <Uploader name="documento_url" showUploadedFiles value={formik.values.documento_url} uploadPath="fileuploader/upload/documento_url" onChange={(paths) => formik.setFieldValue('documento_url', paths)} fileLimit={1} maxFileSize={3} accept=".docx,.doc,.xls,.xlsx,.xml,.csv,.pdf,.xps" multiple={false} label="Elija archivos o suelte archivos aquí" onUploadError={(errMsg) => app.flashMsg('Upload error', errMsg, 'error')} />
+                                                </div>
                                                 <ErrorMessage name="documento_url" component="span" className="p-error" />
                                             </div>
                                         </div>

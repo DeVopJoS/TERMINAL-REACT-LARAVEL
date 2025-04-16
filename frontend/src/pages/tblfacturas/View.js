@@ -90,48 +90,208 @@ const TblfacturasViewPage = (props) => {
                                     <div className="col-12 md:col-4">
                                         <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
                                             <div className="">
-                                                <div className="text-400 font-medium mb-1">Arrendatario Nombre</div>
-                                                <div className="font-bold">{ item.arrendatario_nombre }</div>
+                                                <div className="text-400 font-medium mb-1">N</div>
+                                                <div className="font-bold">{ item.n }</div>
                                             </div>
                                         </div>
                                     </div>
                                     <div className="col-12 md:col-4">
                                         <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
                                             <div className="">
-                                                <div className="text-400 font-medium mb-1">Arrendatario Ci</div>
-                                                <div className="font-bold">{ item.arrendatario_ci }</div>
+                                                <div className="text-400 font-medium mb-1">Fecha De La Factura</div>
+                                                <div className="font-bold">{ item.fecha_de_la_factura }</div>
                                             </div>
                                         </div>
                                     </div>
                                     <div className="col-12 md:col-4">
                                         <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
                                             <div className="">
-                                                <div className="text-400 font-medium mb-1">Factura Numero</div>
-                                                <div className="font-bold">{ item.factura_numero }</div>
+                                                <div className="text-400 font-medium mb-1">N De La Factura</div>
+                                                <div className="font-bold">{ item.n_de_la_factura }</div>
                                             </div>
                                         </div>
                                     </div>
                                     <div className="col-12 md:col-4">
                                         <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
                                             <div className="">
-                                                <div className="text-400 font-medium mb-1">Factura Fecha Emision</div>
-                                                <div className="font-bold">{ item.factura_fecha_emision }</div>
+                                                <div className="text-400 font-medium mb-1">Codigo De Autorizacion</div>
+                                                <div className="font-bold">{ item.codigo_de_autorizacion }</div>
                                             </div>
                                         </div>
                                     </div>
                                     <div className="col-12 md:col-4">
                                         <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
                                             <div className="">
-                                                <div className="text-400 font-medium mb-1">Factura Total</div>
-                                                <div className="font-bold">{ item.factura_total }</div>
+                                                <div className="text-400 font-medium mb-1">Nit Ci Cliente</div>
+                                                <div className="font-bold">{ item.nit_ci_cliente }</div>
                                             </div>
                                         </div>
                                     </div>
                                     <div className="col-12 md:col-4">
                                         <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
                                             <div className="">
-                                                <div className="text-400 font-medium mb-1">Factura Fecha Pago</div>
-                                                <div className="font-bold">{ item.factura_fecha_pago }</div>
+                                                <div className="text-400 font-medium mb-1">Complemento</div>
+                                                <div className="font-bold">{ item.complemento }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Nombre O Razon Social</div>
+                                                <div className="font-bold">{ item.nombre_o_razon_social }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Importe Total De La Venta</div>
+                                                <div className="font-bold">{ item.importe_total_de_la_venta }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Importe Ice</div>
+                                                <div className="font-bold">{ item.importe_ice }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Importe Iehd</div>
+                                                <div className="font-bold">{ item.importe_iehd }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Importe Ipj</div>
+                                                <div className="font-bold">{ item.importe_ipj }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Tasas</div>
+                                                <div className="font-bold">{ item.tasas }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Otros No Sujetos Al Iva</div>
+                                                <div className="font-bold">{ item.otros_no_sujetos_al_iva }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Exportaciones Y Operaciones Exentas</div>
+                                                <div className="font-bold">{ item.exportaciones_y_operaciones_exentas }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Ventas Gravadas A Tasa Cero</div>
+                                                <div className="font-bold">{ item.ventas_gravadas_a_tasa_cero }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Subtotal</div>
+                                                <div className="font-bold">{ item.subtotal }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Descuentos Bonificaciones Y Rebajas Sujetas Al Iva</div>
+                                                <div className="font-bold">{ item.descuentos_bonificaciones_y_rebajas_sujetas_al_iva }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Importe Gift Card</div>
+                                                <div className="font-bold">{ item.importe_gift_card }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Importe Base Para Debito Fiscal</div>
+                                                <div className="font-bold">{ item.importe_base_para_debito_fiscal }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Debito Fiscal</div>
+                                                <div className="font-bold">{ item.debito_fiscal }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Estado</div>
+                                                <div className="font-bold">{ item.estado }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Codigo De Control</div>
+                                                <div className="font-bold">{ item.codigo_de_control }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Tipo De Venta</div>
+                                                <div className="font-bold">{ item.tipo_de_venta }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Con Derecho A Credito Fiscal</div>
+                                                <div className="font-bold">{ item.con_derecho_a_credito_fiscal }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Estado Consolidacion</div>
+                                                <div className="font-bold">{ item.estado_consolidacion }</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-12 md:col-4">
+                                        <div className="card flex gap-3 align-items-center card shadow-none p-3 surface-100 ">
+                                            <div className="">
+                                                <div className="text-400 font-medium mb-1">Fecha Registro</div>
+                                                <div className="font-bold">{ item.fecha_registro }</div>
                                             </div>
                                         </div>
                                     </div>

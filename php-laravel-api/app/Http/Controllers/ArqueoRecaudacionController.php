@@ -140,13 +140,13 @@ class ArqueoRecaudacionController extends Controller
                 'arqueodiferencia' => 'required|numeric',
                 'arqueoobservacion' => 'nullable|string'
             ]);
-
+    
             // Asegurar que la fecha esté en el formato correcto Y-m-d
             $fecha = date('Y-m-d', strtotime($request->arqueofecha));
-
+    
             $arqueoid = DB::table('arqueocab')->max('arqueoid') + 1;
             $arqueodetcorteid = DB::table('arqueodetcortes')->max('arqueodetcorteid') + 1;
-
+    
             $arqueoCab = new Arqueocab();
             $arqueoCab->arqueoid = $arqueoid;
             $arqueoCab->arqueonumero = $request->arqueonumero;
@@ -154,7 +154,7 @@ class ArqueoRecaudacionController extends Controller
             $arqueoCab->arqueoturno = $request->arqueoturno ?? 'M'; // Por defecto turno mañana
             $arqueoCab->arqueohorainicio = $request->arqueohorainicio;
             $arqueoCab->arqueohorafin = $request->arqueohorafin;
-            $arqueoCab->arqueosupervisor = 1; // valor por defecto
+            $arqueoCab->arqueosupervisor = $request->arqueosupervisor;
             $arqueoCab->arqueorealizadopor = auth()->id() ?? 1;
             $arqueoCab->arqueorevisadopor = 1; // valor por defecto
             $arqueoCab->arqueorecaudaciontotal = $request->arqueorecaudaciontotal;
@@ -164,7 +164,7 @@ class ArqueoRecaudacionController extends Controller
             $arqueoCab->arqueofecharegistro = now();
             $arqueoCab->arqueousuario = auth()->id() ?? 1;
             $arqueoCab->save();
-
+    
             $arqueodetcortes = new Arqueodetcortes();
             $arqueodetcortes->arqueodetcorteid = $arqueodetcorteid;
             $arqueodetcortes->arqueoid = $arqueoid;
@@ -181,29 +181,111 @@ class ArqueoRecaudacionController extends Controller
             $arqueodetcortes->arqueocorte000_10 = $request->cortes['arqueocorte000_10'] ?? 0;
             $arqueodetcortes->arqueoestado = 'A';
             $arqueodetcortes->save();
-
-            // Actualizar las actas de entrega de estado P a C
-            $updatedRows = Actaentregacab::where('ae_estado', 'P')
+    
+            // Identificar las actas de entrega que tienen estado 'P' y al menos un detalle con estado 'L'
+            $actasToUpdate = DB::table('actaentregacab as cab')
+                ->join('actaentregadet as det', 'cab.ae_actaid', '=', 'det.ae_actaid')
+                ->where('cab.ae_estado', 'P')
+                ->where('det.aed_estado', 'L')
+                ->select('cab.ae_actaid')
+                ->distinct()
+                ->pluck('ae_actaid');
+    
+            if ($actasToUpdate->isEmpty()) {
+                throw new Exception('No se encontraron actas con estado "P" y detalles con estado "L" para actualizar.');
+            }
+    
+            // Actualizar las cabeceras de actas de entrega de estado P a C
+            $updatedCabRows = Actaentregacab::whereIn('ae_actaid', $actasToUpdate)
                 ->update([
                     'arqueoid' => $arqueoid,
                     'ae_estado' => 'C', // estado cambiado de 'P' a 'C'
                     'ae_fechaarqueo' => now(),
                     'ae_usuarioarqueo' => auth()->id() ?? 1
                 ]);
-
-            if (!$updatedRows) {
-                throw new Exception('No se encontraron actas con estado "P" para actualizar.');
-            }
-            
-            // Actualizar los detalles de las actas de entrega de estado L a C
-            $updatedDetalles = DB::table('actaentregadet as det')
-                ->join('actaentregacab as cab', 'det.ae_actaid', '=', 'cab.ae_actaid')
-                ->where('cab.ae_estado', 'C')
-                ->where('det.aed_estado', 'L')
+    
+            // Actualizar los detalles correspondientes
+            $updatedDetRows = DB::table('actaentregadet')
+                ->whereIn('ae_actaid', $actasToUpdate)
+                ->where('aed_estado', 'L')
                 ->update([
-                    'det.aed_estado' => 'C'
+                    'aed_estado' => 'C' // Actualizando el estado del detalle a 'C'
                 ]);
-
+    
+            // Verificar que se actualizaron registros
+            if (!$updatedCabRows || !$updatedDetRows) {
+                throw new Exception('Error al actualizar los registros. Cabeceras actualizadas: ' . $updatedCabRows . ', Detalles actualizados: ' . $updatedDetRows);
+            }
+    
+            // NUEVA FUNCIONALIDAD: Crear nuevos registros para detalles con diferencia > 0
+            // Agrupar detalles por cabecera para evitar duplicados
+            $detallesPorCabecera = DB::table('actaentregadet')
+                ->whereIn('ae_actaid', $actasToUpdate)
+                ->where('aed_estado', 'C')
+                ->whereRaw('(aed_hastanumero - aed_desdenumero + 1) - aed_cantidad > 0')
+                ->get()
+                ->groupBy('ae_actaid');
+    
+            // Procesar cada cabecera que tiene detalles con diferencia
+            foreach ($detallesPorCabecera as $actaId => $detalles) {
+                // Obtener la cabecera original
+                $cabeceraOriginal = DB::table('actaentregacab')
+                    ->where('ae_actaid', $actaId)
+                    ->first();
+                
+                if (!$cabeceraOriginal) {
+                    continue; // Saltar si no se encuentra la cabecera
+                }
+                
+                // Generar nuevo ID para la cabecera (una sola vez por grupo de detalles)
+                $nuevoActaId = DB::table('actaentregacab')->max('ae_actaid') + 1;
+                
+                // Insertar nueva cabecera con estado 'A' (una sola vez por grupo de detalles)
+                DB::table('actaentregacab')->insert([
+                    'ae_actaid' => $nuevoActaId,
+                    'ae_correlativo' => $cabeceraOriginal->ae_correlativo,
+                    'punto_recaud_id' => $cabeceraOriginal->punto_recaud_id,
+                    'ae_fecha' => now()->toDateString(),
+                    'ae_grupo' => $cabeceraOriginal->ae_grupo,
+                    'ae_operador1erturno' => $cabeceraOriginal->ae_operador1erturno,
+                    'ae_operador2doturno' => $cabeceraOriginal->ae_operador2doturno,
+                    'ae_cambiobs' => $cabeceraOriginal->ae_cambiobs,
+                    'ae_cajachicabs' => $cabeceraOriginal->ae_cajachicabs,
+                    'ae_llaves' => $cabeceraOriginal->ae_llaves,
+                    'ae_fechero' => $cabeceraOriginal->ae_fechero,
+                    'ae_tampo' => $cabeceraOriginal->ae_tampo,
+                    'ae_candados' => $cabeceraOriginal->ae_candados,
+                    'ae_observacion' => $cabeceraOriginal->ae_observacion,
+                    'ae_recaudaciontotalbs' => $cabeceraOriginal->ae_recaudaciontotalbs,
+                    'ae_usuario' => auth()->id() ?? 1,
+                    'ae_usuarioarqueo' => null,
+                    'ae_fecharegistro' => now(),
+                    'ae_fechaarqueo' => null,
+                    'ae_estado' => 'P',
+                    'arqueoid' => null
+                ]);
+                
+                // Insertar todos los detalles correspondientes a esta cabecera
+                foreach ($detalles as $detalle) {
+                    // Generar nuevo ID para cada detalle
+                    $nuevoDetalleId = DB::table('actaentregadet')->max('aed_actaid') + 1;
+                    
+                    // Insertar nuevo detalle con estado 'A' y vinculado a la nueva cabecera
+                    DB::table('actaentregadet')->insert([
+                        'aed_actaid' => $nuevoDetalleId,
+                        'ae_actaid' => $nuevoActaId, // Usar el mismo nuevo ID de cabecera para todos los detalles
+                        'servicio_id' => $detalle->servicio_id,
+                        'aed_desdenumero' => $detalle->aed_hastanumero+$detalle->aed_cantidad,// Asignar el mismo número de inicio
+                        'aed_hastanumero' => $detalle->aed_hastanumero,
+                        'aed_vendidohasta' => $detalle->aed_vendidohasta,
+                        'aed_cantidad' => $detalle->aed_hastanumero-$detalle->aed_vendidohasta,
+                        'aed_importebs' => $detalle->aed_importebs,
+                        'aed_estado' => 'P',
+                        'aed_preciounitario' => $detalle->aed_preciounitario
+                    ]);
+                }
+            }
+    
             DB::commit();
             return response()->json([
                 'success' => true,
@@ -215,7 +297,7 @@ class ArqueoRecaudacionController extends Controller
                     'diferencia' => $request->arqueodiferencia
                 ]
             ]);
-
+    
         } catch (Exception $e) {
             DB::rollback();
             return response()->json([

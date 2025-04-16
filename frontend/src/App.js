@@ -127,9 +127,6 @@ import 'primeflex/primeflex.css';
 import 'assets/styles/layout.scss';
 import PrevaloradasEdit from 'pages/registroprevaloradas/Edit';
 import ControlDiarioList from 'pages/control-diario/List';
-import ImportarFacturas from 'pages/importaciones/ImportarFacturas';
-import ImportacionMenu from 'pages/importaciones/ImportacionMenu';
-
 const App = () => {
 	const auth = useAuth();
 	function DefaultPage(){
@@ -359,14 +356,6 @@ const App = () => {
 				
 				{/* Control Diario */}
 				<Route path="/control-diario" element={<ControlDiarioList />} />
-
-				{/* Importación de facturastmp */}
-				<Route path="/importacion-facturas" element={<ImportarFacturas />} />
-
-				{/* Importaciones */}
-				<Route path="/importacion" element={<ImportacionMenu />} />
-				<Route path="/importacion-facturas" element={<ImportarFacturas />} />
-
 			</Route>
 			</Route>
 			<Route exact element={<IndexLayout />}>

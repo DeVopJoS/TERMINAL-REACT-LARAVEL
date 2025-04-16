@@ -135,14 +135,14 @@ class TblArrendamientosDocumentos extends Model
      */
 	public static function editFields(){
 		return [ 
-			"documento_id", 
 			"arrendamiento_id", 
 			"documento_tipo", 
 			"documento_nombre", 
 			"documento_url", 
 			"documento_descripcion", 
 			"fecha_subida", 
-			"documento_estado" 
+			"documento_estado", 
+			"documento_id" 
 		];
 	}
 	
