@@ -422,6 +422,7 @@ export default function MenuList() {
     ];
 
     const iconOptions = [
+        { label: 'Default', value: 'pi pi-th-large'},
         { label: 'Home', value: 'pi pi-home' },
         { label: 'User', value: 'pi pi-user' },
         { label: 'Settings', value: 'pi pi-cog' },
@@ -434,7 +435,20 @@ export default function MenuList() {
         { label: 'Calendar', value: 'pi pi-calendar' },
         { label: 'Envelope', value: 'pi pi-envelope' },
         { label: 'Search', value: 'pi pi-search' },
-        { label: 'Default', value: 'pi pi-th-large' }
+        { label: 'Info', value: 'pi pi-info-circle' },
+        { label: 'Star', value: 'pi pi-star' },
+        { label: 'Trash', value: 'pi pi-trash' },
+        { label: 'Plus', value: 'pi pi-plus' },
+        { label: 'Minus', value: 'pi pi-minus' },
+        { label: 'Check', value: 'pi pi-check' },
+        { label: 'Times', value: 'pi pi-times' },
+        { label: 'Lock', value: 'pi pi-lock' },
+        { label: 'Download', value: 'pi pi-download' },
+        { label: 'Upload', value: 'pi pi-upload' },
+        { label: 'Print', value: 'pi pi-print' },
+        { label: 'Flag', value: 'pi pi-flag' },
+        { label: 'Tag', value: 'pi pi-tag' },
+        { label: 'Bell', value: 'pi pi-bell' }
     ];
     
     const onFileSelect = (e) => {
